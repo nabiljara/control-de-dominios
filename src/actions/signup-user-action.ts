@@ -3,9 +3,9 @@
 import * as v from "valibot";
 import { SignupSchema } from "@/validators/signup-validator";
 import argon2 from "argon2";
-import db from "@/drizzle";
+import db from "@/db";
 import { eq } from "drizzle-orm";
-import { lower, users } from "@/drizzle/schema";
+import { lower, users } from "@/db/schema";
 type Res =
   | { success: true }
   | { success: false, error: v.FlatErrors<undefined>, statusCode: 400 }

@@ -1,7 +1,7 @@
 "use server"
 
-import db from "@/drizzle"
-import { users } from "@/drizzle/schema"
+import db from "@/db"
+import { users } from "@/db/schema"
 import { and, eq, isNull } from "drizzle-orm"
 export async function oauthVerifyEmailAction(email: string) {
   const existingUser = await db

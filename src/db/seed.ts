@@ -1,0 +1,43 @@
+import { sql, Table } from "drizzle-orm";
+import dotenv from 'dotenv';
+import * as schema from "@/db/schema";
+import * as seeds from "@/db/seeds";
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+
+dotenv.config();
+const DATABASE_URL = process.env.DATABASE_URL ?? "";
+const sql_ = neon(DATABASE_URL)
+const db = drizzle(sql_, { schema });
+type DB = typeof db;
+
+async function resetTable(db: DB, table: Table) {
+  return db.execute(sql`truncate table ${table} restart identity cascade`);
+}
+
+async function main() {
+  for (const table of [
+    schema.clients,
+    schema.contacts,
+    schema.providers,
+    schema.domains,
+    schema.access,
+  ]) {
+    await resetTable(db, table);
+  }
+  await seeds.clients(db);
+  await seeds.contacts(db);
+  await seeds.providers(db);
+  await seeds.domains(db);
+  await seeds.access(db);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    console.log("Seeding done!");
+    process.exit(0);
+  });

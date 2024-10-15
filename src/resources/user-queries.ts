@@ -1,7 +1,7 @@
 import 'server-only'
-import db from '@/drizzle';
+import db from '@/db';
 import { eq } from 'drizzle-orm/expressions';
-import { lower, users } from "@/drizzle/schema";
+import { lower, users } from "@/db/schema";
 
 export const findUserByEmail = async (
   email: string

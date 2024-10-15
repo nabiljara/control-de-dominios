@@ -1,6 +1,6 @@
 import type { JWT as DefaultJWT } from "next-auth/jwt";
 import type { User as DefaultUser } from "next-auth";
-import { users } from "@/drizzle/schema";
+import { users } from "@/db/schema";
 
 declare module "next-auth" {
   interface User extends DefaultUser {
