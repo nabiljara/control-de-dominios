@@ -10,8 +10,8 @@ export default function OAuthSigninButtons() {
   }
 
   return (
-    <div className="max-w-[400px] flex justify-center">
-      <Button variant="secondary" className="w-[70%] gap-3" onClick={handleClick.bind(null,"google")}>
+    <div className="w-full flex justify-center">
+      <Button variant="secondary" className="w-full gap-3" onClick={handleClick.bind(null,"google")}>
         <span>
           Iniciar sesión con
         </span>
