@@ -12,9 +12,8 @@ export default function SignoutButton() {
   return (
     <>
       <DropdownMenuItem onClick={clickHandler}>
-      <LogOut className="mr-2 h-4 w-4" />
+        <LogOut />
         Cerrar sesión
-        {/* <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> */}
       </DropdownMenuItem>
     </>
   )
