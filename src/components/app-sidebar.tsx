@@ -18,22 +18,19 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import Image from "next/image"
 import AppSidebarFooter from "./app-sidebar-footer"
 
+
 import { auth } from "@/auth";
 
-import { NAV_MAIN } from "@/constants"
-
+import AppSidebarMenu from "./app-sidebar-menu"
 
 export async function AppSidebar() {
-
+// TODO: CAMBIAR ESTO
   const session = await auth();
   const user = session?.user
   let name = ""
@@ -41,7 +38,7 @@ export async function AppSidebar() {
   if (user && user.name && user && user.email) {
     name = user.name
     email = user.email
-  }
+  }  
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -103,18 +100,7 @@ export async function AppSidebar() {
             ))}
           </SidebarMenu> */}
 
-          <SidebarMenu>
-            {NAV_MAIN.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton asChild isActive={item.isActive}>
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+          <AppSidebarMenu/>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>

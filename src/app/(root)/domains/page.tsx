@@ -6,7 +6,7 @@ import db from "@/db"
 
 import { columns } from "@/app/(root)/clients/_components/columns"
 import { DataTable } from "@/app/(root)/clients/_components/data-table"
-import { taskSchema } from "@/app/(root)/clients/data/schema"
+import { clientSchema } from "@/app/(root)/clients/data/schema"
 import { Loader2 } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -16,11 +16,11 @@ export const metadata: Metadata = {
 
 async function getTasks() {
   const data = await fs.readFile(
-    path.join(process.cwd(), "src/app/(root)/clients/data/tasks.json")
+    path.join(process.cwd(), "src/app/(root)/clients/data/clients.json")
   )
   const tasks = JSON.parse(data.toString())
 
-  return z.array(taskSchema).parse(tasks)
+  return z.array(clientSchema).parse(tasks)
 }
 
 export default async function DomainPage() {

@@ -11,7 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed.ts",
-    "data:tasks": "tsx src/app/(root)/clients/data/seed.ts"
+    "data:clients": "tsx src/app/(root)/clients/data/seed.ts"
   },
   "dependencies": {
     "@auth/core": "^0.37.0",

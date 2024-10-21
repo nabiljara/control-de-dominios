@@ -1,15 +1,17 @@
 "use client"
 //Filtros 
 //TODO: Hacer también reutilizable
-import { Cross2Icon } from "@radix-ui/react-icons"
+import { Cross2Icon, PlusCircledIcon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 
-import { priorities, statuses } from "@/app/(root)/clients/data/data"
+import { segments, statuses } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
+import { CirclePlus } from "lucide-react"
+import Link from "next/link"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -25,24 +27,24 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Filtrar clientes"
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
-            title="Status"
+            title="Estado"
             options={statuses}
           />
         )}
-        {table.getColumn("priority") && (
+        {table.getColumn("segment") && (
           <DataTableFacetedFilter
-            column={table.getColumn("priority")}
-            title="Priority"
-            options={priorities}
+            column={table.getColumn("segment")}
+            title="Segmento"
+            options={segments}
           />
         )}
         {isFiltered && (
@@ -56,7 +58,19 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <DataTableViewOptions table={table} />
+      <div className="flex space-x-2">
+        <DataTableViewOptions table={table} />
+        <Button
+          variant="default"
+          className="h-8 px-2 lg:px-3"
+          asChild
+        >
+          <Link href="/clients/create">
+          Nuevo cliente
+          <CirclePlus className="h-5 w-5 ml-2" />
+          </Link>
+        </Button>
+      </div>
     </div>
   )
 }

@@ -1,32 +1,35 @@
 import { promises as fs } from "fs"
 import path from "path"
 import { Metadata } from "next"
-import Image from "next/image"
 import { z } from "zod"
 import db from "@/db"
-
 import { columns } from "./_components/columns"
 import { DataTable } from "./_components/data-table"
-import { taskSchema } from "./data/schema"
+import { clientSchema } from "./data/schema"
 
 export const metadata: Metadata = {
-  title: "Tasks",
-  description: "A task and issue tracker build using Tanstack Table.",
+  title: "Clientes",
+  description: "Una tabla de clientes.",
 }
 
-// Simulate a database read for tasks.
-async function getTasks() {
+// Simulate a database read for clients.
+async function getClients() {
   const data = await fs.readFile(
-    path.join(process.cwd(), "src/app/(root)/clients/data/tasks.json")
+    path.join(process.cwd(), "src/app/(root)/clients/data/clients.json")
   )
-  const tasks = JSON.parse(data.toString())
-
-  return z.array(taskSchema).parse(tasks)
+  // const data = db.query.clients.findMany({
+  //   with: {
+  //     access:true
+  //   }
+  // })
+  const clients = JSON.parse(data.toString())
+  // return data;
+  return z.array(clientSchema).parse(clients)
 }
 
 export default async function ClientsPage() {
-  const tasks = await getTasks()
-
+  const clients = await getClients()
+  // console.log(clients[0].access);
   return (
     <>
       <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
@@ -38,7 +41,7 @@ export default async function ClientsPage() {
             </p>
           </div>
         </div>
-        <DataTable data={tasks} columns={columns} />
+        <DataTable data={clients} columns={columns} />
       </div>
     </>
   )

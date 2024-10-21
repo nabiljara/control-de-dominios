@@ -8,64 +8,40 @@ import {
   QuestionMarkCircledIcon,
   StopwatchIcon,
 } from "@radix-ui/react-icons"
-
-export const labels = [
-  {
-    value: "bug",
-    label: "Bug",
-  },
-  {
-    value: "feature",
-    label: "Feature",
-  },
-  {
-    value: "documentation",
-    label: "Documentation",
-  },
-]
+import { Ban, Building, Check, Pause, User, Users } from "lucide-react"
 
 export const statuses = [
   {
-    value: "backlog",
-    label: "Backlog",
-    icon: QuestionMarkCircledIcon,
+    value: "active",
+    label: "Activo",
+    icon: Check,
   },
   {
-    value: "todo",
-    label: "Todo",
-    icon: CircleIcon,
+    value: "inactive",
+    label: "Inactivo",
+    icon: Pause,
   },
   {
-    value: "in progress",
-    label: "In Progress",
-    icon: StopwatchIcon,
-  },
-  {
-    value: "done",
-    label: "Done",
-    icon: CheckCircledIcon,
-  },
-  {
-    value: "canceled",
-    label: "Canceled",
-    icon: CrossCircledIcon,
-  },
+    value: "suspended",
+    label: "Suspendido",
+    icon: Ban,
+  }
 ]
 
-export const priorities = [
+export const segments = [
   {
-    label: "Low",
-    value: "low",
-    icon: ArrowDownIcon,
+    label: "Chica",
+    value: "small",
+    icon: User,
   },
   {
-    label: "Medium",
+    label: "Media",
     value: "medium",
-    icon: ArrowRightIcon,
+    icon: Users,
   },
   {
-    label: "High",
-    value: "high",
-    icon: ArrowUpIcon,
+    label: "Grande",
+    value: "large",
+    icon: Building,
   },
 ]
