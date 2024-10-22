@@ -8,7 +8,7 @@ const auth = NextAuth(authConfig).auth;
 
 export default auth((request: NextAuthRequest) => {
   const publicRoutes = ["/signin", "/signup", "/maintenance"];
-  const protectedRoutes = ["/", "/profile","/domains","/providers","/clients"];
+  const protectedRoutesPrefixes = ["/profile", "/domains", "/providers", "/clients"];
   
   const { auth, nextUrl } = request;
   const isLoggedIn = !!auth?.user;
@@ -27,11 +27,21 @@ export default auth((request: NextAuthRequest) => {
     return NextResponse.redirect(new URL("/", nextUrl));
   }
 
+  // Verificar si la ruta es protegida por prefijo o si es la raíz ("/")
+  const isProtectedRoute = currentPath === "/" || protectedRoutesPrefixes.some(prefix => currentPath.startsWith(prefix));
+
   // Si la ruta es protegida y el usuario NO está logeado, redirigir a "signin"
-  if (protectedRoutes.includes(currentPath) && !isLoggedIn && !isMaintenanceMode) {
-    return NextResponse.redirect(new URL("/signin", nextUrl));
+  if (isProtectedRoute && !isLoggedIn && !isMaintenanceMode) {
+    if (currentPath !== "/signin") {
+      return NextResponse.redirect(new URL("/signin", nextUrl));
+    }
   }
-  
+
+  // Si está autenticado y la ruta es protegida, permitir acceso
+  if (isLoggedIn || !isProtectedRoute) {
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 });
 
