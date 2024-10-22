@@ -8,7 +8,7 @@ const auth = NextAuth(authConfig).auth;
 
 export default auth((request: NextAuthRequest) => {
   const publicRoutes = ["/signin", "/signup", "/maintenance"];
-  const protectedRoutes = ["/", "/profile"];
+  const protectedRoutes = ["/", "/profile","/domains","/providers","/clients"];
   
   const { auth, nextUrl } = request;
   const isLoggedIn = !!auth?.user;
