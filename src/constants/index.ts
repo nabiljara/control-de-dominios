@@ -31,7 +31,6 @@ export const NAV_MAIN = [
       label: "Dashboard",
       href: "/",
       icon: Home,
-      isActive: true,
       items: [
       //   {
       //     label: "Dominios",
@@ -50,6 +49,7 @@ export const NAV_MAIN = [
     {
       label: "Dominios",
       href: "/domains",
+      singular: "dominio",
       icon: Globe,
       items: [
       //   {
@@ -70,6 +70,7 @@ export const NAV_MAIN = [
       label: "Clientes",
       href: "/clients",
       icon: Users,
+      singular: "cliente",
       items: [
       //   {
       //     label: "Introduction",
@@ -93,6 +94,7 @@ export const NAV_MAIN = [
       label: "Provedores",
       href: "/providers",
       icon: Box,
+      singular: "provedor",
       items: [
       //   {
       //     label: "General",

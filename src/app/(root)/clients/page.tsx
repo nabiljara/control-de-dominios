@@ -9,7 +9,6 @@ import { clientSchema } from "./data/schema"
 
 export const metadata: Metadata = {
   title: "Clientes",
-  description: "Una tabla de clientes.",
 }
 
 // Simulate a database read for clients.

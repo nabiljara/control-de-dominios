@@ -8,16 +8,23 @@ export default function AppSidebarMenu() {
   const pathname = usePathname(); 
   return (
     <SidebarMenu>
-    {NAV_MAIN.map((item) => (
-      <SidebarMenuItem key={item.label}>
-        <SidebarMenuButton asChild isActive={pathname === item.href}>
-          <Link href={item.href}>
-            <item.icon />
-            <span>{item.label}</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    ))}
-  </SidebarMenu>
-  )
+      {NAV_MAIN.map((item) => {
+        const isActive = item.href === "/"
+          ? pathname === item.href
+          : pathname.startsWith(item.href);
+        return (
+          <SidebarMenuItem key={item.label}>
+            <SidebarMenuButton asChild isActive={isActive}>
+            {/* <SheetClose asChild> */}
+              <Link href={item.href}>
+                <item.icon />
+                <span>{item.label}</span>
+              </Link>
+            {/* </SheetClose> */}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        );
+      })}
+    </SidebarMenu>
+  );
 }

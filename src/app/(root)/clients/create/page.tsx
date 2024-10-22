@@ -1,7 +1,7 @@
 import React from 'react'
 
-export default function CreatePage() {
+export default function CreateClientPage() {
   return (
-    <div>CreatePage</div>
+    <div>CreateClientPage</div>
   )
 }

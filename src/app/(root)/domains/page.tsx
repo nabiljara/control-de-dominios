@@ -4,14 +4,12 @@ import { Metadata } from "next"
 import { z } from "zod"
 import db from "@/db"
 
-import { columns } from "@/app/(root)/clients/_components/columns"
-import { DataTable } from "@/app/(root)/clients/_components/data-table"
+import { columns } from "./_components/columns"
+import { DataTable } from "./_components/data-table"
 import { clientSchema } from "@/app/(root)/clients/data/schema"
-import { Loader2 } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Tasks",
-  description: "A task and issue tracker build using Tanstack Table.",
+  title: "Dominios",
 }
 
 async function getTasks() {
