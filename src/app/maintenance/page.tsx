@@ -8,13 +8,13 @@ export default function MaintenancePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-50 flex flex-col items-center justify-center p-4 text-center">
       {/* <div className="flex aspect-square size-28 items-center justify-center rounded-lg text-sidebar-primary-foreground"> */}
-        <Image
+        {/* <Image
           src="/images/logo.svg"
           width={200}
           height={200}
           alt='Logo'
           className='mb-5'
-        />
+        /> */}
       {/* </div> */}
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold text-green-800 mb-4">Estamos en mantenimiento</h1>
