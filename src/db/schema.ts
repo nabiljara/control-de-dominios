@@ -1,6 +1,4 @@
-// import { access } from '@/db/schema';
-import { en } from '@faker-js/faker';
-import { InferSelectModel, relations, sql, SQL } from "drizzle-orm"
+import { relations, sql, SQL } from "drizzle-orm"
 import {
   boolean,
   timestamp,
@@ -15,34 +13,32 @@ import {
   varchar
 } from "drizzle-orm/pg-core"
 import type { AdapterAccountType } from "next-auth/adapters"
-import * as v from "valibot";
 
 
 export function lower(email: AnyPgColumn): SQL {
   return sql`lower(${email})`
 }
 
-export const userRoleEnum = pgEnum("role", ["user", "admin"])
-export const clientSizeEnum = pgEnum("segment", ["small", "medium", "large"])
+export const userRoleEnum = pgEnum("user_role", ["user", "admin"])
+export const clientSizeEnum = pgEnum("client_size", ["small", "medium", "large"])
 export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "suspended"])
 export const domainStatusEnum = pgEnum("domain_status", ["active", "inactive", "suspended"])
 export const contactTypeEnum = pgEnum("contact_type", ["technical", "administrative", "financial"])
 export const contactStatusEnum = pgEnum("contact_status", ["active", "inactive"])
 export const notificationStatusEnum = pgEnum("notification_status", ["delivered", "bounced"])
+export const auditsActionEnum = pgEnum("audit_action_enum", ["insert", "update", "delete"])
+export const auditsEntityEnum = pgEnum("audits_entity_enum", ["localities", "clients", "contacts","providers", "access", "domains", "users"])
+export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts","providers"])
 
-
-// * * OK
 export const localities = pgTable("localities", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
 })
 
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
-  localityId:integer("locality_id")
-  .references(() => localities.id, { onDelete: "cascade" }),
+  localityId: integer("locality_id")
+    .references(() => localities.id, { onDelete: "set null" }),
   size: clientSizeEnum("size").notNull().default("small"),
   status: clientStatusEnum("status").notNull().default("active"),
   name: varchar("name", { length: 255 }).notNull(),
@@ -60,19 +56,17 @@ export const clientRelations = relations(clients, ({ many, one }) => ({
   domains: many(domains),
 }))
 
-// * * OK
-
-
 export const contacts = pgTable("contacts", {
   id: serial("id").primaryKey(),
   clientId: integer("client_id")
-    .references(() => clients.id, { onDelete: "cascade" }), // Should be null if the domain has its own contact.
+    .references(() => clients.id, { onDelete: "set null" }), // Should be null if the domain has its own contact.
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
-  phone: varchar("phone", { length: 255 }).notNull(),
-  type: contactTypeEnum("contact_type"),
-  status: contactStatusEnum("contact_status"),
-  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow()
+  phone: varchar("phone", { length: 255 }).notNull().unique(),
+  type: contactTypeEnum("type"),
+  status: contactStatusEnum("status"),
+  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  updated_at: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 });
 
 export const contactRelations = relations(contacts, ({ one, many }) => ({
@@ -81,15 +75,12 @@ export const contactRelations = relations(contacts, ({ one, many }) => ({
     references: [clients.id],
   }),
   domains: many(domains),
-})) 
-
-
-//** OK */
+}))
 
 export const providers = pgTable("providers", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  url: varchar("url", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  url: varchar("url", { length: 255 }).notNull().unique(),
 })
 
 export const providersRelations = relations(providers, ({ many }) => ({
@@ -100,12 +91,14 @@ export const providersRelations = relations(providers, ({ many }) => ({
 export const access = pgTable("access", {
   id: serial("id").primaryKey(),
   clientId: integer("client_id")
-    .references(() => clients.id, { onDelete: "cascade" }),
+    .references(() => clients.id, { onDelete: "set null" }),
   providerId: integer("provider_id")
-    .references(() => providers.id, { onDelete: "cascade" }),
+    .references(() => providers.id, { onDelete: "set null" }),
   username: varchar("username", { length: 255 }).notNull(),
   password: varchar("password", { length: 255 }).notNull(),
   notes: text("notes"),
+  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  updated_at: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 })
 
 export const accessRelations = relations(access, ({ one, many }) => ({
@@ -120,58 +113,24 @@ export const accessRelations = relations(access, ({ one, many }) => ({
   domainAccess: many(domainAccess),
 }))
 
-//** OK */
-
-
 export const domains = pgTable("domains", {
   id: serial("id").primaryKey(),
   clientId: integer("client_id")
     .notNull()
-    .references(() => clients.id, { onDelete: "cascade" }),
+    .references(() => clients.id, { onDelete: "set null" }),
   providerId: integer("provider_id")
     .notNull()
-    .references(() => providers.id, { onDelete: "cascade" }),
+    .references(() => providers.id, { onDelete: "set null" }),
   contactId: integer("contact_id")
     .notNull()
-    .references(() => contacts.id, { onDelete: "cascade" }),
+    .references(() => contacts.id, { onDelete: "set null" }),
 
-  name: varchar("name", { length: 255 }).notNull(),
-  registrationDate: timestamp("registration_date", { mode: "string" }).notNull().defaultNow(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  providerRegistrationDate: timestamp("provider_registration_date", { mode: "string" }).notNull(),
   expirationDate: timestamp("expiration_date", { mode: "string" }).notNull().defaultNow(),
   status: domainStatusEnum("status").notNull().default("active"),
-})
-
-export const domainAccess = pgTable("domain_access", {
-  domainId: integer("domain_id"),
-  accessId: integer("access_id"),
-},
-  (table) => ({
-    pk: primaryKey({ columns: [table.domainId, table.accessId] }),
-  }))
-
-export const domainAccessRelations = relations(domainAccess, ({ one, many }) => ({
-    access: one(access, {
-      fields: [domainAccess.accessId],
-      references: [access.id],
-    }),
-    domain: one(domains, {
-      fields: [domainAccess.domainId],
-      references: [domains.id],
-    }),
-  }))
-
-
-export const domainHistory = pgTable("domain_history", {
-  id: serial("id").primaryKey(),
-  domainId: integer("domain_id")
-    .references(() => domains.id, { onDelete: "cascade" }),
-  entityId: integer("entity_id")
-    .notNull(),
-  entity: varchar("name", { length: 255 }).notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
-  startDate: timestamp("start_date", { mode: "string" }).notNull().defaultNow(),
-  endDate: timestamp("end_date", { mode: "string" }),
-  active: boolean("active").default(true)
+  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  updated_at: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 })
 
 export const domainsRelation = relations(domains, ({ one, many }) => ({
@@ -188,7 +147,46 @@ export const domainsRelation = relations(domains, ({ one, many }) => ({
     fields: [domains.contactId],
     references: [contacts.id],
   }),
-  history: many(domainHistory)
+  history: many(domainHistory),
+}))
+
+export const domainAccess = pgTable("domain_access", {
+  id: serial("id").primaryKey(),
+  domainId: integer("domain_id").notNull()
+    .references(() => domains.id, { onDelete: "cascade" }).unique(),
+  accessId: integer("access_id").notNull()
+    .references(() => access.id, { onDelete: "cascade" }),
+},
+)
+
+export const domainAccessRelations = relations(domainAccess, ({ one, many }) => ({
+  access: one(access, {
+    fields: [domainAccess.accessId],
+    references: [access.id],
+  }),
+  domain: one(domains, {
+    fields: [domainAccess.domainId],
+    references: [domains.id],
+  }),
+}))
+
+
+export const domainHistory = pgTable("domain_history", {
+  id: serial("id").primaryKey(),
+  domainId: integer("domain_id")
+    .references(() => domains.id, { onDelete: "cascade" }),
+  entityId: integer("entity_id").notNull(),
+  entity: domainHistoryEntityEnum("entity").notNull(),
+  startDate: timestamp("start_date", { mode: "string" }).notNull().defaultNow(),
+  endDate: timestamp("end_date", { mode: "string" }),
+  active: boolean("active").default(true)
+})
+
+export const domainHistoryRelations = relations(domainHistory, ({ one }) => ({
+  domain: one(domains, {
+    fields: [domainHistory.domainId],
+    references: [domains.id],
+  })
 }))
 
 export const notifications = pgTable("notifications", {
@@ -201,7 +199,6 @@ export const notifications = pgTable("notifications", {
 export const notificationsRelations = relations(notifications, ({ many }) => ({
   notificationToUser: many(usersNotifications),
 }))
-
 
 export const usersNotifications = pgTable("users_notifications", {
   userId: text("user_id")
@@ -228,10 +225,47 @@ export const usersNotificationsRelations = relations(usersNotifications, ({ one 
   }),
 }))
 
+export const audits = pgTable("audits", {
+  id: serial("id")
+    .primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "set null" }),
+  action: auditsActionEnum("action").notNull(),
+  entity: auditsEntityEnum("entity").notNull(),
+  entityId: integer("entity_id").notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+});
+
+export const auditsRelations = relations(audits, ({ many, one }) => ({
+  user: one(users, {
+    fields: [audits.userId],
+    references: [users.id],
+  }),
+  audit_details: many(auditDetails),
+}))
+
+export const auditDetails = pgTable("auditDetails", {
+  id: serial("id").primaryKey(),
+  auditId: integer("audit_id")
+    .notNull()
+    .references(() => audits.id, { onDelete: "cascade" }),
+  oldValue: text("old_value"),
+  newValue: text("new_value"),
+  field:  varchar("field", { length: 255 }).notNull(),
+});
+
+
+export const auditsDetailsRelations = relations(auditDetails, ({ many, one }) => ({
+  audits: one(audits,{
+    fields: [auditDetails.auditId],
+    references: [audits.id]
+  })
+}))
 
 //AUTHJS
 
-// * * OK 
+
 export const users = pgTable("users", {
   id: text("id")
     .primaryKey()
@@ -245,47 +279,16 @@ export const users = pgTable("users", {
 },
 
   (table) => ({
-    emailUniqueIndex: uniqueIndex('enailUniqueIndex').on(lower(table.email)),
+    emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(lower(table.email)),
   })
 )
-
-export const audits = pgTable("audits", {
-  id: serial("id")
-    .primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  action: text("name").notNull(),
-  entity: text("entity").notNull(),
-  entityId: integer("entity_id").notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
-});
-
-export const auditDetails = pgTable("audits", {
-  id: serial("id")
-    .primaryKey(),
-  auditId: integer("audit_id")
-    .notNull()
-    .references(() => audits.id, { onDelete: "cascade" }),
-  oldValue: text("old_value"),
-  newValue: text("old_value"),
-  field: text("field").notNull(),
-});
-
-export const auditsRelations = relations(audits, ({ many, one }) => ({
-  users: one(users),
-  audit_details: many(auditDetails),
-}))
-
-export const auditsDetailsRelations = relations(auditDetails, ({ many, one }) => ({
-  audits: one(audits)
-}))
 
 export const usersRelatinos = relations(users, ({ many }) => ({
   notifications: many(usersNotifications),
   audits: many(audits),
 }))
-// * * OK
+
+
 
 export const accounts = pgTable(
   "account",
