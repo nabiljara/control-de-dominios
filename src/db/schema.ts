@@ -65,8 +65,8 @@ export const contacts = pgTable("contacts", {
   phone: varchar("phone", { length: 255 }).notNull().unique(),
   type: contactTypeEnum("type"),
   status: contactStatusEnum("status"),
-  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
-  updated_at: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
+  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 });
 
 export const contactRelations = relations(contacts, ({ one, many }) => ({
@@ -97,8 +97,8 @@ export const access = pgTable("access", {
   username: varchar("username", { length: 255 }).notNull(),
   password: varchar("password", { length: 255 }).notNull(),
   notes: text("notes"),
-  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
-  updated_at: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
+  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 })
 
 export const accessRelations = relations(access, ({ one, many }) => ({
@@ -129,8 +129,8 @@ export const domains = pgTable("domains", {
   providerRegistrationDate: timestamp("provider_registration_date", { mode: "string" }).notNull(),
   expirationDate: timestamp("expiration_date", { mode: "string" }).notNull().defaultNow(),
   status: domainStatusEnum("status").notNull().default("active"),
-  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
-  updated_at: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
+  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 })
 
 export const domainsRelation = relations(domains, ({ one, many }) => ({
@@ -193,7 +193,7 @@ export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
   message: text("message").notNull(),
   status: notificationStatusEnum("status").notNull(),
-  created_at: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 })
 
 export const notificationsRelations = relations(notifications, ({ many }) => ({
