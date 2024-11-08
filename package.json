@@ -11,7 +11,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed.ts",
-    "data:clients": "tsx src/app/(root)/clients/data/seed.ts",  
+    "db:functions": "tsx src/db/execute_functions.ts",
+    "db:triggers": "tsx src/db/execute_triggers.ts",
+    "data:clients": "tsx src/app/(root)/clients/data/seed.ts",
     "postinstall": "npm rebuild argon2 --build-from-source"
   },
   "dependencies": {

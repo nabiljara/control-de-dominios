@@ -229,7 +229,6 @@ export const audits = pgTable("audits", {
   id: serial("id")
     .primaryKey(),
   userId: text("user_id")
-    .notNull()
     .references(() => users.id, { onDelete: "set null" }),
   action: auditsActionEnum("action").notNull(),
   entity: auditsEntityEnum("entity").notNull(),
@@ -245,7 +244,7 @@ export const auditsRelations = relations(audits, ({ many, one }) => ({
   audit_details: many(auditDetails),
 }))
 
-export const auditDetails = pgTable("auditDetails", {
+export const auditDetails = pgTable("audits_details", {
   id: serial("id").primaryKey(),
   auditId: integer("audit_id")
     .notNull()
