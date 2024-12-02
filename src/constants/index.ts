@@ -23,7 +23,8 @@ import {
   Home,
   Globe,
   Users,
-  Box
+  Box,
+  Contact
 } from "lucide-react"
 
 export const NAV_MAIN = [
@@ -95,6 +96,30 @@ export const NAV_MAIN = [
       href: "/providers",
       icon: Box,
       singular: "provedor",
+      items: [
+      //   {
+      //     label: "General",
+      //     href: "#",
+      //   },
+      //   {
+      //     label: "Team",
+      //     href: "#",
+      //   },
+      //   {
+      //     label: "Billing",
+      //     href: "#",
+      //   },
+      //   {
+      //     label: "Limits",
+      //     href: "#",
+      //   },
+      ],
+    },
+    {
+      label: "Contactos",
+      href: "/contacts",
+      icon: Contact,
+      singular: "contacto",
       items: [
       //   {
       //     label: "General",

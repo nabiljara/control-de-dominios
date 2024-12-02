@@ -11,7 +11,7 @@ const mock = () => {
 
 	for (let i = 0; i < 20; i++) {
 		data.push({
-      segment: faker.helpers.arrayElement(["small", "medium", "large"]),
+      size: faker.helpers.arrayElement(["small", "medium", "large"]),
       name: faker.person.lastName(),
       createdAt: faker.date.past().toDateString(),
       updatedAt: faker.date.past().toDateString(),
