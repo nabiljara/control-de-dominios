@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { type SigninInput, SigninSchema } from "@/validators/signin-validator"
-import { useForm } from "react-hook-form"
-import { valibotResolver } from "@hookform/resolvers/valibot"
+import { type SigninInput, SigninSchema } from "@/validators/signin-validator";
+import { useForm } from "react-hook-form";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import {
   Form,
   FormControl,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signinUserAction } from "@/actions/signin-user-action";
+import { signinUserAction } from "@/actions/user-action/signin-user-action";
 import Image from "next/image";
 import OAuthSigninButtons from "@/app/(auth)/signin/_components/oauth-signin-buttons";
 
@@ -24,14 +24,14 @@ export default function SignInForm() {
       email: "",
       password: "",
     },
-  })
-  
+  });
+
   const { handleSubmit, control, formState, setError } = form;
 
   const onSubmit = async (data: SigninInput) => {
-    const res = await signinUserAction(data)
+    const res = await signinUserAction(data);
     if (res.success) {
-      window.location.href = "/"
+      window.location.href = "/";
     } else {
       switch (res.statusCode) {
         case 401:
@@ -43,9 +43,9 @@ export default function SignInForm() {
           setError("password", { message: error });
       }
     }
-  }
+  };
   return (
-    <div className="w-full lg:grid  min-h-screen lg:grid-cols-2 ">
+    <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
@@ -55,7 +55,10 @@ export default function SignInForm() {
             </p>
           </div>
           <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-[400px]">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="max-w-[400px] space-y-8"
+            >
               <FormField
                 name="email"
                 control={control}
@@ -92,10 +95,16 @@ export default function SignInForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={formState.isSubmitting} className="w-full">Ingresar</Button>
+              <Button
+                type="submit"
+                disabled={formState.isSubmitting}
+                className="w-full"
+              >
+                Ingresar
+              </Button>
             </form>
           </Form>
-          <OAuthSigninButtons/>
+          <OAuthSigninButtons />
         </div>
       </div>
       <div className="hidden bg-muted lg:block">
@@ -108,5 +117,5 @@ export default function SignInForm() {
         />
       </div>
     </div>
-  )
+  );
 }

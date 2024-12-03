@@ -181,7 +181,7 @@ export async function createFunctions(db: DB) {
               ELSEIF TG_OP = 'UPDATE' THEN
                   IF OLD.username IS DISTINCT FROM NEW.username THEN
                       INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                      VALUES (v_audit_id, OLD.username, NEW.username, 'Usuario');
+                      VALUES (v_audit_id, OLD.username, NEW.username, 'Nombre de usuario');
                   END IF;
 
                   IF OLD.notes IS DISTINCT FROM NEW.notes THEN
@@ -214,12 +214,247 @@ export async function createFunctions(db: DB) {
               INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
               VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
               RETURNING id INTO v_audit_id;
+
+              INSERT INTO audits_details (audit_id, old_value, new_value, field)
+              VALUES (v_audit_id, OLD.username, NULL, 'Nombre de usuario');
+
             END IF;
 
             RETURN NULL;
         END;
         $$ LANGUAGE plpgsql;
     `);
+    // PARA AUDITAR CONTACTOS
+    await db.execute(`
+        CREATE OR REPLACE FUNCTION audits_contacts()
+        RETURNS TRIGGER AS $$
+          DECLARE
+              v_user_id TEXT := NULLIF(current_setting('my.user_id', true), '');
+              v_audit_id INT;
+          BEGIN
+            
+              IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
   
+                INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                RETURNING id INTO v_audit_id;
+    
+                IF TG_OP = 'INSERT' THEN
+  
+                    INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                    VALUES (v_audit_id, NULL, NEW.client_id, 'ID Cliente'),
+                    (v_audit_id, NULL, NEW.email, 'Email'),
+                    (v_audit_id, NULL, NEW.phone, 'Telefono'),
+                    (v_audit_id, NULL, NEW.contact_type, 'Tipo de contacto'),
+                    (v_audit_id, NULL, NEW.contact_status, 'Estado del contacto'),
+                    (v_audit_id, NULL, NEW.created_at, 'Fecha de creación'),
+                    (v_audit_id, NULL, NEW.updated_at, 'Fecha de actualización');
+    
+                ELSEIF TG_OP = 'UPDATE' THEN
+                    IF OLD.client_id IS DISTINCT FROM NEW.client_id THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.client_id, NEW.client_id, 'ID Cliente');
+                    END IF;
+  
+                    IF OLD.email IS DISTINCT FROM NEW.email THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.email, NEW.email, 'Email');
+                    END IF;
+  
+                    IF OLD.phone IS DISTINCT FROM NEW.phone THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.phone, NEW.phone, 'Telefono');
+                    END IF;
+
+                    IF OLD.contact_type IS DISTINCT FROM NEW.contact_type THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.contact_type, NEW.contact_type, 'Tipo de contacto');
+                    END IF;
+                    
+                    IF OLD.contact_status IS DISTINCT FROM NEW.contact_status THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.contact_status, NEW.contact_status, 'Estado del contacto');
+                    END IF;
+  
+                    IF OLD.created_at IS DISTINCT FROM NEW.created_at THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.created_at, NEW.created_at, 'Fecha de creación');
+                    END IF;
+  
+                    IF OLD.updated_at IS DISTINCT FROM NEW.updated_at THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.updated_at, NEW.updated_at, 'Fecha de actualización');
+                    END IF;
+                END IF;
+                
+              ELSEIF TG_OP = 'DELETE' THEN
+                INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                RETURNING id INTO v_audit_id;
+
+                INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                VALUES (v_audit_id, OLD.client_id, NULL, 'ID del cliente');
+
+              END IF;
+  
+              RETURN NULL;
+          END;
+          $$ LANGUAGE plpgsql;
+      `);
+    // PARA AUDITAR DOMINIOS
+    await db.execute(`
+        CREATE OR REPLACE FUNCTION audits_domains()
+        RETURNS TRIGGER AS $$
+          DECLARE
+              v_user_id TEXT := NULLIF(current_setting('my.user_id', true), '');
+              v_audit_id INT;
+          BEGIN
+            
+              IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+  
+                INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                RETURNING id INTO v_audit_id;
+    
+                IF TG_OP = 'INSERT' THEN
+  
+                    INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                    VALUES (v_audit_id, NULL, NEW.client_id, 'ID Cliente'),
+                    (v_audit_id, NULL, NEW.provider_id, 'ID Proveedor'),
+                    (v_audit_id, NULL, NEW.contact_id, 'ID Contacto'),
+                    (v_audit_id, NULL, NEW.name, 'Nombre'),
+                    (v_audit_id, NULL, NEW.registration_date, 'Fecha de registro'),
+                    (v_audit_id, NULL, NEW.expiration_date, 'Fecha de expiración'),
+                    (v_audit_id, NULL, NEW.status, 'Estado del contacto'),
+                    (v_audit_id, NULL, NEW.created_at, 'Fecha de creación'),
+                    (v_audit_id, NULL, NEW.updated_at, 'Fecha de actualización');
+    
+                ELSEIF TG_OP = 'UPDATE' THEN
+                    IF OLD.client_id IS DISTINCT FROM NEW.client_id THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.client_id, NEW.client_id, 'ID Cliente');
+                    END IF;
+  
+                    IF OLD.provider_id IS DISTINCT FROM NEW.provider_id THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.provider_id, NEW.provider_id, 'provider_id');
+                    END IF;
+  
+                    IF OLD.contact_id IS DISTINCT FROM NEW.contact_id THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.contact_id, NEW.contact_id, 'Telefono');
+                    END IF;
+
+                    IF OLD.name IS DISTINCT FROM NEW.name THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.name, NEW.name, 'Tipo de contacto');
+                    END IF;
+                    
+                    IF OLD.registration_date IS DISTINCT FROM NEW.registration_date THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.registration_date, NEW.registration_date, 'Estado del contacto');
+                    END IF;
+
+                    IF OLD.expiration_date IS DISTINCT FROM NEW.expiration_date THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.expiration_date, NEW.expiration_date, 'Estado del contacto');
+                    END IF;
+
+                    IF OLD.status IS DISTINCT FROM NEW.status THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.status, NEW.status, 'Estado del contacto');
+                    END IF;
+  
+                    IF OLD.created_at IS DISTINCT FROM NEW.created_at THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.created_at, NEW.created_at, 'Fecha de creación');
+                    END IF;
+  
+                    IF OLD.updated_at IS DISTINCT FROM NEW.updated_at THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.updated_at, NEW.updated_at, 'Fecha de actualización');
+                    END IF;
+                END IF;
+                
+              ELSEIF TG_OP = 'DELETE' THEN
+                INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                RETURNING id INTO v_audit_id;
+
+                INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                VALUES (v_audit_id, OLD.name, NULL, 'Nombre');
+
+              END IF;
+  
+              RETURN NULL;
+          END;
+          $$ LANGUAGE plpgsql;
+      `);
+    // PARA AUDITAR USUARIOS
+    await db.execute(`
+        CREATE OR REPLACE FUNCTION audits_users()
+        RETURNS TRIGGER AS $$
+          DECLARE
+              v_user_id TEXT := NULLIF(current_setting('my.user_id', true), '');
+              v_audit_id INT;
+          BEGIN
+            
+              IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+  
+                INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                RETURNING id INTO v_audit_id;
+    
+                IF TG_OP = 'INSERT' THEN
+  
+                    INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                    VALUES (v_audit_id, NULL, NEW.name, 'ID Cliente'),
+                    (v_audit_id, NULL, NEW.email, 'ID Proveedor'),
+                    (v_audit_id, NULL, NEW.image, 'ID Contacto'),
+                    (v_audit_id, NULL, NEW.role, 'Nombre');
+    
+                ELSEIF TG_OP = 'UPDATE' THEN
+                    IF OLD.name IS DISTINCT FROM NEW.name THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.name, NEW.name, 'Nombre');
+                    END IF;
+  
+                    IF OLD.email IS DISTINCT FROM NEW.email THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.email, NEW.email, 'Email');
+                    END IF;
+  
+                    IF OLD.image IS DISTINCT FROM NEW.image THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.image, NEW.image, 'Imagen');
+                    END IF;
+
+                    IF OLD.role IS DISTINCT FROM NEW.role THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.role, NEW.role, 'Rol');
+                    END IF;
+
+                END IF;
+                
+              ELSEIF TG_OP = 'DELETE' THEN
+                INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                RETURNING id INTO v_audit_id;
+
+                INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                VALUES (v_audit_id, OLD.name, NULL, 'Nombre');
+
+                INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                VALUES (v_audit_id, OLD.email, NULL, 'Email');
+
+                INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                VALUES (v_audit_id, OLD.role, NULL, 'Rol');
+
+              END IF;
+  
+              RETURN NULL;
+          END;
+          $$ LANGUAGE plpgsql;
+      `);
     console.log("Stored procedures creados correctamente.");
   }

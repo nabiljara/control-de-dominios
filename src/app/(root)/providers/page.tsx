@@ -1,29 +1,14 @@
-import { promises as fs } from "fs"
-import path from "path"
-import { Metadata } from "next"
-import { z } from "zod"
-import db from "@/db"
-
-import { columns } from "./_components/columns"
-import { DataTable } from "./_components/data-table"
-import { clientSchema } from "@/app/(root)/clients/data/schema"
+import { Metadata } from "next";
+import { columns } from "./_components/columns";
+import { DataTable } from "./_components/data-table";
+import { getProviders } from "@/actions/provider-actions";
 
 export const metadata: Metadata = {
   title: "Provedores",
-}
-
-// Simulate a database read for tasks.
-async function getTasks() {
-  const data = await fs.readFile(
-    path.join(process.cwd(), "src/app/(root)/clients/data/clients.json")
-  )
-  const tasks = JSON.parse(data.toString())
-
-  return z.array(clientSchema).parse(tasks)
-}
+};
 
 export default async function ProvidersPage() {
-  const tasks = await getTasks()
+  const providers = await getProviders();
 
   return (
     <>
@@ -32,12 +17,12 @@ export default async function ProvidersPage() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Provedores</h2>
             <p className="text-muted-foreground">
-              Listado de todos tus provedores
+              Listado de todos los provedores
             </p>
           </div>
         </div>
-        <DataTable data={tasks} columns={columns} />
+        <DataTable data={providers} columns={columns} />
       </div>
     </>
-  )
+  );
 }

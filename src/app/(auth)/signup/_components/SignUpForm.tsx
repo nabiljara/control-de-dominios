@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { type SignupInput, SignupSchema } from "@/validators/signup-validator"
-import { useForm } from "react-hook-form"
-import { valibotResolver } from "@hookform/resolvers/valibot"
+import { type SignupInput, SignupSchema } from "@/validators/signup-validator";
+import { useForm } from "react-hook-form";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import {
   Form,
   FormControl,
@@ -13,13 +13,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signupUserAction } from "@/actions/signup-user-action";
+import { signupUserAction } from "@/actions/user-action/signup-user-action";
 import { useState } from "react";
 import Link from "next/link";
 
-
 export default function SignUpForm() {
-
   const form = useForm<SignupInput>({
     resolver: valibotResolver(SignupSchema),
     defaultValues: {
@@ -28,24 +26,23 @@ export default function SignUpForm() {
       password: "",
       confirmPassword: "",
     },
-  })
+  });
   const { handleSubmit, control, formState, reset, setError } = form;
   const [success, setSuccess] = useState(false);
 
   const onSubmit = async (data: SignupInput) => {
-    const res = await signupUserAction(data)
+    const res = await signupUserAction(data);
 
     if (res.success) {
-      setSuccess(true)
-    }
-    else {
+      setSuccess(true);
+    } else {
       switch (res.statusCode) {
         case 400:
           const nestedErrors = res.error.nested;
           for (const key in nestedErrors) {
             setError(key as keyof SignupInput, {
               message: nestedErrors[key]?.[0],
-            })
+            });
           }
           break;
         case 500:
@@ -53,27 +50,30 @@ export default function SignUpForm() {
           const error = res.error || "Internal Server Error";
           setError("confirmPassword", {
             message: error,
-          })
+          });
           break;
       }
     }
-    console.log(res)
-  }
+    console.log(res);
+  };
 
   if (success) {
     return (
       <div>
         <p>Se ha registrado correctamente.</p>
-        <Button variant='link' size="sm" className="px-0" asChild>
-        <Link href="/signin">Iniciar sesión</Link>
+        <Button variant="link" size="sm" className="px-0" asChild>
+          <Link href="/signin">Iniciar sesión</Link>
         </Button>
       </div>
-    )
+    );
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-[400px]">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="max-w-[400px] space-y-8"
+      >
         <FormField
           name="name"
           control={control}
@@ -150,9 +150,14 @@ export default function SignUpForm() {
           )}
         />
 
-        <Button type="submit" disabled={formState.isSubmitting} className="w-full">Registrarse</Button>
-
+        <Button
+          type="submit"
+          disabled={formState.isSubmitting}
+          className="w-full"
+        >
+          Registrarse
+        </Button>
       </form>
     </Form>
-  )
+  );
 }

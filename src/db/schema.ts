@@ -26,8 +26,8 @@ export const domainStatusEnum = pgEnum("domain_status", ["active", "inactive", "
 export const contactTypeEnum = pgEnum("contact_type", ["technical", "administrative", "financial"])
 export const contactStatusEnum = pgEnum("contact_status", ["active", "inactive"])
 export const notificationStatusEnum = pgEnum("notification_status", ["delivered", "bounced"])
-export const auditsActionEnum = pgEnum("audit_action_enum", ["insert", "update", "delete"])
-export const auditsEntityEnum = pgEnum("audits_entity_enum", ["localities", "clients", "contacts","providers", "access", "domains", "users"])
+// export const auditsActionEnum = pgEnum("audit_action_enum", ["insert", "update", "delete"])
+// export const auditsEntityEnum = pgEnum("audits_entity_enum", ["localities", "clients", "contacts","providers", "access", "domains", "users"])
 export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts","providers"])
 
 export const localities = pgTable("localities", {
@@ -66,7 +66,7 @@ export const contacts = pgTable("contacts", {
   type: contactTypeEnum("type"),
   status: contactStatusEnum("status"),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
+  updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
 });
 
 export const contactRelations = relations(contacts, ({ one, many }) => ({
@@ -230,8 +230,8 @@ export const audits = pgTable("audits", {
     .primaryKey(),
   userId: text("user_id")
     .references(() => users.id, { onDelete: "set null" }),
-  action: auditsActionEnum("action").notNull(),
-  entity: auditsEntityEnum("entity").notNull(),
+  action: varchar("action", { length: 255 }).notNull(),
+  entity: varchar("entity", { length: 255 }).notNull(),
   entityId: integer("entity_id").notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 });

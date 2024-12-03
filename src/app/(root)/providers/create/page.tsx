@@ -1,7 +1,6 @@
-import React from 'react'
+import React from "react";
+import { CreateProviderForm } from "../_components/create-provider-form";
 
 export default function ProviderCreatePage() {
-  return (
-    <div>ProviderCreatePage</div>
-  )
+  return <CreateProviderForm />;
 }

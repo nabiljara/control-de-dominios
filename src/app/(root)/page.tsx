@@ -9,7 +9,8 @@ export default function Dashboard() {
         <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
       </div>
       <div
-        className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm" x-chunk="dashboard-02-chunk-1"
+        className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm"
+        x-chunk="dashboard-02-chunk-1"
       >
         {/* <div className="flex flex-col items-center gap-1 text-center"> */}
         <DomainStatus />
@@ -17,5 +18,5 @@ export default function Dashboard() {
         {/* </div> */}
       </div>
     </>
-  )
+  );
 }

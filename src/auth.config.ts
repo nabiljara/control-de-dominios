@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import * as schema from "@/db/schema"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import db from "@/db"
-import { oauthVerifyEmailAction } from "@/actions/oauth-verify-email-action";
+import { oauthVerifyEmailAction } from "@/actions/user-action/oauth-verify-email-action";
 import Google from "next-auth/providers/google"
 
 

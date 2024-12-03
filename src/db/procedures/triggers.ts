@@ -8,14 +8,12 @@ export async function createTriggers(db: DB) {
     FOR EACH ROW
     EXECUTE FUNCTION audits_providers();
 `);
-
 await db.execute(`
     CREATE OR REPLACE TRIGGER update_audit_provider
     AFTER UPDATE ON providers
     FOR EACH ROW
     EXECUTE FUNCTION audits_providers();
 `);
-
 await db.execute(`
     CREATE OR REPLACE TRIGGER delete_audit_provider
     AFTER DELETE ON providers
@@ -35,7 +33,6 @@ await db.execute(`
   FOR EACH ROW
   EXECUTE FUNCTION audits_localities();
 `);
-
 await db.execute(`
   CREATE OR REPLACE TRIGGER delete_audit_locality
   AFTER DELETE ON localities
@@ -55,7 +52,6 @@ await db.execute(`
   FOR EACH ROW
   EXECUTE FUNCTION audits_clients();
 `);
-
 await db.execute(`
   CREATE OR REPLACE TRIGGER delete_audit_client
   AFTER DELETE ON clients
@@ -75,12 +71,68 @@ await db.execute(`
   FOR EACH ROW
   EXECUTE FUNCTION audits_access();
 `);
-
 await db.execute(`
   CREATE OR REPLACE TRIGGER delete_audit_access
   AFTER DELETE ON access
   FOR EACH ROW
   EXECUTE FUNCTION audits_access();
+`);
+//TRIGGERS PARA CONTACTOS
+await db.execute(`
+  CREATE OR REPLACE TRIGGER insert_audit_contacts
+  AFTER INSERT ON contacts
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_contacts();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER update_audit_contacts
+  AFTER UPDATE ON contacts
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_contacts();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER delete_audit_contacts
+  AFTER DELETE ON contacts
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_contacts();
+`);
+//TRIGGERS PARA DOMAINS
+await db.execute(`
+  CREATE OR REPLACE TRIGGER insert_audit_domains
+  AFTER INSERT ON domains
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_domains();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER update_audit_domains
+  AFTER UPDATE ON domains
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_domains();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER delete_audit_domains
+  AFTER DELETE ON domains
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_domains();
+`);
+//TRIGGERS PARA USERS
+await db.execute(`
+  CREATE OR REPLACE TRIGGER insert_audit_users
+  AFTER INSERT ON users
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_users();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER update_audit_users
+  AFTER UPDATE ON users
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_users();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER delete_audit_users
+  AFTER DELETE ON users
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_users();
 `);
 
 
