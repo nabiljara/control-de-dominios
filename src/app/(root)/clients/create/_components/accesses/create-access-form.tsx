@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { useForm, } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,20 +10,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AccessType } from '@/app/(root)/clients/create/_components/create-client-form'
 import { Textarea } from '@/components/ui/textarea'
 import { PasswordInput } from '@/components/password-input'
+import { Provider } from '@/actions/provider-actions'
 
 export function CreateAccessForm({
   onSave,
-  accessSchema
+  accessSchema,
+  providers
 }: {
   onSave: (access: AccessType) => void;
   accessSchema: z.Schema;
+  providers: Provider[]
 }) {
   const [isPending, setIsPending] = useState(false)
 
   const form = useForm<AccessType>({
     resolver: zodResolver(accessSchema),
     defaultValues: {
-      provider: undefined,
+      provider: { id: undefined, name: undefined },
       username: '',
       password: '',
       notes: ''
@@ -49,21 +51,28 @@ export function CreateAccessForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField
           control={form.control}
-          name="provider"
+          name="provider.id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Proveedor <span className="text-red-500">*</span></FormLabel>
-              <Select onValueChange={field.onChange} name='provider'>
+              <Select onValueChange={(value) => {
+                field.onChange(value);
+                const selectedProvider = providers.find((provider) => provider.id.toString() === value);
+                if (selectedProvider) {
+                  form.setValue("provider.name", selectedProvider.name);
+                }
+              }} name='provider'>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione el proveedor" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {/* Traer proovedores de la base de datos */}
-                  <SelectItem value="Hostinger">Hostinger</SelectItem>
-                  <SelectItem value="DonWeb">DonWeb</SelectItem>
-                  <SelectItem value="GoDaddy">GoDaddy</SelectItem>
+                  {
+                    providers.map((provider) => (
+                      <SelectItem key={provider.url} value={provider.id.toString()}>{provider.name}</SelectItem>
+                    ))
+                  }
                 </SelectContent>
               </Select>
               <FormMessage />

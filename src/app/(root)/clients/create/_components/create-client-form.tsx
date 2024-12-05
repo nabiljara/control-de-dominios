@@ -17,6 +17,7 @@ import { CreateContactForm } from '@/app/(root)/clients/create/_components/conta
 import { Access } from '@/app/(root)/clients/create/_components/accesses/access'
 import { CreateAccessForm } from '@/app/(root)/clients/create/_components/accesses/create-access-form'
 import { ConfirmationModal } from '@/app/(root)/clients/create/_components/confirmation-modal'
+import { Provider } from '@/actions/provider-actions'
 
 const nameRegex = /^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$/;
 
@@ -25,26 +26,33 @@ export const formSchema = z.object({
   contacts: z.array(z.object({
     name: z.string().max(50, { message: "El nombre debe tener como máximo 50 caracteres." }).min(2, { message: "El nombre debe tener al menos 2 caracteres." }).refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
     email: z.string().email({ message: "El email no es válido." }).max(50, { message: "El email debe contener como máximo 50 caracteres." }),
-    phone: z.string().min(10, { message: "El número no es válido." }).optional(),
+    phone: z.string().max(11, { message: "El número no es válido." }).optional(),
     type: z.enum(["Técnico", "Administrativo"], { message: "El tipo del cliente es requerido." })
   })).optional(),
   size: z.enum(["small", "medium", "large"], { message: "El tamaño del cliente es requerido." }),
   state: z.enum(["active", "inactive", "suspended"], { message: "El estado del cliente es requerido." }),
   accesses: z.array(z.object({
-    provider: z.enum(["Hostinger", "DonWeb", "GoDaddy"], { message: "El proveedor del cliente es requerido." }),
+    provider: z.object({
+      id: z.string({ message: "El proveedor es requerido." }),
+      name:z.string({ message: "El proveedor es requerido." }),
+    }),
     username: z.string().max(50, { message: "El usuario o email debe tener como máximo 50 caracteres." }).min(1, { message: "El usuario o email es requerido." }),
     password: z.string().max(30, { message: "La contraseña debe tener como máximo 50 caracteres." }).min(1, { message: "La contraseña es requerida." }),
     notes: z.string().max(100, { message: "Máximo 100 caracteres" }).optional()
   })).optional()
 })
 
-export function CreateClientForm() {
+export function CreateClientForm({
+  providers
+}: {
+  providers: Provider[]
+}
+) {
   const [isCreateContactModalOpen, setIsCreateContactModalOpen] = useState(false)
   const [isCreateAccessModalOpen, setIsCreateAccessModalOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
   const [contacts, setContacts] = useState<ContactType[]>([])
   const [accesses, setAccesses] = useState<AccessType[]>([])
-  //TODO: traer los provedores de bdd y setear como enumerados en provider
 
   const getContactSchema = (editingIndex: number | null) => {
     return formSchema.shape.contacts.unwrap().element.extend({
@@ -52,7 +60,7 @@ export function CreateClientForm() {
         (email) => !contacts.some((c, i) => i !== editingIndex && c.email === email),
         { message: "El correo ya está en uso." }
       ),
-      phone: z.string().min(10, { message: "El número no es válido." }).optional().refine(
+      phone: z.string().max(11, { message: "El número no es válido." }).optional().refine(
         (phone) => !contacts.some((c, i) => i !== editingIndex && c.phone === phone),
         { message: "El número de teléfono ya está en uso." }
       ),
@@ -64,7 +72,7 @@ export function CreateClientForm() {
       const { provider, username } = data;
       const isDuplicate = accesses.some((access, i) =>
         i !== editingIndex &&
-        access.provider === provider &&
+        access.provider.id === provider.id &&
         access.username === username
       );
 
@@ -219,11 +227,11 @@ export function CreateClientForm() {
                   <>
                     <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {accesses.map((access, index) => (
-                        <Access key={index} access={access} index={index} removeAccess={removeAccess} editAccess={editAccess} accessSchema={getAccessSchema(index)} />
+                        <Access key={index} access={access} index={index} removeAccess={removeAccess} editAccess={editAccess} accessSchema={getAccessSchema(index)} providers={providers} />
                       ))}
                     </div>
                     <ResponsiveDialog open={isCreateAccessModalOpen} onOpenChange={setIsCreateAccessModalOpen} title='Agregar acceso' description='Agregue los datos correspondientes al acceso.'>
-                      <CreateAccessForm onSave={addAccess} accessSchema={getAccessSchema(null)} />
+                      <CreateAccessForm onSave={addAccess} accessSchema={getAccessSchema(null)} providers={providers}/>
                     </ResponsiveDialog>
                   </>
                 </FormControl>

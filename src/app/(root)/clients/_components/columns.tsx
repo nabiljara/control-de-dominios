@@ -125,6 +125,7 @@ export const columns: ColumnDef<Client>[] = [
     id: "actions",
     cell: ({ row }) => (
       <DataTableRowActions
+        canEdit
         row={row}
         entityEdit={"clients/" + row.getValue("id")}
         canDelete={true}

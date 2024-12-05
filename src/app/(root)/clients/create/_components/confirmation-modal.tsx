@@ -107,7 +107,7 @@ export function ConfirmationModal(
                       <div className='flex items-center gap-2'>
                         <Box className="h-4 w-4" />
                         <h2 className="font-bold text-md">
-                          {access.provider}
+                          {access.provider.name}
                         </h2>
                       </div>
                       <div className='flex items-center gap-2'>
