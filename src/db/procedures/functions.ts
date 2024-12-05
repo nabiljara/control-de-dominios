@@ -409,10 +409,10 @@ export async function createFunctions(db: DB) {
                 IF TG_OP = 'INSERT' THEN
   
                     INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                    VALUES (v_audit_id, NULL, NEW.name, 'ID Cliente'),
-                    (v_audit_id, NULL, NEW.email, 'ID Proveedor'),
-                    (v_audit_id, NULL, NEW.image, 'ID Contacto'),
-                    (v_audit_id, NULL, NEW.role, 'Nombre');
+                    VALUES (v_audit_id, NULL, NEW.name, 'Nombre'),
+                    (v_audit_id, NULL, NEW.email, 'Email'),
+                    (v_audit_id, NULL, NEW.image, 'Imagen'),
+                    (v_audit_id, NULL, NEW.role, 'Rol');
     
                 ELSEIF TG_OP = 'UPDATE' THEN
                     IF OLD.name IS DISTINCT FROM NEW.name THEN

@@ -232,7 +232,7 @@ export const audits = pgTable("audits", {
     .references(() => users.id, { onDelete: "set null" }),
   action: varchar("action", { length: 255 }).notNull(),
   entity: varchar("entity", { length: 255 }).notNull(),
-  entityId: integer("entity_id").notNull(),
+  entityId: varchar("entity_id", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 });
 
