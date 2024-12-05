@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/data-table-column-header";
-import { DataTableRowActions } from "@/components/data-table-row-actions";
-import { z } from "zod";
+import { ColumnDef } from "@tanstack/react-table"
+import { DataTableColumnHeader } from "@/components/data-table-column-header"
+import { DataTableRowActions } from "@/components/data-table-row-actions"
+import { z } from "zod"
 
 export const providerSchema = z.object({
   id: z.number(),
   name: z.string(),
-  url: z.string(),
-});
-type Provider = z.infer<typeof providerSchema>;
+  url: z.string()
+})
+type Provider = z.infer<typeof providerSchema>
 
 export const columns: ColumnDef<Provider>[] = [
   // {
@@ -44,7 +44,7 @@ export const columns: ColumnDef<Provider>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
     enableSorting: true,
-    enableHiding: true,
+    enableHiding: true
   },
   {
     accessorKey: "name",
@@ -53,7 +53,7 @@ export const columns: ColumnDef<Provider>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
     enableSorting: true,
-    enableHiding: true,
+    enableHiding: true
   },
   {
     accessorKey: "url",
@@ -62,13 +62,20 @@ export const columns: ColumnDef<Provider>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("url")}</div>,
     enableSorting: true,
-    enableHiding: true,
+    enableHiding: true
   },
   {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Acciones" />
     ),
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-  },
-];
+    cell: ({ row }) => (
+      <DataTableRowActions
+        row={row}
+        entityEdit={"providers/" + row.getValue("id")}
+        canDelete={false}
+        canEdit={true}
+      />
+    )
+  }
+]

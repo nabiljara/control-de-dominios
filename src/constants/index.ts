@@ -139,6 +139,30 @@ export const NAV_MAIN = [
       //   },
       ],
     },
+    {
+      label: "Auditorias",
+      href: "/audits",
+      icon: BookOpen,
+      singular: "auditoria",
+      items: [
+      //   {
+      //     label: "General",
+      //     href: "#",
+      //   },
+      //   {
+      //     label: "Team",
+      //     href: "#",
+      //   },
+      //   {
+      //     label: "Billing",
+      //     href: "#",
+      //   },
+      //   {
+      //     label: "Limits",
+      //     href: "#",
+      //   },
+      ],
+    },
   ]
   // projects: [
   //   {

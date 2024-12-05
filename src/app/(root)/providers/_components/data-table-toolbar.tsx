@@ -1,5 +1,5 @@
 "use client"
-//Filtros 
+//Filtros
 //TODO: Hacer también reutilizable
 import { Cross2Icon, PlusCircledIcon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
@@ -7,20 +7,32 @@ import { Table } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
-
-import { segments, statuses } from "@/app/(root)/clients/data/data"
-import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { CirclePlus } from "lucide-react"
-import Link from "next/link"
+import { CreateProviderForm } from "./create-provider-form"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
 }
 
 export function DataTableToolbar<TData>({
-  table,
+  table
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const route = useRouter()
+  function handleSuccess() {
+    setIsModalOpen(false)
+    route.push("/providers")
+  }
 
   return (
     <div className="flex items-center justify-between">
@@ -33,20 +45,6 @@ export function DataTableToolbar<TData>({
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("status") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("status")}
-            title="Estado"
-            options={statuses}
-          />
-        )}
-        {table.getColumn("segment") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("segment")}
-            title="Segmento"
-            options={segments}
-          />
-        )}
         {isFiltered && (
           <Button
             variant="ghost"
@@ -60,16 +58,20 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex space-x-2">
         <DataTableViewOptions table={table} />
-        <Button
-          variant="default"
-          className="h-8 px-2 lg:px-3"
-          asChild
-        >
-          <Link href="/providers/create">
-          Nuevo provedor
-          <CirclePlus className="h-5 w-5 ml-2" />
-          </Link>
-        </Button>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button variant="default" className="h-8 px-2 lg:px-3">
+              Nuevo proveedor
+              <CirclePlus className="ml-2 h-5 w-5" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Proveedor</DialogTitle>
+            </DialogHeader>
+            <CreateProviderForm onSuccess={handleSuccess} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

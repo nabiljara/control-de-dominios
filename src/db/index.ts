@@ -6,7 +6,7 @@ import * as schema from './schema'
 
 const DATABASE_URL = process.env.DATABASE_URL ?? "";
 
-const sql = neon(DATABASE_URL);
+export const sql = neon(DATABASE_URL);
 
 const db = drizzle(sql, { schema });
 

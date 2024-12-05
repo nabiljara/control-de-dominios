@@ -39,7 +39,7 @@ export const columns: ColumnDef<Client>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
     enableSorting: true,
-    enableHiding: true,
+    enableHiding: true
     // filterFn: (row, id, value) => {
     //   return value.includes(row.getValue(id))
     // },
@@ -89,7 +89,7 @@ export const columns: ColumnDef<Client>[] = [
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
-    },
+    }
   },
   {
     accessorKey: "segment",
@@ -116,13 +116,19 @@ export const columns: ColumnDef<Client>[] = [
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
-    },
+    }
   },
   {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Acciones" />
     ),
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-  },
+    cell: ({ row }) => (
+      <DataTableRowActions
+        row={row}
+        entityEdit={"clients/" + row.getValue("id")}
+        canDelete={true}
+      />
+    )
+  }
 ]
