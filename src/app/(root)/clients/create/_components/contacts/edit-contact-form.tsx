@@ -1,0 +1,173 @@
+'use client'
+
+import { useForm, } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dispatch, SetStateAction, useState } from 'react';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/high-res.css';
+
+import { ContactType } from '@/app/(root)/clients/create/_components/create-client-form'
+
+export function EditContactForm({
+  contactSchema,
+  setIsOpen,
+  editContact,
+  index,
+  contact
+}: {
+  contactSchema: z.Schema;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  editContact: (index: number, updatedContact: ContactType) => void;
+  index: number;
+  contact: ContactType
+}) {
+  const [isPending, setIsPending] = useState(false)
+
+  const form = useForm<ContactType>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: contact?.name,
+      email: contact?.email,
+      phone: contact?.phone,
+      type: contact?.type
+    }
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsPending(true)
+    const isValid = await form.trigger()
+    if (isValid) {
+      const data = form.getValues()
+      editContact(index, data)
+      form.reset()
+      setIsOpen(false);
+    }
+    setIsPending(false)
+  }
+
+
+  return (
+    <Form {...form}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre <span className="text-red-500">*</span></FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Ingrese el nombre del contacto" autoComplete="name"/>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
+              <FormControl>
+                <Input type="email" {...field} placeholder="Ingrese el email del contacto" autoComplete="email" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='phone'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor='phone'>Teléfono</FormLabel>
+              <FormControl>
+                <PhoneInput
+                  inputStyle={{
+                    width: '100%',
+                    height: '2.5rem',
+                    borderRadius: '0.375rem',
+                    borderColor:
+                      'rgb(226 232 240)',
+                    paddingLeft: '60px'
+                  }}
+                  buttonStyle={{
+                    backgroundColor:
+                      'rgb(255 255 255)',
+                    borderColor:
+                      'rgb(226 232 240)'
+                  }}
+                  country={'ar'}
+                  preferredCountries={[
+                    'ar',
+                    'us',
+                    'br'
+                  ]}
+                  countryCodeEditable={false}
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(
+                      value.toString()
+                    );
+                  }}
+                  inputProps={{
+                    name: 'phone',
+                    id: 'phone',
+                    placeholder:
+                      'Escribe tu número',
+                    autoComplete: "phone"
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }
+                  }}
+                  autoFormat={false}
+                  enableSearch={true}
+                  disableSearchIcon={true}
+                  searchPlaceholder={'Buscar'}
+                  searchNotFound={
+                    'No hay resultados'
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tipo <span className="text-red-500">*</span></FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={contact.type} name='type'>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione el tipo" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Técnico">Técnico</SelectItem>
+                  <SelectItem value="Administrativo">Administrativo</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={isPending} className='w-full'>
+          {isPending ? 'Editando...' : 'Editar'}
+        </Button>
+      </form>
+    </Form>
+  )
+}
