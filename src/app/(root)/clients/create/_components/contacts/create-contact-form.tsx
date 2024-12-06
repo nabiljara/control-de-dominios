@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/high-res.css';
+import { ContactType } from '@/validators/client-validator'
 
-import { ContactType} from '@/app/(root)/clients/create/_components/create-client-form'
 
 export function CreateContactForm({
   onSave,
@@ -27,7 +27,7 @@ export function CreateContactForm({
     defaultValues: {
       name: '',
       email: '',
-      phone: '',
+      phone: undefined,
       type: undefined
     }
   })
@@ -106,16 +106,17 @@ export function CreateContactForm({
                     'us',
                     'br'
                   ]}
-                  countryCodeEditable={false}
+                  countryCodeEditable={true}
                   value={field.value}
                   onChange={(value) => {
-                    field.onChange(
-                      value.toString()
-                    );
+                    if (value.length <= 0) {
+                      field.onChange(undefined);
+                    } else {
+                      field.onChange(value);
+                    }
                   }}
                   inputProps={{
                     name: 'phone',
-
                     id: 'phone',
                     placeholder:
                       'Escribe tu número',

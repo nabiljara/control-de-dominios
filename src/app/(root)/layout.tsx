@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import AppSidebarInset from "@/components/app-sidebar-inset";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -12,6 +13,7 @@ export default function RootLayout({
       <AppSidebar />
       <SidebarInset>
         <AppSidebarInset />
+        <Toaster richColors />
         {children}
       </SidebarInset>
     </SidebarProvider>

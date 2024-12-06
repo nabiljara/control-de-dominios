@@ -1,4 +1,4 @@
-import { relations, sql, SQL } from "drizzle-orm"
+import { InferInsertModel, InferSelectModel, relations, sql, SQL } from "drizzle-orm"
 import {
   boolean,
   timestamp,
@@ -20,11 +20,11 @@ export function lower(email: AnyPgColumn): SQL {
 }
 
 export const userRoleEnum = pgEnum("user_role", ["user", "admin"])
-export const clientSizeEnum = pgEnum("client_size", ["small", "medium", "large"])
-export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "suspended"])
-export const domainStatusEnum = pgEnum("domain_status", ["active", "inactive", "suspended"])
-export const contactTypeEnum = pgEnum("contact_type", ["technical", "administrative", "financial"])
-export const contactStatusEnum = pgEnum("contact_status", ["active", "inactive"])
+export const clientSizeEnum = pgEnum("client_size", ["Chico", "Medio", "Grande"])
+export const clientStatusEnum = pgEnum("client_status", ["Activo", "Inactivo", "Suspendido"])
+export const domainStatusEnum = pgEnum("domain_status", ["Activo", "Inactivo", "Suspendido"])
+export const contactTypeEnum = pgEnum("contact_type", ["Técnico", "Administrativo", "Financiero"])
+export const contactStatusEnum = pgEnum("contact_status", ["Activo", "Inactivo"])
 export const notificationStatusEnum = pgEnum("notification_status", ["delivered", "bounced"])
 // export const auditsActionEnum = pgEnum("audit_action_enum", ["insert", "update", "delete"])
 // export const auditsEntityEnum = pgEnum("audits_entity_enum", ["localities", "clients", "contacts","providers", "access", "domains", "users"])
@@ -39,8 +39,8 @@ export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
   localityId: integer("locality_id")
     .references(() => localities.id, { onDelete: "set null" }),
-  size: clientSizeEnum("size").notNull().default("small"),
-  status: clientStatusEnum("status").notNull().default("active"),
+  size: clientSizeEnum("size").notNull().default("Chico"),
+  status: clientStatusEnum("status").notNull().default("Activo"),
   name: varchar("name", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
@@ -64,7 +64,7 @@ export const contacts = pgTable("contacts", {
   name: varchar("name", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 255 }).notNull().unique(),
   type: contactTypeEnum("type"),
-  status: contactStatusEnum("status"),
+  status: contactStatusEnum("status").default("Activo"),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
 });
@@ -128,7 +128,7 @@ export const domains = pgTable("domains", {
   name: varchar("name", { length: 255 }).notNull().unique(),
   providerRegistrationDate: timestamp("provider_registration_date", { mode: "string" }).notNull(),
   expirationDate: timestamp("expiration_date", { mode: "string" }).notNull().defaultNow(),
-  status: domainStatusEnum("status").notNull().default("active"),
+  status: domainStatusEnum("status").notNull().default("Activo"),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 })
@@ -355,3 +355,6 @@ export const authenticators = pgTable(
     }),
   })
 )
+
+export type Locality = InferSelectModel<typeof localities>;
+export type Client = InferInsertModel<typeof clients>;

@@ -110,12 +110,14 @@ export function EditContactForm({
                     'us',
                     'br'
                   ]}
-                  countryCodeEditable={false}
+                  countryCodeEditable={true}
                   value={field.value}
                   onChange={(value) => {
-                    field.onChange(
-                      value.toString()
-                    );
+                    if (value.length <= 0) {
+                      field.onChange(undefined);
+                    } else {
+                      field.onChange(value);
+                    }
                   }}
                   inputProps={{
                     name: 'phone',

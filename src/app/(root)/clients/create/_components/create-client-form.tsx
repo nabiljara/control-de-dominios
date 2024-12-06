@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { User, Plus, UserPlus } from "lucide-react"
+import { User, Plus, UserPlus, Loader2 } from "lucide-react"
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import { Contact } from '@/app/(root)/clients/create/_components/contacts/contact'
 import { CreateContactForm } from '@/app/(root)/clients/create/_components/contacts/create-contact-form'
@@ -18,57 +18,41 @@ import { Access } from '@/app/(root)/clients/create/_components/accesses/access'
 import { CreateAccessForm } from '@/app/(root)/clients/create/_components/accesses/create-access-form'
 import { ConfirmationModal } from '@/app/(root)/clients/create/_components/confirmation-modal'
 import { Provider } from '@/actions/provider-actions'
-
-const nameRegex = /^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$/;
-
-export const formSchema = z.object({
-  name: z.string().max(50, { message: "El nombre debe tener como máximo 50 caracteres." }).min(2, { message: "El nombre debe tener al menos 2 caracteres." }).refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
-  contacts: z.array(z.object({
-    name: z.string().max(50, { message: "El nombre debe tener como máximo 50 caracteres." }).min(2, { message: "El nombre debe tener al menos 2 caracteres." }).refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
-    email: z.string().email({ message: "El email no es válido." }).max(50, { message: "El email debe contener como máximo 50 caracteres." }),
-    phone: z.string().max(11, { message: "El número no es válido." }).optional(),
-    type: z.enum(["Técnico", "Administrativo"], { message: "El tipo del cliente es requerido." })
-  })).optional(),
-  size: z.enum(["small", "medium", "large"], { message: "El tamaño del cliente es requerido." }),
-  state: z.enum(["active", "inactive", "suspended"], { message: "El estado del cliente es requerido." }),
-  accesses: z.array(z.object({
-    provider: z.object({
-      id: z.string({ message: "El proveedor es requerido." }),
-      name:z.string({ message: "El proveedor es requerido." }),
-    }),
-    username: z.string().max(50, { message: "El usuario o email debe tener como máximo 50 caracteres." }).min(1, { message: "El usuario o email es requerido." }),
-    password: z.string().max(30, { message: "La contraseña debe tener como máximo 50 caracteres." }).min(1, { message: "La contraseña es requerida." }),
-    notes: z.string().max(100, { message: "Máximo 100 caracteres" }).optional()
-  })).optional()
-})
+import { Locality } from '@/db/schema'
+import { toast } from 'sonner'
+import { insertClient } from '@/actions/client-actions'
+import { AccessType, clientFormSchema, ClientFormValues, ContactType } from '@/validators/client-validator'
 
 export function CreateClientForm({
-  providers
+  providers,
+  localities
 }: {
-  providers: Provider[]
+  providers: Provider[],
+  localities: Locality[]
 }
 ) {
   const [isCreateContactModalOpen, setIsCreateContactModalOpen] = useState(false)
   const [isCreateAccessModalOpen, setIsCreateAccessModalOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [contacts, setContacts] = useState<ContactType[]>([])
   const [accesses, setAccesses] = useState<AccessType[]>([])
 
   const getContactSchema = (editingIndex: number | null) => {
-    return formSchema.shape.contacts.unwrap().element.extend({
-      email: z.string().email({ message: "El email no es válido." }).max(50, { message: "El email debe contener como máximo 50 caracteres." }).refine(
+    return clientFormSchema.shape.contacts.unwrap().element.extend({
+      email: z.string().email({ message: "El email no es válido." }).max(30, { message: "El email debe contener como máximo 30 caracteres." }).refine(
         (email) => !contacts.some((c, i) => i !== editingIndex && c.email === email),
         { message: "El correo ya está en uso." }
       ),
-      phone: z.string().max(11, { message: "El número no es válido." }).optional().refine(
-        (phone) => !contacts.some((c, i) => i !== editingIndex && c.phone === phone),
+      phone: z.string().min(11, { message: "El número no es válido." }).max(14, { message: "El número no es válido." }).optional().refine(
+        (phone) => !contacts.some((c, i) => i !== editingIndex && c.phone !== undefined && c.phone === phone),
         { message: "El número de teléfono ya está en uso." }
       ),
     });
   };
 
   const getAccessSchema = (editingIndex: number | null) => {
-    return formSchema.shape.accesses.unwrap().element.superRefine((data, ctx) => {
+    return clientFormSchema.shape.accesses.unwrap().element.superRefine((data, ctx) => {
       const { provider, username } = data;
       const isDuplicate = accesses.some((access, i) =>
         i !== editingIndex &&
@@ -86,7 +70,7 @@ export function CreateClientForm({
     });
   };
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
+  const onSubmit: SubmitHandler<ClientFormValues> = (data) => {
     setIsConfirmationModalOpen(true)
   }
 
@@ -114,27 +98,57 @@ export function CreateClientForm({
     setAccesses(accesses.map((access, i) => (i === index ? updatedAccess : access)));
   };
 
-  const handleFinalSubmit = () => {
-    const formData = { ...form.getValues(), contacts, accesses }
-    console.log(formData)
-    //TODO: Acá enviar los datos al backend
-    setIsConfirmationModalOpen(false)
-  }
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ClientFormValues>({
+    resolver: zodResolver(clientFormSchema),
     defaultValues: {
       name: "",
+      // locality: undefined,
+      // size: undefined,
+      // state: undefined,
       contacts: [],
       accesses: []
     }
   })
 
+  const handleFinalSubmit = async () => {
+    setIsSubmitting(true);
+    const client = { ...form.getValues(), contacts, accesses }
+    toast.promise(
+      new Promise<void>(async (resolve, reject) => {
+        try {
+          const response = await insertClient(client);
+          if (response.success) {
+            resolve();
+          } else {
+            throw new Error("Error al insertar el cliente");
+          }
+        } catch (error) {
+          console.error(error)
+          reject(error);
+        } finally {
+          setIsSubmitting(false);
+        }
+      }),
+      {
+        loading: 'Registrando cliente',
+        success: () => {
+          // form.reset();
+          //TODO: Redirigir a la tabla de clientes
+          setIsConfirmationModalOpen(false)
+          return 'Cliente registrado satisfactoriamente'
+        },
+        error: 'No se pudo registrar el cliente correctamente.'
+      }
+    )
+    console.log(client)
+  }
+
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100/50 p-4 dark:from-gray-900 dark:to-gray-800">
+    <div className="bg-gradient-to-b from-gray-50 dark:from-gray-900 to-gray-100/50 dark:to-gray-800 p-4 min-h-screen">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold gap-2 flex items-center"><User />Registro de Cliente</CardTitle>
+          <CardTitle className="flex items-center gap-2 font-bold text-2xl"><User />Registro de Cliente</CardTitle>
           <CardDescription>
             Complete el formulario para registrar un nuevo cliente. Los campos marcados con * son obligatorios.
           </CardDescription>
@@ -169,9 +183,40 @@ export function CreateClientForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="small">Pequeño</SelectItem>
-                        <SelectItem value="medium">Mediano</SelectItem>
-                        <SelectItem value="large">Grande</SelectItem>
+                        <SelectItem value="Chico">Chico</SelectItem>
+                        <SelectItem value="Medio">Medio</SelectItem>
+                        <SelectItem value="Grande">Grande</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="locality.id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Localidad <span className="text-red-500">*</span></FormLabel>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      const selectedLocality = localities.find((locality) => locality.id.toString() === value);
+                      if (selectedLocality) {
+                        form.setValue("locality.name", selectedLocality.name);
+                      }
+                    }} defaultValue={field.value} name='locality'>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccione la localidad" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {
+                          localities.map((locality) => (
+                            <SelectItem key={locality.name} value={locality.id.toString()}>{locality.name}</SelectItem>
+                          ))
+                        }
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -181,7 +226,7 @@ export function CreateClientForm({
 
               <FormItem>
                 <div className="flex items-center gap-5">
-                  <span className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>Contactos</span>
+                  <span className='peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed'>Contactos</span>
                   <Button
                     aria-labelledby="button-label"
                     type="button"
@@ -189,14 +234,14 @@ export function CreateClientForm({
                     onClick={() => {
                       setIsCreateContactModalOpen(true);
                     }}
-                    className='h-8 w-8 rounded-full'
+                    className='rounded-full w-8 h-8'
                   >
                     <Plus />
                   </Button>
                 </div>
                 <FormControl>
                   <>
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
                       {contacts.map((contact, index) => (
                         <Contact key={contact.email} contact={contact} index={index} removeContact={removeContact} editContact={editContact} contactSchema={getContactSchema(index)} />
                       ))}
@@ -210,7 +255,7 @@ export function CreateClientForm({
 
               <FormItem>
                 <div className="flex items-center gap-8">
-                  <span className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>Accesos</span>
+                  <span className='peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed'>Accesos</span>
                   <Button
                     aria-labelledby="button-label"
                     type="button"
@@ -218,20 +263,20 @@ export function CreateClientForm({
                     onClick={() => {
                       setIsCreateAccessModalOpen(true);
                     }}
-                    className='h-8 w-8 rounded-full'
+                    className='rounded-full w-8 h-8'
                   >
                     <Plus />
                   </Button>
                 </div>
                 <FormControl>
                   <>
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
                       {accesses.map((access, index) => (
                         <Access key={index} access={access} index={index} removeAccess={removeAccess} editAccess={editAccess} accessSchema={getAccessSchema(index)} providers={providers} />
                       ))}
                     </div>
                     <ResponsiveDialog open={isCreateAccessModalOpen} onOpenChange={setIsCreateAccessModalOpen} title='Agregar acceso' description='Agregue los datos correspondientes al acceso.'>
-                      <CreateAccessForm onSave={addAccess} accessSchema={getAccessSchema(null)} providers={providers}/>
+                      <CreateAccessForm onSave={addAccess} accessSchema={getAccessSchema(null)} providers={providers} />
                     </ResponsiveDialog>
                   </>
                 </FormControl>
@@ -251,13 +296,13 @@ export function CreateClientForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="active">
+                        <SelectItem value="Activo">
                           <Badge variant="default" className="bg-green-500">Activo</Badge>
                         </SelectItem>
-                        <SelectItem value="inactive">
+                        <SelectItem value="Inactivo">
                           <Badge variant="secondary">Inactivo</Badge>
                         </SelectItem>
-                        <SelectItem value="suspended">
+                        <SelectItem value="Suspendido">
                           <Badge variant="destructive">Suspendido</Badge>
                         </SelectItem>
                       </SelectContent>
@@ -267,9 +312,22 @@ export function CreateClientForm({
                 )}
               />
               <div className='flex justify-end'>
-                <Button className="gap-2" size="lg">
-                  <UserPlus className="h-5 w-5" />
-                  Registrar Cliente
+                <Button
+                  className="gap-2"
+                  size="lg"
+                  disabled={isSubmitting}
+                  type='submit'>
+                  {isSubmitting ? (
+                    <div className='flex items-center gap-1'>
+                      <Loader2 className='animate-spin' />
+                      Registrando cliente
+                    </div>
+                  ) : (
+                    <>
+                      <UserPlus className="w-5 h-5" />
+                      Registrar Cliente
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
@@ -282,7 +340,3 @@ export function CreateClientForm({
     </div>
   )
 }
-
-export type FormValues = z.infer<typeof formSchema>
-export type ContactType = NonNullable<FormValues['contacts']>[number];
-export type AccessType = NonNullable<FormValues['accesses']>[number];
