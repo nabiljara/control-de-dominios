@@ -17,19 +17,22 @@ import { Box, MoreVertical, SquarePen, StickyNote, Trash2, User } from 'lucide-r
 import { z } from 'zod';
 import { EditAccessForm } from '@/app/(root)/clients/create/_components/accesses/edit-access-form';
 import { DeleteForm } from '@/app/(root)/clients/create/_components/delete-form';
+import { Provider } from '@/actions/provider-actions';
 
 export function Access({
   access,
   removeAccess,
   index,
   editAccess,
-  accessSchema
+  accessSchema,
+  providers
 }: {
   access: AccessType;
   removeAccess: (index: number) => void;
   editAccess: (index: number, updatedAccess: AccessType) => void;
   index: number
   accessSchema: z.Schema;
+  providers: Provider[]
 }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -41,7 +44,7 @@ export function Access({
         title="Editar acceso"
         description='Edite los campos correspondientes al acceso.'
       >
-        <EditAccessForm setIsOpen={setIsEditOpen} editAccess={editAccess} index={index} accessSchema={accessSchema} access={access} />
+        <EditAccessForm setIsOpen={setIsEditOpen} editAccess={editAccess} index={index} accessSchema={accessSchema} access={access} providers={providers}/>
       </ResponsiveDialog>
       <ResponsiveDialog
         open={isDeleteOpen}
@@ -57,7 +60,7 @@ export function Access({
           <div className='flex items-center gap-2'>
             <Box className="h-4 w-4" />
             <h2 className="font-bold text-md">
-              {access.provider}
+              {access.provider.name}
             </h2>
           </div>
           <div className='flex items-center gap-2'>

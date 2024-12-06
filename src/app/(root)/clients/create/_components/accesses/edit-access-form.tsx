@@ -12,26 +12,29 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import { AccessType } from '@/app/(root)/clients/create/_components/create-client-form'
 import { Textarea } from '@/components/ui/textarea'
 import { PasswordInput } from '@/components/password-input'
+import { Provider } from '@/actions/provider-actions'
 
 export function EditAccessForm({
   accessSchema,
   setIsOpen,
   editAccess,
   index,
-  access
+  access,
+  providers
 }: {
   accessSchema: z.Schema;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   editAccess: (index: number, updatedAccess: AccessType) => void;
   index: number;
-  access: AccessType
+  access: AccessType;
+  providers: Provider[]
 }) {
   const [isPending, setIsPending] = useState(false)
 
   const form = useForm<AccessType>({
     resolver: zodResolver(accessSchema),
     defaultValues: {
-      provider: access?.provider,
+      provider: { id: access?.provider.id, name: access?.provider.name },
       username: access?.username,
       password: access?.password,
       notes: access?.notes
@@ -58,21 +61,28 @@ export function EditAccessForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField
           control={form.control}
-          name="provider"
+          name="provider.id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Proveedor <span className="text-red-500">*</span></FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={access.provider} name='provider'>
+              <Select onValueChange={(value) => {
+                field.onChange(value);
+                const selectedProvider = providers.find((provider) => provider.id.toString() === value);
+                if (selectedProvider) {
+                  form.setValue("provider.name", selectedProvider.name);
+                }
+              }} defaultValue={access.provider.id} name='provider'>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione el proveedor" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {/* TODO: Traer proovedores de la base de datos */}
-                  <SelectItem value="Hostinger">Hostinger</SelectItem>
-                  <SelectItem value="DonWeb">DonWeb</SelectItem>
-                  <SelectItem value="GoDaddy">GoDaddy</SelectItem>
+                  {
+                    providers.map((provider) => (
+                      <SelectItem key={provider.url} value={provider.id.toString()}>{provider.name}</SelectItem>
+                    ))
+                  }
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -86,7 +96,7 @@ export function EditAccessForm({
             <FormItem>
               <FormLabel>Nombre de usuario o email <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Ingrese el usuario o email del cliente" autoComplete="email"/>
+                <Input {...field} placeholder="Ingrese el usuario o email del cliente" autoComplete="email" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -112,7 +122,7 @@ export function EditAccessForm({
             <FormItem>
               <FormLabel>Notas</FormLabel>
               <FormControl>
-                <Textarea {...field} className='min-h-[100px] resize-none'/>
+                <Textarea {...field} className='min-h-[100px] resize-none' />
               </FormControl>
               <FormMessage />
             </FormItem>
