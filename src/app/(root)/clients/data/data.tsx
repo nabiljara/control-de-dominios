@@ -12,36 +12,36 @@ import { Ban, Building, Check, Pause, User, Users } from "lucide-react"
 
 export const statuses = [
   {
-    value: "active",
+    value: "Activo",
     label: "Activo",
     icon: Check,
   },
   {
-    value: "inactive",
+    value: "Inactivo",
     label: "Inactivo",
     icon: Pause,
   },
   {
-    value: "suspended",
+    value: "Suspendido",
     label: "Suspendido",
     icon: Ban,
   }
 ]
 
-export const segments = [
+export const sizes = [
   {
-    label: "Chica",
-    value: "small",
+    label: "Chico",
+    value: "Chico",
     icon: User,
   },
   {
-    label: "Media",
-    value: "medium",
+    label: "Medio",
+    value: "Medio",
     icon: Users,
   },
   {
     label: "Grande",
-    value: "large",
+    value: "Grande",
     icon: Building,
   },
 ]

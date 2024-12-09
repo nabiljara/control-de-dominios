@@ -70,7 +70,7 @@ export function CreateClientForm({
     });
   };
 
-  const onSubmit: SubmitHandler<ClientFormValues> = (data) => {
+  const onSubmit: SubmitHandler<ClientFormValues> = () => {
     setIsConfirmationModalOpen(true)
   }
 
@@ -102,9 +102,6 @@ export function CreateClientForm({
     resolver: zodResolver(clientFormSchema),
     defaultValues: {
       name: "",
-      // locality: undefined,
-      // size: undefined,
-      // state: undefined,
       contacts: [],
       accesses: []
     }
@@ -116,12 +113,10 @@ export function CreateClientForm({
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          const response = await insertClient(client);
-          if (response.success) {
-            resolve();
-          } else {
-            throw new Error("Error al insertar el cliente");
-          }
+          await insertClient(client);
+          resolve();
+          form.reset();
+          setIsConfirmationModalOpen(false);
         } catch (error) {
           console.error(error)
           reject(error);
@@ -131,16 +126,10 @@ export function CreateClientForm({
       }),
       {
         loading: 'Registrando cliente',
-        success: () => {
-          // form.reset();
-          //TODO: Redirigir a la tabla de clientes
-          setIsConfirmationModalOpen(false)
-          return 'Cliente registrado satisfactoriamente'
-        },
+        success: 'Cliente registrado satisfactoriamente',
         error: 'No se pudo registrar el cliente correctamente.'
       }
     )
-    console.log(client)
   }
 
 
