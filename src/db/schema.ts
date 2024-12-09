@@ -62,9 +62,9 @@ export const contacts = pgTable("contacts", {
     .references(() => clients.id, { onDelete: "set null" }), // Should be null if the domain has its own contact.
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
-  phone: varchar("phone", { length: 255 }).notNull().unique(),
-  type: contactTypeEnum("type"),
-  status: contactStatusEnum("status").default("Activo"),
+  phone: varchar("phone", { length: 255 }).unique(),
+  type: contactTypeEnum("type").notNull(),
+  status: contactStatusEnum("status").notNull().default("Activo"),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
 });
@@ -358,3 +358,4 @@ export const authenticators = pgTable(
 
 export type Locality = InferSelectModel<typeof localities>;
 export type Client = InferInsertModel<typeof clients>;
+export type Contact = InferInsertModel<typeof contacts>;
