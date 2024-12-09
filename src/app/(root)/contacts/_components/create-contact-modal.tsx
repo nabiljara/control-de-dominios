@@ -36,7 +36,8 @@ const contactSchema = z.object({
   phone: z
     .string()
     .min(1, { message: "El teléfono es obligatorio" })
-    .max(255, { message: "El teléfono no puede superar los 255 caracteres" }),
+    .max(255, { message: "El teléfono no puede superar los 255 caracteres" })
+    .nullable(),
   type: z.enum(["Técnico", "Administrativo", "Financiero"], {
     message: "Seleccione un tipo válido."
   }),
@@ -86,10 +87,8 @@ export function CreateContactModal({
   const onSubmit = async (data: Contact) => {
     setIsPending(true)
     try {
-      console.log(data)
-      const selectedClientId =
-        data.clientId !== null ? parseInt(data.clientId.toString(), 10) : null
-      insertContact(data)
+      // console.log(data)
+      await insertContact(data)
       form.reset()
       setIsPending(false)
       onSuccess()
