@@ -244,10 +244,11 @@ export async function createFunctions(db: DB) {
   
                     INSERT INTO audits_details (audit_id, old_value, new_value, field)
                     VALUES (v_audit_id, NULL, NEW.client_id, 'ID Cliente'),
+                    (v_audit_id, NULL, NEW.name, 'Nombre'),
                     (v_audit_id, NULL, NEW.email, 'Email'),
                     (v_audit_id, NULL, NEW.phone, 'Telefono'),
-                    (v_audit_id, NULL, NEW.contact_type, 'Tipo de contacto'),
-                    (v_audit_id, NULL, NEW.contact_status, 'Estado del contacto'),
+                    (v_audit_id, NULL, NEW.type, 'Tipo de contacto'),
+                    (v_audit_id, NULL, NEW.status, 'Estado del contacto'),
                     (v_audit_id, NULL, NEW.created_at, 'Fecha de creación'),
                     (v_audit_id, NULL, NEW.updated_at, 'Fecha de actualización');
     
@@ -261,20 +262,25 @@ export async function createFunctions(db: DB) {
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
                         VALUES (v_audit_id, OLD.email, NEW.email, 'Email');
                     END IF;
+
+                    IF OLD.name IS DISTINCT FROM NEW.name THEN
+                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                        VALUES (v_audit_id, OLD.name, NEW.name, 'Nombre');
+                    END IF;
   
                     IF OLD.phone IS DISTINCT FROM NEW.phone THEN
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
                         VALUES (v_audit_id, OLD.phone, NEW.phone, 'Telefono');
                     END IF;
 
-                    IF OLD.contact_type IS DISTINCT FROM NEW.contact_type THEN
+                    IF OLD.type IS DISTINCT FROM NEW.type THEN
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                        VALUES (v_audit_id, OLD.contact_type, NEW.contact_type, 'Tipo de contacto');
+                        VALUES (v_audit_id, OLD.type, NEW.type, 'Tipo de contacto');
                     END IF;
                     
-                    IF OLD.contact_status IS DISTINCT FROM NEW.contact_status THEN
+                    IF OLD.status IS DISTINCT FROM NEW.status THEN
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                        VALUES (v_audit_id, OLD.contact_status, NEW.contact_status, 'Estado del contacto');
+                        VALUES (v_audit_id, OLD.status, NEW.status, 'Estado del contacto');
                     END IF;
   
                     IF OLD.created_at IS DISTINCT FROM NEW.created_at THEN

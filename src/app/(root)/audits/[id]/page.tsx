@@ -23,7 +23,7 @@ interface AuditDetail {
 interface Audit {
   id: number
   createdAt: string
-  entityId: number
+  entityId: string
   entity: string
   userId: string | null
   action: string
@@ -128,7 +128,7 @@ export default function AuditDetailsPage({
                 <TableBody>
                   {audit.audit_details.length === 0 ? (
                     <TableRow>
-                      <TableCell>No hay dominios asociados</TableCell>
+                      <TableCell>No hay detalles de la auditoría</TableCell>
                     </TableRow>
                   ) : (
                     audit.audit_details.map((detail) => (
