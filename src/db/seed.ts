@@ -17,19 +17,21 @@ async function resetTable(db: DB, table: Table) {
 
 async function main() {
   for (const table of [
-    schema.clients,
-    schema.contacts,
+    // schema.clients,
+    // schema.contacts,
     schema.providers,
-    schema.domains,
-    schema.access,
+    schema.localities,
+    // schema.domains,
+    // schema.access,
   ]) {
     await resetTable(db, table);
   }
-  await seeds.clients(db);
-  await seeds.contacts(db);
+  // await seeds.clients(db);
+  // await seeds.contacts(db);
   await seeds.providers(db);
-  await seeds.domains(db);
-  await seeds.access(db);
+  await seeds.localities(db);
+  // await seeds.domains(db);
+  // await seeds.access(db);
 }
 
 main()
@@ -38,6 +40,6 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    console.log("Seeding done!");
+    console.log("Seeding hecho!");
     process.exit(0);
   });

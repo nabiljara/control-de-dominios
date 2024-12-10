@@ -6,14 +6,13 @@ import type { InferInsertModel } from "drizzle-orm";
 type ProviderInsert = InferInsertModel<typeof providers>;
 
 const mock = async () => {
-  const data : ProviderInsert [] = []
-    for (let i = 0; i < 10; i++) {
-      data.push({
-        name: faker.person.lastName(),
-        url: faker.internet.url()
-      });
-    }
-    return data;
+  const data: ProviderInsert[] = []
+  data.push(
+    { id: 3, name: 'DonWeb', url: 'www.donweb.com' },
+    { id: 2, name: 'GoDaddy', url: 'www.godaddy.com' },
+    { id: 1, name: 'Hostinger', url: 'www.hostinger.com.ar' }
+  );
+  return data;
 };
 
 export async function seed(db: DB) {
