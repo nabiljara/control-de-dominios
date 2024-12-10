@@ -23,7 +23,7 @@ export const userRoleEnum = pgEnum("user_role", ["user", "admin"])
 export const clientSizeEnum = pgEnum("client_size", ["Chico", "Medio", "Grande"])
 export const clientStatusEnum = pgEnum("client_status", ["Activo", "Inactivo", "Suspendido"])
 export const domainStatusEnum = pgEnum("domain_status", ["Activo", "Inactivo", "Suspendido"])
-export const contactTypeEnum = pgEnum("contact_type", ["Técnico", "Administrativo", "Financiero"])
+export const contactTypeEnum = pgEnum("contact_type", ["Tecnico", "Administrativo", "Financiero"])
 export const contactStatusEnum = pgEnum("contact_status", ["Activo", "Inactivo"])
 export const notificationStatusEnum = pgEnum("notification_status", ["delivered", "bounced"])
 // export const auditsActionEnum = pgEnum("audit_action_enum", ["insert", "update", "delete"])
@@ -64,7 +64,7 @@ export const contacts = pgTable("contacts", {
   name: varchar("name", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 255 }).unique(),
   type: contactTypeEnum("type").notNull(),
-  status: contactStatusEnum("status").notNull().default("Activo"),
+  status: contactStatusEnum("status").notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
 });

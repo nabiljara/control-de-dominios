@@ -21,13 +21,19 @@ export async function setUserId() {
         if (!session || !session.user) {
             throw new Error("Usuario no autenticado");
         }
+        
         const userId = session.user.id;
-        const result = await sql.transaction([
-            sql`
+        if (!userId) {
+            throw new Error("ID de usuario no disponible");
+        }
+        await db.transaction(async () => {
+
+            const result = await sql`
                 SELECT set_user_id(${userId})
-              `,
-        ]);
-        return result[0]
+            `;
+            console.log("Resultado de set_user_id:", result);
+
+        });
     } catch (error) {
         throw error
     }

@@ -86,3 +86,28 @@ export async function getContact(id:number) {
         throw error;
     }
 };
+
+export async function validatePhone(phone: string | undefined) {
+    try {
+        if (!phone) return true
+        const response = await db.query.contacts.findFirst({
+            where: eq(contacts.phone, phone)
+        });
+        return response ? false : true;
+    } catch (error) {
+        console.error("Error al validar el email", error)
+        throw error
+    }
+}
+
+export async function validateEmail(email: string) {
+    try {
+        const response = await db.query.contacts.findFirst({
+            where: eq(contacts.email, email)
+        });
+        console.log(response);
+        return response ? false : true;
+    } catch (error) {
+        console.error("Error al validar el email")
+    }
+}
