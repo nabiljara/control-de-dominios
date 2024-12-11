@@ -42,14 +42,22 @@ export function DomainTable({ domains }: DomainTableProps) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {domains.map((domain) => (
-          <TableRow key={domain.id}>
-            <TableCell>{domain.name}</TableCell>
-            <TableCell>{domain.status}</TableCell>
-            <TableCell>{domain.client.name}</TableCell>
-            <TableCell>{domain.provider.name}</TableCell>
+        {domains.length > 0 ? (
+          domains.map((domain) => (
+            <TableRow key={domain.id}>
+              <TableCell>{domain.name}</TableCell>
+              <TableCell>{domain.status}</TableCell>
+              <TableCell>{domain.client.name}</TableCell>
+              <TableCell>{domain.provider.name}</TableCell>
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell colSpan={4} className="h-24 text-center">
+              No hay dominios asociados a este contacto.
+            </TableCell>
           </TableRow>
-        ))}
+        )}
       </TableBody>
     </Table>
   )

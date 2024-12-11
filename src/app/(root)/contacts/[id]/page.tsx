@@ -22,7 +22,7 @@ import { DomainTable } from "../_components/domains-table"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Switch } from "@/components/ui/switch"
-import { getDomains } from "@/actions/domains-actions"
+import { getDomains, getDomainsByContact } from "@/actions/domains-actions"
 import { getContact, updateContact } from "@/actions/contacts-actions"
 import { toast } from "sonner"
 import { getClients } from "@/actions/client-actions"
@@ -75,7 +75,7 @@ export default function ContactDetailsPage({
 
   const fecthDomains = async () => {
     try {
-      const data = await getDomains()
+      const data = await getDomainsByContact(params.id)
       setDomains(data)
     } catch (e) {
       if (e instanceof Error) {

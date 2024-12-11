@@ -15,6 +15,14 @@ import { Mail, Phone, User, Activity, CheckCircle } from "lucide-react"
 import { ContactType } from "@/validators/contacts-validator"
 import { Domain } from "../[id]/page"
 import { useState } from "react"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
 
 type ConfirmationModalProps = {
   isOpen: boolean
@@ -94,7 +102,13 @@ export function ConfirmationModal({
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Estado</p>
-                    <p className="text-sm font-medium leading-none">
+                    <p
+                      className={`text-sm font-medium leading-none ${
+                        updatedContact?.status === "Inactivo"
+                          ? "text-destructive"
+                          : ""
+                      }`}
+                    >
                       {updatedContact?.status}
                     </p>
                   </div>
@@ -124,24 +138,94 @@ export function ConfirmationModal({
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <CardTitle className="mb-2">Dominios afectados</CardTitle>
-              <CardDescription className="mb-4">
-                Los siguientes dominios se verán afectados por los cambios
-                realizados:
-              </CardDescription>
-              <ul className="space-y-1">
-                {domains.map((domain, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    <span className="text-sm">{domain.name}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          {updatedContact?.status === "Inactivo" ? (
+            <Card>
+              <CardContent className="pt-6">
+                <CardTitle className="mb-2">Dominios afectados</CardTitle>
+                <CardDescription className="mb-4">
+                  Los siguientes dominios se verán afectados por la baja del
+                  dominio, deberá seleccionar un nuevo contacto para cada uno.
+                </CardDescription>
+                {domains.length > 0 ? (
+                  <ul className="space-y-4">
+                    {domains.map((domain, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center justify-between gap-4"
+                      >
+                        <span className="text-sm font-medium">
+                          {domain.name}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Select>
+                            <SelectTrigger className="w-[200px]">
+                              <SelectValue placeholder="Seleccione un contacto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectItem value="contacto1">
+                                  contacto1
+                                </SelectItem>
+                                <SelectItem value="contacto2">
+                                  contacto2
+                                </SelectItem>
+                                <SelectItem value="contacto3">
+                                  contacto3
+                                </SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <Button variant="outline" size="sm" asChild>
+                            <a href="/contacts/new">Crear</a>
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        No hay dominios asociados a este contacto.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <CardTitle className="mb-2">Dominios afectados</CardTitle>
+                <CardDescription className="mb-4">
+                  Los siguientes dominios se verán afectados por los cambios
+                  realizados:
+                </CardDescription>
+                {domains.length > 0 ? (
+                  <ul className="space-y-4">
+                    {domains.map((domain, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center justify-between gap-4"
+                      >
+                        <span className="text-sm font-medium">
+                          {domain.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        No hay dominios asociados a este contacto.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex justify-end">
             <Button onClick={handleConfirm} disabled={isSubmitting}>

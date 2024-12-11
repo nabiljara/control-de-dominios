@@ -27,3 +27,29 @@ export async function getDomains() {
         throw error;
     }
 };
+
+export async function getDomainsByContact(idContact: number){
+    try{
+        const data = await db.query.domains.findMany({
+          where: eq(domains.contactId, idContact),
+          orderBy: [desc(domains.id)],
+          with:{
+            provider:{
+                columns:{
+                    name:true,
+                }
+            },
+            client:{
+                columns:{
+                    name:true,
+                }
+            }
+          }
+        });
+        return data;
+    }
+    catch(error){
+        console.error("Error al obtener los dominios:", error);
+        throw error;
+    }
+};
