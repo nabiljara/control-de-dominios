@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 
-import { segments, statuses } from "@/app/(root)/clients/data/data"
+import { sizes, statuses } from "@/app/(root)/clients/data/data"
 import { Client } from "@/app/(root)/clients/data/schema"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
@@ -56,7 +56,7 @@ export const columns: ColumnDef<Client>[] = [
   //       <>
   //        {/* <div className="flex space-x-2"> */}
   //         {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-  //         <span className="max-w-[500px] truncate font-medium">
+  //         <span className="max-w-[500px] font-medium truncate">
   //           {row.getValue("title")}
   //         </span>
   //       {/* </div> */}
@@ -79,9 +79,9 @@ export const columns: ColumnDef<Client>[] = [
       }
 
       return (
-        <div className="flex w-[100px] items-center">
+        <div className="flex items-center w-[100px]">
           {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            <status.icon className="mr-2 w-4 h-4 text-muted-foreground" />
           )}
           <span>{status.label}</span>
         </div>
@@ -97,7 +97,7 @@ export const columns: ColumnDef<Client>[] = [
       <DataTableColumnHeader column={column} title="Segmento" />
     ),
     cell: ({ row }) => {
-      const segment = segments.find(
+      const segment = sizes.find(
         (segment) => segment.value === row.getValue("segment")
       )
 
@@ -108,7 +108,7 @@ export const columns: ColumnDef<Client>[] = [
       return (
         <div className="flex items-center">
           {segment.icon && (
-            <segment.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            <segment.icon className="mr-2 w-4 h-4 text-muted-foreground" />
           )}
           <span>{segment.label}</span>
         </div>

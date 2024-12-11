@@ -12,11 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ContactType } from '../create-client-form';
-import { Mail, MoreVertical, Phone, SquarePen, Tag, Trash2, User } from 'lucide-react';
+import { ContactType } from '@/validators/client-validator';
+import { Circle, Mail, MoreVertical, Phone, SquarePen, Tag, Trash2, User } from 'lucide-react';
 import { EditContactForm } from '@/app/(root)/clients/create/_components/contacts/edit-contact-form';
 import { z } from 'zod';
 import { DeleteForm } from '@/app/(root)/clients/create/_components/delete-form';
+import { Badge } from '@/components/ui/badge';
 
 export function Contact({
   contact,
@@ -51,75 +52,78 @@ export function Contact({
       >
         <DeleteForm setIsOpen={setIsDeleteOpen} index={index} remove={removeContact} />
       </ResponsiveDialog>
-      <Card className="w-full p-4 flex shadow-sm relative hover:shadow-md duration-200 transition-all">
+      <Card className="relative flex shadow-sm hover:shadow-md p-4 w-full transition-all duration-200">
         {/* Card Content */}
-        <CardContent className='p-0 flex flex-col items-start gap-2 justify-between h-full'>
+        <CardContent className='flex flex-col justify-between items-start gap-2 p-0 h-full'>
           <div className='flex items-center gap-2'>
-            <User className="h-4 w-4" />
+            <User className="w-4 h-4" />
             <h2 className="font-bold text-md">
               {contact.name}
             </h2>
+              <Badge variant='outline' className={contact.status === 'Activo' ? 'bg-green-500' : ''}>
+                {contact.status}
+              </Badge>
           </div>
           <div className='flex items-center gap-2'>
-            <Mail className="h-4 w-4" />
+            <Mail className="w-4 h-4" />
             <span className="text-neutral-500 text-sm overflow-hidden">
               {contact.email}
             </span>
           </div>
           {contact.phone && (
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
+              <Phone className="w-4 h-4" />
               <span className="text-neutral-500 text-sm">
                 {contact.phone}
               </span>
             </div>
           )}
           <div className='flex items-center gap-2'>
-            <Tag className="h-4 w-4" />
-            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+            <Tag className="w-4 h-4" />
+            <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors focus:outline-none">
               {contact.type}
             </span>
           </div>
         </CardContent>
 
         {/* Dropdown Menu */}
-        <div className="absolute right-4 top-4 z-10">
+        <div className="top-4 right-4 z-10 absolute">
           <span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                  className="flex data-[state=open]:bg-muted p-0 w-8 h-8"
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="w-4 h-4" />
                   <span className="sr-only">Abrir menú</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[160px] z-50">
-                <DropdownMenuItem className="group flex w-full items-center justify-between  text-left p-0 text-sm font-base text-neutral-500 ">
+              <DropdownMenuContent align="end" className="z-50 w-[160px]">
+                <DropdownMenuItem className="flex justify-between items-center p-0 w-full font-base text-left text-neutral-500 text-sm group">
                   <button
                     onClick={() => {
                       setIsEditOpen(true);
                     }}
-                    className="w-full justify-start flex rounded-md p-2 transition-all text-neutral-900 duration-75 hover:bg-neutral-100"
+                    className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-neutral-900 transition-all duration-75"
                   >
                     <IconMenu
                       text="Editar"
-                      icon={<SquarePen className="h-4 w-4" />}
+                      icon={<SquarePen className="w-4 h-4" />}
                     />
                   </button>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="group flex w-full items-center justify-between  text-left p-0 text-sm font-base text-neutral-500 ">
+                <DropdownMenuItem className="flex justify-between items-center p-0 w-full font-base text-left text-neutral-500 text-sm group">
                   <button
                     onClick={() => {
                       setIsDeleteOpen(true);
                     }}
-                    className="w-full justify-start flex text-red-500 rounded-md p-2 transition-all duration-75 hover:bg-neutral-100"
+                    className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-red-500 transition-all duration-75"
                   >
                     <IconMenu
                       text="Eliminar"
-                      icon={<Trash2 className="h-4 w-4" />}
+                      icon={<Trash2 className="w-4 h-4" />}
                     />
                   </button>
                 </DropdownMenuItem>

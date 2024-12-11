@@ -22,6 +22,8 @@ import { Locality } from '@/db/schema'
 import { toast } from 'sonner'
 import { insertClient } from '@/actions/client-actions'
 import { AccessType, clientFormSchema, ClientFormValues, ContactType } from '@/validators/client-validator'
+import { validateEmail, validatePhone } from '@/actions/contacts-actions'
+import { validateUsername } from '@/actions/accesses-actions'
 
 export function CreateClientForm({
   providers,
@@ -40,19 +42,29 @@ export function CreateClientForm({
 
   const getContactSchema = (editingIndex: number | null) => {
     return clientFormSchema.shape.contacts.unwrap().element.extend({
-      email: z.string().email({ message: "El email no es válido." }).max(30, { message: "El email debe contener como máximo 30 caracteres." }).refine(
-        (email) => !contacts.some((c, i) => i !== editingIndex && c.email === email),
-        { message: "El correo ya está en uso." }
-      ),
-      phone: z.string().min(11, { message: "El número no es válido." }).max(14, { message: "El número no es válido." }).optional().refine(
-        (phone) => !contacts.some((c, i) => i !== editingIndex && c.phone !== undefined && c.phone === phone),
-        { message: "El número de teléfono ya está en uso." }
-      ),
+      email: z.string().email({ message: "El email no es válido." }).max(30, { message: "El email debe contener como máximo 30 caracteres." })
+        .refine(
+          (email) => !contacts.some((c, i) => i !== editingIndex && c.email === email),
+          { message: "El correo ya ha sido cargado." }
+        ).refine(
+          async (email) => await validateEmail(email),
+          { message: "El correo ya está registrado en el sistema" }
+        ),
+
+      phone: z.string().min(11, { message: "El número no es válido." }).max(14, { message: "El número no es válido." }).optional()
+        .refine(
+          (phone) => !contacts.some((c, i) => i !== editingIndex && c.phone !== undefined && c.phone === phone),
+          { message: "El número de teléfono ya está en uso." }
+        )
+        .refine(
+          async (phone) => await validatePhone(phone),
+          { message: "El teléfono ya está registrado en el sistema" }
+        ),
     });
   };
 
   const getAccessSchema = (editingIndex: number | null) => {
-    return clientFormSchema.shape.accesses.unwrap().element.superRefine((data, ctx) => {
+    return clientFormSchema.shape.accesses.unwrap().element.superRefine(async (data, ctx) => {
       const { provider, username } = data;
       const isDuplicate = accesses.some((access, i) =>
         i !== editingIndex &&
@@ -64,6 +76,17 @@ export function CreateClientForm({
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "El usuario o email ya está en uso para el proveedor seleccionado.",
+          path: ["username"],
+        });
+      }
+
+      const alreadyRegistered = await validateUsername(username, parseInt(provider.id,10))
+      console.log(alreadyRegistered); 
+
+      if (!alreadyRegistered) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "El usuario o email ya está registrado en el sistema para el proveedor seleccionado.",
           path: ["username"],
         });
       }
@@ -274,7 +297,7 @@ export function CreateClientForm({
 
               <FormField
                 control={form.control}
-                name="state"
+                name="status"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estado <span className="text-red-500">*</span></FormLabel>
@@ -286,13 +309,13 @@ export function CreateClientForm({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Activo">
-                          <Badge variant="default" className="bg-green-500">Activo</Badge>
+                          <Badge variant="outline" className="bg-green-500">Activo</Badge>
                         </SelectItem>
                         <SelectItem value="Inactivo">
-                          <Badge variant="secondary">Inactivo</Badge>
+                          <Badge variant="outline">Inactivo</Badge>
                         </SelectItem>
                         <SelectItem value="Suspendido">
-                          <Badge variant="destructive">Suspendido</Badge>
+                          <Badge variant="outline" className="bg-red-500">Suspendido</Badge>
                         </SelectItem>
                       </SelectContent>
                     </Select>

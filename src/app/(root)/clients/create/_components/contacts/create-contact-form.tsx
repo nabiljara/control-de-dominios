@@ -10,7 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/high-res.css';
 import { ContactType } from '@/validators/client-validator'
+import { Badge } from '@/components/ui/badge'
+import { contactSchema as originalContactSchema } from '@/validators/client-validator'
 
+const typeOptions = originalContactSchema.shape.type.options;
 
 export function CreateContactForm({
   onSave,
@@ -31,6 +34,7 @@ export function CreateContactForm({
       type: undefined
     }
   })
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -154,17 +158,45 @@ export function CreateContactForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Técnico">Técnico</SelectItem>
-                  <SelectItem value="Administrativo">Administrativo</SelectItem>
+                  {
+                    typeOptions.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))
+                  }
                 </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
           )}
         />
-          <Button type="submit" disabled={isPending} className='w-full'>
-            {isPending ? 'Agregando...' : 'Agregar'}
-          </Button>
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Estado <span className="text-red-500">*</span></FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value} name='state'>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione un estado" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Activo">
+                    <Badge variant="outline" className="bg-green-500">Activo</Badge>
+                  </SelectItem>
+                  <SelectItem value="Inactivo">
+                    <Badge variant="outline">Inactivo</Badge>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={isPending} className='w-full'>
+          {isPending ? 'Agregando...' : 'Agregar'}
+        </Button>
       </form>
     </Form>
   )

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dispatch, SetStateAction, useState } from 'react';
 
-import { AccessType } from '@/app/(root)/clients/create/_components/create-client-form'
+import { AccessType } from '@/validators/client-validator'
 import { Textarea } from '@/components/ui/textarea'
 import { PasswordInput } from '@/components/password-input'
 import { Provider } from '@/actions/provider-actions'

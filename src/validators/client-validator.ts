@@ -39,7 +39,9 @@ export const accessesSchema = z.object({
     .min(1, { message: "La contraseña es requerida." }),
   notes: z.string()
     .max(100, { message: "Máximo 100 caracteres" })
-    .optional()
+    .optional(),
+  clientId: z.number().optional(),
+  providerId: z.number().optional()
 })
 
 export const clientFormSchema = z.object({

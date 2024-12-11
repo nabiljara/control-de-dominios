@@ -10,8 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dispatch, SetStateAction, useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/high-res.css';
+import { contactSchema as originalContactSchema } from '@/validators/client-validator'
 
-import { ContactType } from '@/app/(root)/clients/create/_components/create-client-form'
+
+import { ContactType } from '@/validators/client-validator'
+import { Badge } from '@/components/ui/badge'
+
+const typeOptions = originalContactSchema.shape.type.options;
 
 export function EditContactForm({
   contactSchema,
@@ -34,7 +39,8 @@ export function EditContactForm({
       name: contact?.name,
       email: contact?.email,
       phone: contact?.phone,
-      type: contact?.type
+      type: contact?.type,
+      status: contact?.status
     }
   })
 
@@ -158,8 +164,36 @@ export function EditContactForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Técnico">Técnico</SelectItem>
-                  <SelectItem value="Administrativo">Administrativo</SelectItem>
+                {
+                    typeOptions.map((type) =>(
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+                <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Estado <span className="text-red-500">*</span></FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={contact.status} name='state'>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione un estado" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Activo">
+                    <Badge variant="outline" className="bg-green-500">Activo</Badge>
+                  </SelectItem>
+                  <SelectItem value="Inactivo">
+                    <Badge variant="outline">Inactivo</Badge>
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

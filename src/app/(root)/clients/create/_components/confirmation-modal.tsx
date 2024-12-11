@@ -2,8 +2,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Mail, Phone, User, BarChart2, CheckCircle, Box, StickyNote, Tag, Lock, EyeOff, Eye } from "lucide-react"
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { AccessType, ContactType, ClientFormValues } from "@/app/(root)/clients/create/_components/create-client-form";
+import { AccessType, ContactType, ClientFormValues } from "@/validators/client-validator";
 import { UseFormReturn } from "react-hook-form";
+import { Badge } from '@/components/ui/badge';
 
 export function ConfirmationModal(
   {
@@ -44,7 +45,10 @@ export function ConfirmationModal(
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
-                  <span className="font-medium">Estado:</span> {form.getValues().state}
+                  <span className="font-medium">Estado:</span>
+                  <Badge variant='outline' className={form.getValues().status === 'Activo' ? 'bg-green-500' : ''}>
+                    {form.getValues().status}
+                  </Badge>
                 </div>
               </div>
             </CardContent>
@@ -64,6 +68,9 @@ export function ConfirmationModal(
                         <h2 className="font-bold text-md">
                           {contact.name}
                         </h2>
+                        <Badge variant='outline' className={contact.status === 'Activo' ? 'bg-green-500' : ''}>
+                          {contact.status}
+                        </Badge>
                       </div>
                       <div className='flex items-center gap-2'>
                         <Mail className="w-4 h-4" />
