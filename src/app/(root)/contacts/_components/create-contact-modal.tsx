@@ -38,7 +38,7 @@ const contactSchema = z.object({
     .min(1, { message: "El teléfono es obligatorio" })
     .max(255, { message: "El teléfono no puede superar los 255 caracteres" })
     .nullable(),
-  type: z.enum(["Técnico", "Administrativo", "Financiero"], {
+  type: z.enum(["Tecnico", "Administrativo", "Financiero"], {
     message: "Seleccione un tipo válido."
   }),
   status: z.enum(["Activo", "Inactivo"], {

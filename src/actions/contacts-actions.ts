@@ -51,30 +51,55 @@ export async function insertContact(contact : Contact) {
         throw error;
     }
 };
+export async function updateContact(contact : Contact) {
+    try{
+        if (!contact.id) {
+            throw new Error("El ID del contacto no está definido.");
+          }
+        const actualContact = await getContact(contact.id);
+        if(actualContact?.email != contact.email){
+            const existingEmail = await validateEmail(contact.email);
+            if (!existingEmail) {
+                throw new Error("El email ya esta registrado en el sistema.");
+            }
+        }
+        if (actualContact?.phone != contact.phone){
+            const existingPhone = await validatePhone(contact.phone?.toString());
+            if (!existingPhone) {
+                throw new Error("El teléfono ya esta registrado en el sistema.");
+            }
+        }
+        const updatedContact = await db.update(contacts)
+        .set({ name: contact.name, email: contact.email, phone: contact.phone, type: contact.type, status: contact.status, clientId: contact.clientId, updatedAt: new Date().toISOString() })
+        .where(eq(contacts.id, contact.id)).returning({ id: contacts.id });
 
-export async function getContact(id:number) {
+        return updatedContact[0];
+    }
+    catch(error){
+        console.error("Error al modificar el contacto:", error);
+        throw error;
+    }
+};
+
+export async function getContact(id:number  ) {
     try{
         const data = await db.query.contacts.findFirst({
             where: eq(contacts.id, id),
+            columns:{
+                id:true,
+                name:true,
+                email:true,
+                phone:true,
+                type:true,
+                status:true,
+                clientId:true,
+            },
             with:{
             client:{
                 columns:
                     {
+                        id:true,
                         name:true,
-                    }
-                },
-            domains:
-                {columns:
-                    {
-                        name:true,
-                        expirationDate:true,
-                    },
-                    with:{
-                        provider:{
-                            columns:{
-                                name:true,
-                            }
-                        }
                     }
                 }
           }
