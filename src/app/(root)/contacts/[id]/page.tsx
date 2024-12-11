@@ -369,6 +369,22 @@ export default function ContactDetailsPage({
                 )}
               </div>
             </div>
+            <CardContent className="flex justify-end space-x-4">
+              {isEditing && (
+                <>
+                  <Button
+                    type="submit"
+                    variant="default"
+                    disabled={!hasChanges}
+                  >
+                    Guardar
+                  </Button>
+                  <Button type="button" variant="outline" onClick={toggleEdit}>
+                    Cancelar
+                  </Button>
+                </>
+              )}
+            </CardContent>
             <Card>
               <CardHeader>
                 <CardTitle>Dominios Asociados</CardTitle>
@@ -378,18 +394,6 @@ export default function ContactDetailsPage({
               </CardContent>
             </Card>
           </CardContent>
-          <CardFooter className="flex justify-end space-x-4">
-            {isEditing && (
-              <>
-                <Button type="submit" variant="default" disabled={!hasChanges}>
-                  Guardar
-                </Button>
-                <Button type="button" variant="outline" onClick={toggleEdit}>
-                  Cancelar
-                </Button>
-              </>
-            )}
-          </CardFooter>
         </Card>
       </form>
       <ConfirmationModal

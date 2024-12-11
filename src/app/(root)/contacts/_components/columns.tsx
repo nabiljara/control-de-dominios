@@ -4,24 +4,21 @@ import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { z } from "zod"
-export const contactSchema = z.object({
+import { contactSchema } from "@/validators/client-validator"
+
+const extendedContactSchema = contactSchema.extend({
   id: z.number(),
-  clientId: z.number().nullable(),
-  email: z.string().email({ message: "Debe ser un correo electrónico válido" }),
-  name: z
-    .string()
-    .min(1, { message: "El nombre es obligatorio" })
-    .max(255, { message: "El nombre no puede superar los 255 caracteres" }),
-  phone: z
-    .string()
-    .min(1, { message: "El teléfono es obligatorio" })
-    .max(255, { message: "El teléfono no puede superar los 255 caracteres" }),
-  type: z.enum(["technical", "administrative", "financial"]).nullable(),
-  status: z.enum(["active", "inactive"]).nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  clientId: z.number().nullable().nullable(),
+  phone: z
+    .string()
+    .min(11, { message: "El número no es válido." })
+    .max(14, { message: "El número no es válido." })
+    .nullable(),
   client: z
     .object({
+      id: z.number().optional(),
       name: z
         .string()
         .min(1, { message: "El nombre es obligatorio" })
@@ -29,7 +26,7 @@ export const contactSchema = z.object({
     })
     .nullable()
 })
-type Contact = z.infer<typeof contactSchema>
+type Contact = z.infer<typeof extendedContactSchema>
 
 export const columns: ColumnDef<Contact>[] = [
   // {
