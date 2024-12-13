@@ -1,6 +1,17 @@
-import { DB } from "@/db";
+import dotenv from 'dotenv';
+import * as schema from "@/db/schema";
+import { drizzle } from 'drizzle-orm/postgres-js';
 
-export async function createTriggers(db: DB) {
+import postgres from 'postgres';
+
+dotenv.config();
+const DATABASE_URL = process.env.DATABASE_URL ?? "";
+const sql_ = postgres(
+  DATABASE_URL
+);
+const db = drizzle(sql_, { schema });
+
+export async function createTriggers() {
   //TRIGGERS PARA PROVEEDORES
   await db.execute(`
     CREATE OR REPLACE TRIGGER insert_audit_provider

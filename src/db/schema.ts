@@ -26,14 +26,16 @@ export const domainStatusEnum = pgEnum("domain_status", ["Activo", "Inactivo", "
 export const contactTypeEnum = pgEnum("contact_type", ["Tecnico", "Administrativo", "Financiero"])
 export const contactStatusEnum = pgEnum("contact_status", ["Activo", "Inactivo"])
 export const notificationStatusEnum = pgEnum("notification_status", ["delivered", "bounced"])
-// export const auditsActionEnum = pgEnum("audit_action_enum", ["insert", "update", "delete"])
-// export const auditsEntityEnum = pgEnum("audits_entity_enum", ["localities", "clients", "contacts","providers", "access", "domains", "users"])
-export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts","providers"])
+export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts", "providers"])
 
 export const localities = pgTable("localities", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull().unique(),
 })
+
+export const localitiesRelations = relations(localities, ({ many }) => ({
+  clients: many(clients),
+}))
 
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
@@ -47,7 +49,7 @@ export const clients = pgTable("clients", {
 })
 
 export const clientRelations = relations(clients, ({ many, one }) => ({
-  localities: one(localities, {
+  locality: one(localities, {
     fields: [clients.localityId],
     references: [localities.id],
   }),
@@ -251,12 +253,12 @@ export const auditDetails = pgTable("audits_details", {
     .references(() => audits.id, { onDelete: "cascade" }),
   oldValue: text("old_value"),
   newValue: text("new_value"),
-  field:  varchar("field", { length: 255 }).notNull(),
+  field: varchar("field", { length: 255 }).notNull(),
 });
 
 
 export const auditsDetailsRelations = relations(auditDetails, ({ many, one }) => ({
-  audits: one(audits,{
+  audits: one(audits, {
     fields: [auditDetails.auditId],
     references: [audits.id]
   })
@@ -356,17 +358,71 @@ export const authenticators = pgTable(
   })
 )
 
+// LOCALIDADES
 export type Locality = InferSelectModel<typeof localities>;
-export type Client = InferSelectModel<typeof clients> & {
-  localities: Locality;
+export type LocalityInsert = InferInsertModel<typeof localities>;
+export type LocalityWithRelations = Locality & {
+  clients: Client[];
 };
+
+// PROVEEDORES
+export type Provider = InferSelectModel<typeof providers>;
+export type ProviderInsert = InferInsertModel<typeof providers>;
+export type ProviderWithRelations = Provider & {
+  access: Access[],
+  domains: Domain[],
+};
+
+//CLIENTES
+export type Client = InferSelectModel<typeof clients>
 export type ClientInsert = InferInsertModel<typeof clients>
 export type ClientWithRelations = Client & {
   domains: Domain[];
-  localities: Locality;
+  locality: Locality;
   access: Access[];
   contacts: Contact[];
 };
-export type Contact = InferInsertModel<typeof contacts>;
-export type Domain = InferInsertModel<typeof domains>;
-export type Access = InferInsertModel<typeof domains>;
+
+//CONTACTOS
+export type Contact = InferSelectModel<typeof contacts>;
+export type ContactInsert = InferInsertModel<typeof contacts>;
+export type ContactWithRelations = Contact & {
+  client: Client
+  domains: Domain[],
+}
+
+//ACCESOS
+export type Access = InferSelectModel<typeof access>;
+export type AccessInsert = InferInsertModel<typeof access>;
+export type AccessWithRelations = Access & {
+  client: Client
+  provider: Provider
+  domainAccess: DomainAccess[],
+}
+
+//DOMAIN ACCESS
+export type DomainAccess = InferSelectModel<typeof domainAccess>;
+export type DomainAccessInsert = InferInsertModel<typeof domainAccess>;
+export type DomainAccessWithRelations = Access & {
+  access: Access,
+  domain: Domain,
+}
+
+//DOMINIOS
+export type Domain = InferSelectModel<typeof domains>;
+export type DomainInsert = InferInsertModel<typeof domains>;
+export type DomainWithRelations = Domain & {
+  client: Client,
+  provider: Provider,
+  contact: Contact,
+  history: DomainHistory
+}
+
+//HISTORIAL DE DOMINIO
+export type DomainHistory = InferSelectModel<typeof domainHistory>
+export type DomainHistoryInsert = InferInsertModel<typeof domainHistory>
+export type DomainHistoryWithRelations = Domain & {
+  domain: Domain
+}
+
+

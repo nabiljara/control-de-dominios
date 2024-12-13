@@ -2,12 +2,15 @@ import { sql, Table } from "drizzle-orm";
 import dotenv from 'dotenv';
 import * as schema from "@/db/schema";
 import * as seeds from "@/db/seeds";
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/postgres-js';
+
+import postgres from 'postgres';
 
 dotenv.config();
 const DATABASE_URL = process.env.DATABASE_URL ?? "";
-const sql_ = neon(DATABASE_URL)
+const sql_ = postgres(
+  DATABASE_URL
+);
 const db = drizzle(sql_, { schema });
 type DB = typeof db;
 

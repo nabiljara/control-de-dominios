@@ -1,6 +1,17 @@
-import { DB } from "@/db";
+import dotenv from 'dotenv';
+import * as schema from "@/db/schema";
+import { drizzle } from 'drizzle-orm/postgres-js';
 
-export async function createFunctions(db: DB) {
+import postgres from 'postgres';
+
+dotenv.config();
+const DATABASE_URL = process.env.DATABASE_URL ?? "";
+const sql_ = postgres(
+  DATABASE_URL
+);
+const db = drizzle(sql_, { schema });
+
+export async function createFunctions() {
     //PARA AUDITAR PROVEEDORES
     await db.execute(`
       CREATE OR REPLACE FUNCTION audits_providers()
