@@ -138,7 +138,6 @@ export function CreateClientForm({
         try {
           await insertClient(client);
           resolve();
-          form.reset();
           setIsConfirmationModalOpen(false);
         } catch (error) {
           console.error(error)
@@ -195,6 +194,7 @@ export function CreateClientForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        {/* TODO: HACER DINÁMICO */}
                         <SelectItem value="Chico">Chico</SelectItem>
                         <SelectItem value="Medio">Medio</SelectItem>
                         <SelectItem value="Grande">Grande</SelectItem>

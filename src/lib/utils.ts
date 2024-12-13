@@ -1,13 +1,13 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import crypto from 'crypto';
-
+import { formatDate as formatUtil } from "date-fns"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getInitials (name :string){
-return name.split(' ').map(word => word[0]).join('').toUpperCase()
+export function getInitials(name: string) {
+  return name.split(' ').map(word => word[0]).join('').toUpperCase()
 }
 
 const SECRET_KEY = process.env.SECRET_KEY || '';
@@ -33,4 +33,19 @@ export const decrypt = (encrypted: string, iv: string): string => {
   } catch (error) {
     throw new Error(`Error al descifrar: ${error}`);
   }
+};
+
+export function decryptPassword(password: string) {
+  if (!password.includes(":")) {
+    return null
+  }
+  const [retrievedEncrypted, retrievedIv] = password.split(":");
+  return decrypt(retrievedEncrypted, retrievedIv);
+}
+
+export const formatDate = (date: string | undefined) => {
+  if (date) {
+    return formatUtil(new Date(date), "dd/MM/yyyy HH:mm")
+  }
+  return null;
 };

@@ -357,5 +357,16 @@ export const authenticators = pgTable(
 )
 
 export type Locality = InferSelectModel<typeof localities>;
-export type Client = InferInsertModel<typeof clients>;
+export type Client = InferSelectModel<typeof clients> & {
+  localities: Locality;
+};
+export type ClientInsert = InferInsertModel<typeof clients>
+export type ClientWithRelations = Client & {
+  domains: Domain[];
+  localities: Locality;
+  access: Access[];
+  contacts: Contact[];
+};
 export type Contact = InferInsertModel<typeof contacts>;
+export type Domain = InferInsertModel<typeof domains>;
+export type Access = InferInsertModel<typeof domains>;

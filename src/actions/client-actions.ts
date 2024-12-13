@@ -2,13 +2,14 @@
 
 import db from "@/db";
 import { clientFormSchema, ClientFormValues } from "@/validators/client-validator";
-import { clients, Contact, contacts } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { ClientInsert, clients, Contact, contacts, localities } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
 import { revalidatePath } from 'next/cache';
 import { redirect } from "next/navigation";
 import { setUserId } from "./user-action/user-actions";
 import { access } from "@/db/schema";
 import { encrypt } from "@/lib/utils";
+import { sql } from 'drizzle-orm' 
 
 export async function getClients() {
   try {
@@ -23,15 +24,60 @@ export async function getClients() {
   }
 };
 
+export async function getClient(id: number) {
+  try {
+    const client = await db.query.clients.findFirst({
+      where: eq(clients.id, id),
+      with:
+      {
+        domains: true,
+        localities: true,
+        access: {
+          with: { provider: true }
+        },
+        contacts: true
+      }
+    });
+    return client;
+  }
+  catch (error) {
+    console.error("Error al obtener el proveedor:", error);
+    throw error;
+  }
+};
+
+export async function updateClient(client: ClientInsert) {
+  let success = false;
+  console.log(client);
+  
+  try {
+    if (!client.id) {
+      throw new Error("El ID del cliente no está definido.");
+    }
+    await setUserId()
+    await db.update(clients)
+      .set({ name: client.name, localityId: client.localityId, size: client.size, status: client.status, updatedAt: sql`NOW()` })
+      .where(eq(clients.id, client.id)).returning({ id: clients.id });
+    success = true;
+  } catch (error) {
+    console.error("Error al modificar el cliente:", error);
+    throw error;
+  }
+  if (success) {
+    revalidatePath(`/clients`);
+    // redirect(`/clients`);
+  }
+}
+
 
 export async function insertClient(client: ClientFormValues) {
-  const parsed = clientFormSchema.safeParse(client);
   let success = false;
-  if (!parsed.success) {
-    throw new Error("Error de validación del formulario");
-  }
-  await setUserId()
   try {
+    const parsed = clientFormSchema.safeParse(client);
+    if (!parsed.success) {
+      throw new Error("Error de validación del formulario");
+    }
+    await setUserId()
     await db.transaction(async (tx) => {
       const response = await tx.insert(clients)
         .values({
