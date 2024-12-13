@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Client, ClientInsert, Locality } from '@/db/schema'
+import { Client, ClientInsert, ClientWithRelations, Locality } from '@/db/schema'
 import { formatDate } from '@/lib/utils'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { SubmitHandler, useForm } from 'react-hook-form'
@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import { updateClient } from '@/actions/client-actions'
 
 interface EditableClientCardProps {
-  client: Client
+  client: Omit<ClientWithRelations,'domains' | 'access' | 'contacts'>
   localities: Locality[]
 }
 
@@ -38,7 +38,7 @@ export default function EditableClientCard({ client, localities }: EditableClien
       name: client.name,
       status: client.status,
       size: client.size,
-      locality: { id: client.localityId ? client.localityId.toString() : undefined, name: client.localities.name }
+      locality: { id: client.localityId ? client.localityId.toString() : undefined, name: client.locality.name }
     },
   })
 
@@ -220,7 +220,7 @@ export default function EditableClientCard({ client, localities }: EditableClien
                           <FormMessage />
                         </>
                       ) : (
-                        <span>{client.localities.name}</span>
+                        <span>{client.locality.name}</span>
                       )}
                       <FormMessage />
                     </FormItem>

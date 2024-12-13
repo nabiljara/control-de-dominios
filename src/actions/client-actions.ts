@@ -9,12 +9,15 @@ import { redirect } from "next/navigation";
 import { setUserId } from "./user-action/user-actions";
 import { access } from "@/db/schema";
 import { encrypt } from "@/lib/utils";
-import { sql } from 'drizzle-orm' 
+import { sql } from 'drizzle-orm'
 
 export async function getClients() {
   try {
     const data = await db.query.clients.findMany({
       orderBy: [desc(clients.id)],
+      with: {
+        locality: true
+      }
     });
     return data;
   }
@@ -31,7 +34,7 @@ export async function getClient(id: number) {
       with:
       {
         domains: true,
-        localities: true,
+        locality: true,
         access: {
           with: { provider: true }
         },
@@ -49,7 +52,7 @@ export async function getClient(id: number) {
 export async function updateClient(client: ClientInsert) {
   let success = false;
   console.log(client);
-  
+
   try {
     if (!client.id) {
       throw new Error("El ID del cliente no está definido.");

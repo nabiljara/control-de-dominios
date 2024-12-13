@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ClientFormValues } from "@/validators/client-validator"
 import { UseFormReturn } from "react-hook-form"
 import { Badge } from '@/components/ui/badge'
-import { Client } from '@/db/schema'
+import { ClientWithRelations } from '@/db/schema'
 
 export function ConfirmationClientModal({
   handleSubmit,
@@ -15,7 +15,7 @@ export function ConfirmationClientModal({
 }: {
   handleSubmit: () => void
   form: UseFormReturn<ClientFormValues>
-  client: Client
+  client: Omit<ClientWithRelations,'domains' | 'access' | 'contacts'>
 }) {
   const { name, size, status, locality } = form.getValues()
   const nameState = form.getFieldState('name')
@@ -86,7 +86,7 @@ export function ConfirmationClientModal({
         {renderField(
           <BarChart2 className="w-4 h-4 text-primary" />,
           "Localidad",
-          client.localities.name,
+          client.locality.name,
           locality.name,
           localityState.isDirty
         )}

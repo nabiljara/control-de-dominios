@@ -12,15 +12,45 @@ import { sizes, statuses } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { CirclePlus } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { Locality } from "@/db/schema"
+import { getLocalities } from "@/actions/locality-actions"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+}
+
+type Options = {
+  label: string
+  value: string
+  icon?: React.ComponentType<{ className?: string }>
 }
 
 export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
+  const [localities, setLocalities] = useState<Options[]>([]);
+  useEffect(() => {
+    const fetchLocalities = async () => {
+      try {
+        const localities = await getLocalities();
+        const newLocalities: Options[] = []
+        localities.map((locality) =>{
+          const newLocality: Options = {
+            label: locality.name,
+            value: locality.id.toString()
+          }
+          newLocalities.push(newLocality)
+        })
+        setLocalities(newLocalities);
+      } catch (error) {
+        console.error("Error al cargar las localidades:", error);
+      }
+    };
+
+    fetchLocalities();
+  }, []);
 
   return (
     <div className="flex justify-between items-center">
@@ -33,6 +63,13 @@ export function DataTableToolbar<TData>({
           }
           className="w-[150px] lg:w-[250px] h-8"
         />
+        {table.getColumn("locality") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("locality")}
+            title="Localidad"
+            options={localities}
+          />
+        )}
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
@@ -66,8 +103,8 @@ export function DataTableToolbar<TData>({
           asChild
         >
           <Link href="/clients/create">
-          Nuevo cliente
-          <CirclePlus className="ml-2 w-5 h-5" />
+            Nuevo cliente
+            <CirclePlus className="ml-2 w-5 h-5" />
           </Link>
         </Button>
       </div>

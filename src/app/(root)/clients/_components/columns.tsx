@@ -6,10 +6,10 @@ import { sizes, statuses } from "@/app/(root)/clients/data/data"
 
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
-import { Client } from "@/db/schema"
+import { Client, ClientWithRelations } from "@/db/schema"
 import { Checkbox } from "@radix-ui/react-checkbox"
 
-export const columns: ColumnDef<Client>[] = [
+  export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -31,26 +31,33 @@ export const columns: ColumnDef<Client>[] = [
     //   return value.includes(row.getValue(id))
     // },
   },
-  // {
-  //   accessorKey: "title",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Title" />
-  //   ),
-  //   cell: ({ row }) => {
-  //     const label = labels.find((label) => label.value === row.original.label)
-
-  //     return (
-  //       <>
-  //        {/* <div className="flex space-x-2"> */}
-  //         {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-  //         <span className="max-w-[500px] font-medium truncate">
-  //           {row.getValue("title")}
-  //         </span>
-  //       {/* </div> */}
-  //       </>
-  //     )
-  //   },
-  // },
+  {
+    accessorKey: "locality",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Localidad" />
+    ),
+    cell: ({ row }) => {
+      const locality:{id:number, name:string} = row.getValue("locality");
+      return (
+        <>
+         {/* <div className="flex space-x-2"> */}
+          {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
+          <span className="max-w-[500px] font-medium truncate">
+          {locality.name || "Sin localidad"}
+          </span>
+        {/* </div> */}
+        </>
+      )
+    },
+    filterFn: (row, id, value) => {
+      const locality:{id:number, name:string} = row.getValue(id);
+      console.log(locality);
+      console.log(value);
+      console.log(value.includes(locality.id));
+      
+      return value.includes(locality.id.toString())
+    }
+  },
   {
     accessorKey: "status",
     header: ({ column }) => (

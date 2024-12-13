@@ -10,7 +10,7 @@ import Link from "next/link"
 import { PasswordCell } from "../_components/password-cell"
 import { UsernameCopy } from "../_components/username-copy"
 import EditableClientCard from "../_components/editable-client-card"
-import { Client } from "@/db/schema"
+import { Client, ClientWithRelations } from "@/db/schema"
 import { getLocalities } from "@/actions/locality-actions"
 
 export default async function ClientPage({ params }: { params: { id: number } }) {
@@ -18,7 +18,7 @@ export default async function ClientPage({ params }: { params: { id: number } })
   
   if (client) {
     const { access, domains, contacts, ...clientWithoutRelations } = client;
-    const clientWithoutRelationsTyped = clientWithoutRelations as Client;
+    const clientWithoutRelationsTyped = clientWithoutRelations as Omit<ClientWithRelations,'domains' | 'access' | 'contacts'>;
     const localities = await getLocalities()
     return (
       <div className="space-y-4 p-8">
