@@ -1,91 +1,76 @@
-"use client";
-import { getProvider, updateProvider } from "@/actions/provider-actions";
-import { Toaster, toast } from "sonner";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+"use client"
+import { getProvider, updateProvider } from "@/actions/provider-actions"
+import { Toaster, toast } from "sonner"
+import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-interface Domain {
-  name: string;
-  status: "active" | "inactive" | "suspended";
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  clientId: number;
-  providerId: number;
-  contactId: number;
-  providerRegistrationDate: string;
-  expirationDate: string;
-}
-interface Provider {
-  id: number;
-  name: string;
-  url: string;
-  domains: Domain[];
-}
+  TableRow
+} from "@/components/ui/table"
+import { ProviderWithRelations } from "@/db/schema"
 
 export default function ProvidersEditPage({
-  params,
+  params
 }: {
-  params: { id: number };
+  params: { id: number }
 }) {
-  const [provider, setProvider] = useState<Provider | undefined>(undefined);
-  const [editedProvider, setEditedProvider] = useState<Provider | undefined>(
-    undefined,
-  );
-  const [isEditing, setIsEditing] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
+  const [provider, setProvider] = useState<
+    Omit<ProviderWithRelations, "access"> | undefined
+  >(undefined)
+  const [editedProvider, setEditedProvider] = useState<
+    Omit<ProviderWithRelations, "access"> | undefined
+  >(undefined)
+  const [isEditing, setIsEditing] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
 
   const fetchProvider = async () => {
     try {
-      const prov = await getProvider(params.id);
-      setProvider(prov);
-      setEditedProvider(prov);
+      const prov = await getProvider(params.id)
+      setProvider(prov)
+      setEditedProvider(prov)
     } catch (e) {
       if (e instanceof Error) {
-        console.log(e);
-        toast.error("Error al obtener proveedor", { description: e.message });
+        console.log(e)
+        toast.error("Error al obtener proveedor", { description: e.message })
       }
     }
-  };
+  }
 
   useEffect(() => {
-    fetchProvider();
-  }, []);
+    fetchProvider()
+  }, [])
 
   const handleEdit = () => {
-    setIsEditing(true);
-  };
+    setIsEditing(true)
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (editedProvider) {
-      setEditedProvider({ ...editedProvider, [e.target.name]: e.target.value });
-      setHasChanges(true);
+      setEditedProvider({ ...editedProvider, [e.target.name]: e.target.value })
+      setHasChanges(true)
     }
-  };
+  }
 
   const handleApply = async () => {
     if (editedProvider) {
       try {
-        const updatedProvider = await updateProvider(editedProvider);
-        setProvider(updatedProvider);
-        setIsEditing(false);
-        setHasChanges(false);
-        toast.success("Cambios guardados exitosamente");
+        const updatedProvider = await updateProvider(editedProvider)
+        setProvider(updatedProvider)
+        setIsEditing(false)
+        setHasChanges(false)
+        toast.success("Cambios guardados exitosamente")
       } catch (e) {
         if (e instanceof Error) {
-          toast.error("Error al guardar cambios", { description: e.message });
+          toast.error("Error al guardar cambios", { description: e.message })
         }
       }
     }
-  };
+  }
 
   return (
     <>
@@ -162,7 +147,7 @@ export default function ProvidersEditPage({
                         <TableCell>{domain.status}</TableCell>
                         <TableCell>
                           {new Date(domain.expirationDate).toLocaleDateString(
-                            "es-ES",
+                            "es-ES"
                           )}
                         </TableCell>
                       </TableRow>
@@ -175,5 +160,5 @@ export default function ProvidersEditPage({
         )}
       </div>
     </>
-  );
+  )
 }

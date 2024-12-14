@@ -26,7 +26,7 @@ import { getClients } from "@/actions/client-actions"
 import { Client } from "@/db/schema"
 import { toast } from "sonner"
 import { insertContact } from "@/actions/contacts-actions"
-
+//TODO: cambiarlo a el de schema
 const contactSchema = z.object({
   email: z.string().email({ message: "Debe ser un correo electrónico válido" }),
   name: z
@@ -213,7 +213,7 @@ export function CreateContactModal({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Técnico">Técnico</SelectItem>
+                  <SelectItem value="Tecnico">Técnico</SelectItem>
                   <SelectItem value="Administrativo">Administrativo</SelectItem>
                   <SelectItem value="Financiero">Financiero</SelectItem>
                 </SelectContent>

@@ -22,43 +22,34 @@ import { DomainTable } from "../_components/domains-table"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Switch } from "@/components/ui/switch"
-import { getDomains, getDomainsByContact } from "@/actions/domains-actions"
+import {
+  getDomains,
+  getDomainsByContact,
+  updateDomainContact
+} from "@/actions/domains-actions"
 import { getContact, updateContact } from "@/actions/contacts-actions"
 import { toast } from "sonner"
 import { getClients } from "@/actions/client-actions"
-import { Client } from "@/db/schema"
-import { ContactType, contactSchema } from "@/validators/contacts-validator"
+import { Client, DomainWithRelations, ContactWithRelations } from "@/db/schema"
+import { contactSchema } from "@/validators/contacts-validator"
+import { ContactPerDomain } from "../../../../../types/contact-types"
 
-export type Domain = {
-  id: number
-  name: string
-  status: "Activo" | "Inactivo" | "Suspendido"
-  createdAt: string
-  updatedAt: string
-  clientId: number
-  providerId: number
-  contactId: number
-  providerRegistrationDate: string
-  expirationDate: string
-  client: {
-    name: string
-  }
-  provider: {
-    name: string
-  }
-}
 export default function ContactDetailsPage({
   params
 }: {
   params: { id: number }
 }) {
+  const [contact, setContact] = useState<
+    Omit<ContactWithRelations, "domains"> | undefined
+  >(undefined)
+  const [editedContact, setEditedContact] = useState<
+    Omit<ContactWithRelations, "domains"> | undefined
+  >(undefined)
   const [isEditing, setIsEditing] = useState(false)
-  const [contact, setContact] = useState<ContactType | undefined>(undefined)
-  const [domains, setDomains] = useState<Domain[]>([])
+  const [domains, setDomains] = useState<
+    Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
+  >([])
   const [clients, setClients] = useState<Client[]>([])
-  const [editedContact, setEditedContact] = useState<ContactType | undefined>(
-    undefined
-  )
   const [hasChanges, setHasChanges] = useState(false)
   const {
     register,
@@ -67,7 +58,7 @@ export default function ContactDetailsPage({
     setValue,
     reset,
     setError
-  } = useForm<ContactType>({
+  } = useForm<Omit<ContactWithRelations, "domains">>({
     resolver: zodResolver(contactSchema),
     defaultValues: contact
   })
@@ -108,16 +99,19 @@ export default function ContactDetailsPage({
     }
   }
   useEffect(() => {
+    //TODO: mejorar POST's y evitar useEffect
+    console.log("useEffect ejecutado")
     fetchContact()
     fecthDomains()
     fetchClients()
   }, [])
 
   useEffect(() => {
-    if (contact) {
+    if (contact && !editedContact) {
       reset(contact)
+      setEditedContact(contact)
     }
-  }, [contact, reset])
+  }, [contact, reset, editedContact])
 
   if (!contact) return <div>Cargando...</div>
 
@@ -127,7 +121,7 @@ export default function ContactDetailsPage({
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    field: keyof ContactType
+    field: keyof Omit<ContactWithRelations, "domains">
   ) => {
     if (editedContact) {
       setValue(field, e.target.value)
@@ -135,40 +129,44 @@ export default function ContactDetailsPage({
       setHasChanges(true)
     }
   }
-  const handleChangeSelect = (value: string, field: keyof ContactType) => {
+  const handleChangeSelect = (
+    value: string,
+    field: keyof Omit<ContactWithRelations, "domains">
+  ) => {
     if (editedContact) {
       if (field === "clientId") {
         const selectedClient = clients.find(
-          (client) => client.id?.toString() === value
+          (client) => client.id === parseInt(value, 10)
         )
-
         setEditedContact({
           ...editedContact,
           clientId:
             selectedClient && selectedClient.id ? selectedClient.id : null,
-          client:
-            selectedClient && selectedClient.id !== undefined
-              ? { id: selectedClient.id, name: selectedClient.name ?? null }
-              : null
+          client: selectedClient ?? null
         })
+        setValue(field, parseInt(value))
       } else {
         setEditedContact({ ...editedContact, [field]: value })
+        setValue(field, value)
       }
-      setValue(field, value)
       setHasChanges(true)
     }
   }
-  const handleApply = async (data: ContactType) => {
+  const handleApply = async (data: Omit<ContactWithRelations, "domains">) => {
     if (Object.keys(errors).length === 0) {
       setIsModalOpen(true)
     } else {
       console.log("Errores en el formulario:", errors)
     }
   }
-  const applyChanges = async () => {
+
+  const applyChanges = async (contactSelections: ContactPerDomain[]) => {
+    console.log("CONTACTOS POR DOMINIO EN PAGE.TSX")
+    console.log(contactSelections)
     if (editedContact) {
       const toastId = toast.loading("Guardando cambios...")
       try {
+        await updateDomainContact(contactSelections)
         const response = await updateContact(editedContact)
         const updatedContact = await getContact(response.id)
         setEditedContact(updatedContact)

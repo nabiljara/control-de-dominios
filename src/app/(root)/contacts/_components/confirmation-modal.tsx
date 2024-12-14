@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/card"
 import { Mail, Phone, User, Activity, CheckCircle } from "lucide-react"
 import { ContactType } from "@/validators/contacts-validator"
-import { Domain } from "../[id]/page"
-import { useState } from "react"
+import { DomainWithRelations } from "@/db/schema"
+import { useEffect, useState } from "react"
 import {
   Select,
   SelectContent,
@@ -23,13 +23,21 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import { ContactWithRelations } from "@/db/schema"
+import {
+  getContacts,
+  getContactsByClient,
+  getContactsWithoutClient
+} from "@/actions/contacts-actions"
+import { toast } from "sonner"
+import { ContactPerDomain } from "../../../../../types/contact-types"
 
 type ConfirmationModalProps = {
   isOpen: boolean
   onClose: () => void
-  domains: Domain[]
-  onConfirm: () => void
-  updatedContact: ContactType | undefined
+  domains: Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
+  onConfirm: (contactSelections: ContactPerDomain[]) => void //Pruebas con contactId en nulo, acomodar cuando definamos el contacto default(propio de kernel)
+  updatedContact: Omit<ContactWithRelations, "domains"> | undefined
 }
 
 export function ConfirmationModal({
@@ -40,17 +48,73 @@ export function ConfirmationModal({
   updatedContact
 }: ConfirmationModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedContacts, setSelectedContacts] = useState<
+    Record<number, number | null>
+  >({})
+
+  const [contactsByDomain, setContactsByDomain] = useState<
+    Record<number, Omit<ContactWithRelations, "domains">[]>
+  >({})
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      const result = await fetchContactsByDomain(domains)
+      setContactsByDomain(result)
+    }
+    fetchContacts()
+  }, [updatedContact, domains])
+
+  const fetchContactsByDomain = async (
+    domains: Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
+  ) => {
+    try {
+      const contactsByDomain = await Promise.all(
+        domains.map(async (domain) => {
+          const contacts = domain.clientId
+            ? await getContactsByClient(domain.clientId)
+            : await getContactsWithoutClient()
+          return { domainId: domain.id, contacts }
+        })
+      )
+      return contactsByDomain.reduce<
+        Record<number, Omit<ContactWithRelations, "domains">[]>
+      >((acc, curr) => {
+        acc[curr.domainId] = curr.contacts
+        return acc
+      }, {})
+    } catch (error) {
+      console.error("Error al obtener contactos por dominio:", error)
+      throw error
+    }
+  }
 
   const handleConfirm = async () => {
+    const missingContacts = domains.some(
+      (domain) => !selectedContacts[domain.id]
+    )
+    if (missingContacts) {
+      toast.error("No se selecciono un nuevo contacto para cada dominio")
+      return
+    }
+    //Error cuando no selecciona un nuevo contacto para c/u de los dominios
+    //TODO: Mejorarlo para que cuando no se tenga tenga dominios asociados
+
+    const contactSelections: ContactPerDomain[] = Object.entries(
+      selectedContacts
+    ).map(([domainId, contactId]) => ({
+      domainId: Number(domainId),
+      contactId: contactId as number
+    }))
     setIsSubmitting(true)
     try {
-      await onConfirm()
+      await onConfirm(contactSelections)
     } catch (error) {
       console.error(error)
     } finally {
       setIsSubmitting(false)
     }
   }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -144,7 +208,8 @@ export function ConfirmationModal({
                 <CardTitle className="mb-2">Dominios afectados</CardTitle>
                 <CardDescription className="mb-4">
                   Los siguientes dominios se verán afectados por la baja del
-                  dominio, deberá seleccionar un nuevo contacto para cada uno.
+                  dominio, deberá seleccionar un nuevo contacto(del cliente del
+                  dominio o individual) para cada uno.
                 </CardDescription>
                 {domains.length > 0 ? (
                   <ul className="space-y-4">
@@ -157,21 +222,52 @@ export function ConfirmationModal({
                           {domain.name}
                         </span>
                         <div className="flex items-center gap-2">
-                          <Select>
+                          <Select
+                            onValueChange={(value) =>
+                              setSelectedContacts((prev) => ({
+                                ...prev,
+                                [domain.id]: parseInt(value, 10)
+                              }))
+                            }
+                          >
                             <SelectTrigger className="w-[200px]">
                               <SelectValue placeholder="Seleccione un contacto" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectGroup>
-                                <SelectItem value="contacto1">
-                                  contacto1
-                                </SelectItem>
-                                <SelectItem value="contacto2">
-                                  contacto2
-                                </SelectItem>
-                                <SelectItem value="contacto3">
-                                  contacto3
-                                </SelectItem>
+                                <div className="px-2 text-sm font-semibold text-gray-500">
+                                  Cliente {domain.client?.name}
+                                </div>
+                                {contactsByDomain[domain.id]
+                                  ?.filter(
+                                    (contact) => contact.clientId !== null
+                                  )
+                                  .map((contact) => (
+                                    <SelectItem
+                                      key={contact.id}
+                                      value={contact.id.toString()}
+                                    >
+                                      {contact.name}
+                                    </SelectItem>
+                                  ))}
+                              </SelectGroup>
+                              <div className="my-2 border-t border-gray-200" />
+                              <SelectGroup>
+                                <div className="px-2 text-sm font-semibold text-gray-500">
+                                  Individuales
+                                </div>
+                                {contactsByDomain[domain.id]
+                                  ?.filter(
+                                    (contact) => contact.clientId === null
+                                  )
+                                  .map((contact) => (
+                                    <SelectItem
+                                      key={contact.id}
+                                      value={contact.id.toString()}
+                                    >
+                                      {contact.name}
+                                    </SelectItem>
+                                  ))}
                               </SelectGroup>
                             </SelectContent>
                           </Select>

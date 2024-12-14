@@ -1,7 +1,8 @@
 "use server"
 import db from "@/db";
-import { contacts, Contact } from "@/db/schema";
-import { desc , eq, or} from "drizzle-orm";
+import { contacts, Contact, ContactWithRelations } from "@/db/schema";
+import { desc , eq, or, isNull} from "drizzle-orm";
+import { setUserId } from "./user-action/user-actions";
 
 export async function getContacts() {
     try{
@@ -13,6 +14,40 @@ export async function getContacts() {
                   name:true
                 }
               }
+          }
+        });
+        return data;
+    }
+    catch(error){
+        console.error("Error al obtener los contactos:", error);
+        throw error;
+    }
+};
+export async function getContactsByClient(idClient: number) {
+    try{
+        const data = await db.query.contacts.findMany({
+          where: or(eq(contacts.clientId, idClient), isNull(contacts.clientId)),
+          orderBy: [desc(contacts.id)],
+          with:{
+            client:true,
+            domains:true,
+          }
+        });
+        return data;
+    }
+    catch(error){
+        console.error("Error al obtener los contactos:", error);
+        throw error;
+    }
+};
+export async function getContactsWithoutClient() {
+    try{
+        const data = await db.query.contacts.findMany({
+          where: isNull(contacts.clientId),       
+          orderBy: [desc(contacts.id)],
+          with:{
+            client:true,
+            domains:true,
           }
         });
         return data;
@@ -43,6 +78,7 @@ export async function insertContact(contact : Contact) {
         if (existingContactPhone) {
             throw new Error("El teléfono ya esta registrado en el sistema.");
         }
+        await setUserId()
         const data = await db.insert(contacts).values(contact).returning();
         return data;
     }
@@ -51,7 +87,7 @@ export async function insertContact(contact : Contact) {
         throw error;
     }
 };
-export async function updateContact(contact : Contact) {
+export async function updateContact(contact : Omit<ContactWithRelations, "domains">) {
     try{
         if (!contact.id) {
             throw new Error("El ID del contacto no está definido.");
@@ -69,6 +105,7 @@ export async function updateContact(contact : Contact) {
                 throw new Error("El teléfono ya esta registrado en el sistema.");
             }
         }
+        await setUserId()
         const updatedContact = await db.update(contacts)
         .set({ name: contact.name, email: contact.email, phone: contact.phone, type: contact.type, status: contact.status, clientId: contact.clientId, updatedAt: new Date().toISOString() })
         .where(eq(contacts.id, contact.id)).returning({ id: contacts.id });
@@ -93,15 +130,11 @@ export async function getContact(id:number  ) {
                 type:true,
                 status:true,
                 clientId:true,
+                updatedAt:true,
+                createdAt:true,
             },
             with:{
-            client:{
-                columns:
-                    {
-                        id:true,
-                        name:true,
-                    }
-                }
+            client:true,
           }
         });
         return data;

@@ -1,44 +1,10 @@
 "use server"
 import db from "@/db";
-import { sql } from "@/db";
 import { providers } from "@/db/schema";
-import { z } from "zod";
 import { desc, eq, or } from "drizzle-orm";
-import { auth } from "../auth"
-const providerSchema = z.object({
-  id: z.number(),
-  name: z
-    .string()
-    .max(30, { message: "El nombre debe tener como máximo 30 caracteres" })
-    .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-  url: z.string().refine((url) => /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url), {
-    message: "URL inválida",
-  }),
-});
-
-const domainSchema = z.object({
-  name: z.string(),
-  status: z.enum(["active", "inactive", "suspended"]),
-  id: z.number(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  clientId: z.number(),
-  providerId: z.number(),
-  contactId: z.number(),
-  providerRegistrationDate: z.string(),
-  expirationDate: z.string(),
-});
-
-const providerUpdateSchema = z.object({
-  id: z.number(),
-  name: z.string().max(30, { message: "El nombre debe tener como máximo 30 caracteres" }).min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-  url: z.string().refine((url) => /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url), {
-    message: "URL inválida",
-  }),
-  domains: z.array(domainSchema),
-});
-type ProviderUpdate = z.infer<typeof providerUpdateSchema>;
-export type Provider = z.infer<typeof providerSchema>;
+import { Provider } from "@/db/schema";
+import { setUserId } from "./user-action/user-actions";
+import { ProviderWithRelations } from "@/db/schema";
 
 export async function getProviders() {
   try {
@@ -66,25 +32,13 @@ export async function getProvider(id: number) {
     throw error;
   }
 };
-export async function updateProvider(providerData: ProviderUpdate) {
+export async function updateProvider(providerData: Omit<ProviderWithRelations, 'access'>) {
   try {
-    const session = await auth()
-
-    if (!session || !session.user) {
-      throw new Error("Usuario no autenticado");
-    }
-    const userId = session.user.id;
-
-    await sql.transaction([
-      sql`
-        SELECT set_user_id(${userId})
-      `,
-      sql`
-        UPDATE providers
-        SET name = ${providerData.name}, url = ${providerData.url}
-        WHERE id = ${providerData.id}
-      `
-    ]);
+    await setUserId()
+    await db.update(providers) 
+        .set({ name: providerData.name, url: providerData.url})
+        .where(eq(providers.id, providerData.id)).returning({ id: providers.id });
+    
     const updatedProvider = await db.query.providers.findFirst({
       where: eq(providers.id, providerData.id),
       with: {
@@ -102,33 +56,16 @@ export async function updateProvider(providerData: ProviderUpdate) {
 
 export async function insertProvider(provider: Provider) {
   try {
-    const session = await auth()
-
-    if (!session || !session.user) {
-      throw new Error("Usuario no autenticado");
-    }
-    const userId = session.user.id;
-
     const existingProvider = await db.query.providers.findFirst({
       where: or(eq(providers.name, provider.name), eq(providers.url, provider.url))
     })
     if (existingProvider) {
       throw new Error("El proveedor ya existe");
     }
-
-    const result = await sql.transaction([
-      sql`
-          SELECT set_user_id(${userId})
-        `,
-      sql`
-          INSERT INTO providers (name, url)
-          VALUES (${provider.name}, ${provider.url})
-          RETURNING *
-        `
-    ]);
-    const insertedProvider = result[1];
-    // console.log("Proveedor insertado en la base de datos:", insertedProvider);
-    return insertedProvider;
+    console.log(provider)
+    await setUserId()
+    const result = await db.insert(providers).values(provider).returning();
+    return result;
   } catch (error) {
     // console.error("Error al insertar proveedor:", error);
     throw error;
