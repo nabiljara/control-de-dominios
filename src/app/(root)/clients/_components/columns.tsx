@@ -51,10 +51,6 @@ import { Checkbox } from "@radix-ui/react-checkbox"
     },
     filterFn: (row, id, value) => {
       const locality:{id:number, name:string} = row.getValue(id);
-      console.log(locality);
-      console.log(value);
-      console.log(value.includes(locality.id));
-      
       return value.includes(locality.id.toString())
     }
   },

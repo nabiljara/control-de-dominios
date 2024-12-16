@@ -51,8 +51,6 @@ export async function getClient(id: number) {
 
 export async function updateClient(client: ClientInsert) {
   let success = false;
-  console.log(client);
-
   try {
     if (!client.id) {
       throw new Error("El ID del cliente no está definido.");
@@ -67,8 +65,7 @@ export async function updateClient(client: ClientInsert) {
     throw error;
   }
   if (success) {
-    revalidatePath(`/clients`);
-    // redirect(`/clients`);
+    revalidatePath(`/clients/${client.id}`);
   }
 }
 

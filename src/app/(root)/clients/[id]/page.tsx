@@ -1,24 +1,23 @@
 import { decryptPassword } from "@/lib/utils"
 import { getClient } from "@/actions/client-actions"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatDate } from "@/lib/utils"
-import { Building2, Calendar, Eye, Globe, Mail, Package, Phone, Shield, StickyNote, Tag, User } from 'lucide-react'
+import { Calendar, Eye, Globe, Mail, Package, Phone, StickyNote, Tag, User } from 'lucide-react'
 import Link from "next/link"
 import { PasswordCell } from "../_components/password-cell"
 import { UsernameCopy } from "../_components/username-copy"
 import EditableClientCard from "../_components/editable-client-card"
-import { Client, ClientWithRelations } from "@/db/schema"
+import { ClientWithRelations } from "@/db/schema"
 import { getLocalities } from "@/actions/locality-actions"
 
 export default async function ClientPage({ params }: { params: { id: number } }) {
   const client = await getClient(params.id)
-  
+
   if (client) {
     const { access, domains, contacts, ...clientWithoutRelations } = client;
-    const clientWithoutRelationsTyped = clientWithoutRelations as Omit<ClientWithRelations,'domains' | 'access' | 'contacts'>;
+    const clientWithoutRelationsTyped = clientWithoutRelations as Omit<ClientWithRelations, 'domains' | 'access' | 'contacts'>;
     const localities = await getLocalities()
     return (
       <div className="space-y-4 p-8">
@@ -26,7 +25,6 @@ export default async function ClientPage({ params }: { params: { id: number } })
           client={clientWithoutRelationsTyped}
           localities={localities}
         />
-
         <div className="gap-6 grid md:grid-rows">
           <Card>
             <CardHeader>
@@ -161,6 +159,7 @@ export default async function ClientPage({ params }: { params: { id: number } })
             </CardContent>
           </Card>
 
+          {/* TODO : TABLA DE DOMINIOS */}
           {/* <Card>
             <CardHeader>
               <CardTitle>Dominios</CardTitle>

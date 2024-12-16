@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { User, BarChart2, CheckCircle, ArrowRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { ClientFormValues } from "@/validators/client-validator"
@@ -11,11 +11,11 @@ import { ClientWithRelations } from '@/db/schema'
 export function ConfirmationClientModal({
   handleSubmit,
   form,
-  client
+  client,
 }: {
-  handleSubmit: () => void
-  form: UseFormReturn<ClientFormValues>
-  client: Omit<ClientWithRelations,'domains' | 'access' | 'contacts'>
+  handleSubmit: () => void;
+  form: UseFormReturn<Omit<ClientFormValues, "accesses" | "contacts">>;
+  client: Omit<ClientWithRelations, 'domains' | 'access' | 'contacts'>;
 }) {
   const { name, size, status, locality } = form.getValues()
   const nameState = form.getFieldState('name')
@@ -91,10 +91,21 @@ export function ConfirmationClientModal({
           localityState.isDirty
         )}
         <div className="flex justify-end pt-4">
-          <Button onClick={() => {
-            handleSubmit();
-            form.reset();
-          }} className="w-full sm:w-auto">
+          <Button 
+          onClick={
+            () => {
+              handleSubmit();
+              form.reset(
+                {
+                  name:form.getValues('name'),
+                  locality:{id: form.getValues('locality.id'), name: form.getValues('locality.name')},
+                  size:form.getValues('size'),
+                  status:form.getValues('status')
+                }
+              )
+            }
+          }
+            className="w-full sm:w-auto">
             Guardar cambios
           </Button>
         </div>

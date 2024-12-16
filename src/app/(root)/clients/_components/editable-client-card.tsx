@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { User } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Client, ClientInsert, ClientWithRelations, Locality } from '@/db/schema'
+import {  ClientInsert, ClientWithRelations, Locality } from '@/db/schema'
 import { formatDate } from '@/lib/utils'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { SubmitHandler, useForm } from 'react-hook-form'
@@ -20,14 +20,13 @@ import { toast } from 'sonner'
 import { updateClient } from '@/actions/client-actions'
 
 interface EditableClientCardProps {
-  client: Omit<ClientWithRelations,'domains' | 'access' | 'contacts'>
+  client: Omit<ClientWithRelations, 'domains' | 'access' | 'contacts'>
   localities: Locality[]
 }
 
 export default function EditableClientCard({ client, localities }: EditableClientCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
-  // const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false)
 
   const form = useForm<Omit<ClientFormValues, "accesses" | "contacts">>({
     resolver: zodResolver(clientFormSchema.omit({
@@ -40,36 +39,11 @@ export default function EditableClientCard({ client, localities }: EditableClien
       size: client.size,
       locality: { id: client.localityId ? client.localityId.toString() : undefined, name: client.locality.name }
     },
-  })
+  })  
 
   const onSubmit: SubmitHandler<ClientFormValues> = () => {
     setIsConfirmationModalOpen(true)
   }
-
-  console.log(form.getValues().name);
-  console.log(form.getValues().size);
-  console.log(form.getValues().status);
-  console.log(form.getValues().locality);
-  
-
-  // console.log(form.getValues().name);
-
-  // ** Simular el sumbit del formulario
-  // function timeout(ms:number) {
-  //   return new Promise(resolve => setTimeout(resolve, ms));
-  // }
-  // await timeout(2000)
-  // console.log(form.formState.isSubmitSuccessful);
-
-  // useEffect(() => {
-  //   if (isSubmitSuccessful) {
-  //     form.reset()
-  //     setIsSubmitSuccessful(false)
-  //   }
-  // }, [isSubmitSuccessful, form])
-
-  // console.log(isSubmitSuccessful);
-  
 
   const handleFinalSubmit = async () => {
     const modifiedClient: ClientInsert = {
