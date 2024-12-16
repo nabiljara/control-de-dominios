@@ -80,6 +80,12 @@ export default function ContactDetailsPage({
       const con = await getContact(params.id)
       setContact(con)
       setEditedContact(con)
+      //Por el useEffect se carga primero el select que el contacto, con esto seteo los select que no se alcanzan a setear
+      //TODO: Mejorar esto
+      if (con) {
+        setValue("type", con.type)
+        setValue("status", con.status)
+      }
     } catch (e) {
       if (e instanceof Error) {
         console.log(e)
@@ -100,20 +106,17 @@ export default function ContactDetailsPage({
   }
   useEffect(() => {
     //TODO: mejorar POST's y evitar useEffect
-    console.log("useEffect ejecutado")
     fetchContact()
     fecthDomains()
     fetchClients()
   }, [])
 
-  useEffect(() => {
-    if (contact && !editedContact) {
-      reset(contact)
-      setEditedContact(contact)
-    }
-  }, [contact, reset, editedContact])
-
-  if (!contact) return <div>Cargando...</div>
+  // useEffect(() => {
+  //   if (contact && !editedContact) {
+  //     reset(contact)
+  //     setEditedContact(contact)
+  //   }
+  // }, [contact, reset, editedContact])
 
   const toggleEdit = () => {
     setIsEditing(!isEditing)
@@ -161,8 +164,6 @@ export default function ContactDetailsPage({
   }
 
   const applyChanges = async (contactSelections: ContactPerDomain[]) => {
-    console.log("CONTACTOS POR DOMINIO EN PAGE.TSX")
-    console.log(contactSelections)
     if (editedContact) {
       const toastId = toast.loading("Guardando cambios...")
       try {
@@ -190,217 +191,235 @@ export default function ContactDetailsPage({
     }
     setIsModalOpen(false)
   }
-
-  return (
-    <>
-      <form onSubmit={handleSubmit(handleApply)}>
-        <Card className="mx-2 w-full">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Información del Contacto</CardTitle>
-            <div className="flex items-center space-x-2">
-              <span>Habilitar edición</span>
-              <Switch checked={isEditing} onCheckedChange={setIsEditing} />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre</Label>
-                {isEditing ? (
-                  <Input
-                    id="name"
-                    {...register("name")}
-                    defaultValue={contact.name}
-                    onChange={(e) => handleChange(e, "name")}
-                  />
-                ) : (
-                  <span
-                    id="nameValue"
-                    className="block w-full cursor-default rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  >
-                    {contact.name}
-                  </span>
-                )}
-                {errors.name && (
-                  <p className="text-sm text-red-500">{errors.name.message}</p>
-                )}
+  if (!contact) {
+    console.log(contact)
+    return <div>Cargando...</div>
+  } else {
+    return (
+      <>
+        <form onSubmit={handleSubmit(handleApply)}>
+          <Card className="mx-2 w-full">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Información del Contacto</CardTitle>
+              <div className="flex items-center space-x-2">
+                <span>Habilitar edición</span>
+                <Switch checked={isEditing} onCheckedChange={setIsEditing} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                {isEditing ? (
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register("email")}
-                    onChange={(e) => handleChange(e, "email")}
-                    defaultValue={contact.email}
-                  />
-                ) : (
-                  <span
-                    id="emailValue"
-                    className="block w-full cursor-default rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  >
-                    {contact.email}
-                  </span>
-                )}
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Teléfono</Label>
-                {isEditing ? (
-                  <Input
-                    id="phone"
-                    {...register("phone")}
-                    onChange={(e) => handleChange(e, "phone")}
-                    defaultValue={contact.phone?.toString()}
-                  />
-                ) : (
-                  <span
-                    id="phoneValue"
-                    className="block w-full cursor-default rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  >
-                    {contact.phone}
-                  </span>
-                )}
-                {errors.phone && (
-                  <p className="text-sm text-red-500">{errors.phone.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="type">Tipo</Label>
-                {isEditing ? (
-                  <Select
-                    onValueChange={(value) => handleChangeSelect(value, "type")}
-                    defaultValue={contact.type}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Tecnico">Técnico</SelectItem>
-                      <SelectItem value="Administrativo">
-                        Administrativo
-                      </SelectItem>
-                      <SelectItem value="Financiero">Financiero</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <span
-                    id="typeValue"
-                    className="block w-full cursor-default rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  >
-                    {contact.type}
-                  </span>
-                )}
-                {errors.type && (
-                  <p className="text-sm text-red-500">{errors.type.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Estado</Label>
-                {isEditing ? (
-                  <Select
-                    onValueChange={(value) =>
-                      handleChangeSelect(value, "status")
-                    }
-                    defaultValue={contact.status}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Activo">Activo</SelectItem>
-                      <SelectItem value="Inactivo">Inactivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <span
-                    id="statusValue"
-                    className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  >
-                    {contact.status || "\u00A0"}
-                  </span>
-                )}
-                {errors.status && (
-                  <p className="text-sm text-red-500">
-                    {errors.status.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client">Cliente</Label>
-                {isEditing ? (
-                  <Select
-                    onValueChange={(value) =>
-                      handleChangeSelect(value, "clientId")
-                    }
-                    defaultValue={contact.client?.id.toString()}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar cliente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clients.map((client) => (
-                        <SelectItem
-                          key={client.id}
-                          value={client.id ? client.id.toString() : ""}
-                        >
-                          {client.name}
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nombre</Label>
+                  {isEditing ? (
+                    <Input
+                      id="name"
+                      {...register("name")}
+                      defaultValue={contact.name}
+                      onChange={(e) => handleChange(e, "name")}
+                    />
+                  ) : (
+                    <span
+                      id="clientValue"
+                      className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+                    >
+                      {contact.name || "\u00A0"}
+                    </span>
+                  )}
+                  {errors.name && (
+                    <p className="text-sm text-red-500">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  {isEditing ? (
+                    <Input
+                      id="email"
+                      type="email"
+                      {...register("email")}
+                      onChange={(e) => handleChange(e, "email")}
+                      defaultValue={contact.email}
+                    />
+                  ) : (
+                    <span
+                      id="clientValue"
+                      className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+                    >
+                      {contact.email || "\u00A0"}
+                    </span>
+                  )}
+                  {errors.email && (
+                    <p className="text-sm text-red-500">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Teléfono</Label>
+                  {isEditing ? (
+                    <Input
+                      id="phone"
+                      {...register("phone")}
+                      onChange={(e) => handleChange(e, "phone")}
+                      defaultValue={contact.phone?.toString()}
+                    />
+                  ) : (
+                    <span
+                      id="clientValue"
+                      className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+                    >
+                      {contact.phone || "\u00A0"}
+                    </span>
+                  )}
+                  {errors.phone && (
+                    <p className="text-sm text-red-500">
+                      {errors.phone.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="type">Tipo</Label>
+                  {isEditing ? (
+                    <Select
+                      onValueChange={(value) =>
+                        handleChangeSelect(value, "type")
+                      }
+                      defaultValue={contact.type}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Tecnico">Técnico</SelectItem>
+                        <SelectItem value="Administrativo">
+                          Administrativo
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <span
-                    id="clientValue"
-                    className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  >
-                    {contact.client?.name || "\u00A0"}
-                  </span>
-                )}
-                {errors.clientId && (
-                  <p className="text-sm text-red-500">
-                    {errors.clientId.message}
-                  </p>
-                )}
+                        <SelectItem value="Financiero">Financiero</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span
+                      id="clientValue"
+                      className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+                    >
+                      {contact.type || "\u00A0"}
+                    </span>
+                  )}
+                  {errors.type && (
+                    <p className="text-sm text-red-500">
+                      {errors.type.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Estado</Label>
+                  {isEditing ? (
+                    <Select
+                      onValueChange={(value) =>
+                        handleChangeSelect(value, "status")
+                      }
+                      defaultValue={contact.status}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Activo">Activo</SelectItem>
+                        <SelectItem value="Inactivo">Inactivo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span
+                      id="statusValue"
+                      className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+                    >
+                      {contact.status || "\u00A0"}
+                    </span>
+                  )}
+                  {errors.status && (
+                    <p className="text-sm text-red-500">
+                      {errors.status.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="client">Cliente</Label>
+                  {isEditing ? (
+                    <Select
+                      onValueChange={(value) =>
+                        handleChangeSelect(value, "clientId")
+                      }
+                      defaultValue={contact?.client?.id.toString()}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cliente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients.map((client) => (
+                          <SelectItem
+                            key={client.id}
+                            value={client.id ? client.id.toString() : ""}
+                          >
+                            {client.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span
+                      id="clientValue"
+                      className="block min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+                    >
+                      {contact.client?.name || "\u00A0"}
+                    </span>
+                  )}
+                  {errors.clientId && (
+                    <p className="text-sm text-red-500">
+                      {errors.clientId.message}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-            <CardContent className="flex justify-end space-x-4">
-              {isEditing && (
-                <>
-                  <Button
-                    type="submit"
-                    variant="default"
-                    disabled={!hasChanges}
-                  >
-                    Guardar
-                  </Button>
-                  <Button type="button" variant="outline" onClick={toggleEdit}>
-                    Cancelar
-                  </Button>
-                </>
-              )}
-            </CardContent>
-            <Card>
-              <CardHeader>
-                <CardTitle>Dominios Asociados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DomainTable domains={domains} />
+              <CardContent className="flex justify-end space-x-4">
+                {isEditing && (
+                  <>
+                    <Button
+                      type="submit"
+                      variant="default"
+                      disabled={!hasChanges}
+                    >
+                      Guardar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={toggleEdit}
+                    >
+                      Cancelar
+                    </Button>
+                  </>
+                )}
               </CardContent>
-            </Card>
-          </CardContent>
-        </Card>
-      </form>
-      <ConfirmationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        domains={domains}
-        onConfirm={applyChanges}
-        updatedContact={editedContact}
-      />
-    </>
-  )
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dominios Asociados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DomainTable domains={domains} />
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+        </form>
+        <ConfirmationModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          domains={domains}
+          onConfirm={applyChanges}
+          updatedContact={editedContact}
+        />
+      </>
+    )
+  }
 }

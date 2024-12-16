@@ -1,6 +1,6 @@
 "use server"
 import db from "@/db";
-import { contacts, Contact, ContactWithRelations } from "@/db/schema";
+import { contacts, Contact, ContactWithRelations, ContactInsert } from "@/db/schema";
 import { desc , eq, or, isNull} from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 
@@ -58,7 +58,7 @@ export async function getContactsWithoutClient() {
     }
 };
 
-export async function insertContact(contact : Contact) {
+export async function insertContact(contact : ContactInsert) {
     try{
         const phone = contact.phone ? contact.phone.trim() : null;
         let existingContactPhone = null;

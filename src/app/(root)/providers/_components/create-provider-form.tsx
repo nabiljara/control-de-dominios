@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useState } from "react";
-import { Save, Building, Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { useState } from "react"
+import { Save, Building, Loader2 } from "lucide-react"
 
 import {
   Form,
@@ -12,21 +12,22 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+  FormMessage
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { insertProvider } from "@/actions/provider-actions";
-import { toast } from "sonner";
+  DialogTitle
+} from "@/components/ui/dialog"
+import { insertProvider } from "@/actions/provider-actions"
+import { toast } from "sonner"
+import { ProviderInsert } from "@/db/schema"
 
 const formSchema = z.object({
   name: z
@@ -34,59 +35,59 @@ const formSchema = z.object({
     .max(30, { message: "El nombre debe tener como máximo 30 caracteres" })
     .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
   url: z.string().refine((url) => /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url), {
-    message: "URL inválida",
-  }),
-});
+    message: "URL inválida"
+  })
+})
 
-type FormValues = z.infer<typeof formSchema>;
+// type FormValues = z.infer<typeof formSchema>;
 
 interface CreateProviderFormProps {
-  onSuccess: () => void;
+  onSuccess: () => void
 }
 
 export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const form = useForm<FormValues>({
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const form = useForm<ProviderInsert>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      url: "",
-    },
-  });
+      url: ""
+    }
+  })
 
-  const onSubmit = (data: FormValues) => {
-    setIsConfirmationModalOpen(true);
-  };
+  const onSubmit = () => {
+    setIsConfirmationModalOpen(true)
+  }
 
   const handleFinalSubmit = async () => {
-    setIsLoading(true);
-    const toastLoading = toast.loading("Cargando...");
+    setIsLoading(true)
+    const toastLoading = toast.loading("Cargando...")
     try {
-      const formData = form.getValues();
-      await insertProvider(formData);
-      setIsConfirmationModalOpen(false);
-      form.reset();
-      toast.dismiss(toastLoading);
-      setIsLoading(false);
-      toast.success("Proveedor ingresado correctamente");
-      onSuccess();
+      const formData = form.getValues()
+      await insertProvider(formData)
+      setIsConfirmationModalOpen(false)
+      form.reset()
+      toast.dismiss(toastLoading)
+      setIsLoading(false)
+      toast.success("Proveedor ingresado correctamente")
+      onSuccess()
     } catch (error) {
       if (error instanceof Error) {
-        toast.dismiss(toastLoading);
-        setIsLoading(false);
+        toast.dismiss(toastLoading)
+        setIsLoading(false)
         if (error instanceof z.ZodError) {
           toast.error("Error al ingresar los datos ", {
-            description: error.message,
-          });
+            description: error.message
+          })
         } else {
           toast.error("Error al registrar proveedor ", {
-            description: error.message,
-          });
+            description: error.message
+          })
         }
       }
     }
-  };
+  }
 
   return (
     <div>
@@ -183,5 +184,5 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

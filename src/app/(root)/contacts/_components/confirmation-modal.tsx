@@ -3,7 +3,8 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog"
 import {
   Card,
@@ -25,12 +26,14 @@ import {
 } from "@/components/ui/select"
 import { ContactWithRelations } from "@/db/schema"
 import {
-  getContacts,
+  getContact,
   getContactsByClient,
   getContactsWithoutClient
 } from "@/actions/contacts-actions"
 import { toast } from "sonner"
 import { ContactPerDomain } from "../../../../../types/contact-types"
+import { CreateContactModal } from "./create-contact-modal"
+import { is } from "valibot"
 
 type ConfirmationModalProps = {
   isOpen: boolean
@@ -48,6 +51,9 @@ export function ConfirmationModal({
   updatedContact
 }: ConfirmationModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [oldContacts, setOldContacts] = useState<
+    Omit<ContactWithRelations, "domains"> | undefined
+  >(undefined)
   const [selectedContacts, setSelectedContacts] = useState<
     Record<number, number | null>
   >({})
@@ -55,14 +61,24 @@ export function ConfirmationModal({
   const [contactsByDomain, setContactsByDomain] = useState<
     Record<number, Omit<ContactWithRelations, "domains">[]>
   >({})
+  const [isCreateContactModalOpen, setIsCreateContactModalOpen] =
+    useState(false)
+
+  const fetchContacts = async () => {
+    const result = await fetchContactsByDomain(domains)
+    setContactsByDomain(result)
+    const old = await getContact(updatedContact?.id as number)
+    setOldContacts(old)
+  }
 
   useEffect(() => {
-    const fetchContacts = async () => {
-      const result = await fetchContactsByDomain(domains)
-      setContactsByDomain(result)
-    }
     fetchContacts()
   }, [updatedContact, domains])
+
+  const handleNewContact = () => {
+    setIsCreateContactModalOpen(false)
+    fetchContacts()
+  }
 
   const fetchContactsByDomain = async (
     domains: Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
@@ -89,16 +105,20 @@ export function ConfirmationModal({
   }
 
   const handleConfirm = async () => {
-    const missingContacts = domains.some(
-      (domain) => !selectedContacts[domain.id]
-    )
-    if (missingContacts) {
-      toast.error("No se selecciono un nuevo contacto para cada dominio")
-      return
+    if (
+      updatedContact?.status === "Inactivo" &&
+      oldContacts?.status !== "Inactivo"
+    ) {
+      const missingContacts = domains.some(
+        (domain) => !selectedContacts[domain.id]
+      )
+      if (missingContacts) {
+        toast.error("No se selecciono un nuevo contacto para cada dominio")
+        return
+      }
     }
     //Error cuando no selecciona un nuevo contacto para c/u de los dominios
-    //TODO: Mejorarlo para que cuando no se tenga tenga dominios asociados
-
+    //TODO: Mejorarlo para que cuando no se tenga tenga dominios asociados -- DONE
     const contactSelections: ContactPerDomain[] = Object.entries(
       selectedContacts
     ).map(([domainId, contactId]) => ({
@@ -116,220 +136,248 @@ export function ConfirmationModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Información del Contacto
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                    <User className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Nombre</p>
-                    <p className="text-sm font-medium leading-none">
-                      {updatedContact?.name}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                    <Phone className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Teléfono</p>
-                    <p className="text-sm font-medium leading-none">
-                      {updatedContact?.phone}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                    <Mail className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="text-sm font-medium leading-none">
-                      {updatedContact?.email}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                    <Activity className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Estado</p>
-                    <p
-                      className={`text-sm font-medium leading-none ${
-                        updatedContact?.status === "Inactivo"
-                          ? "text-destructive"
-                          : ""
-                      }`}
-                    >
-                      {updatedContact?.status}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Tipo</p>
-                    <p className="text-sm font-medium leading-none">
-                      {updatedContact?.type}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Cliente</p>
-                    <p className="text-sm font-medium leading-none">
-                      {updatedContact?.client?.name}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          {updatedContact?.status === "Inactivo" ? (
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              Información del Contacto
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
             <Card>
               <CardContent className="pt-6">
-                <CardTitle className="mb-2">Dominios afectados</CardTitle>
-                <CardDescription className="mb-4">
-                  Los siguientes dominios se verán afectados por la baja del
-                  dominio, deberá seleccionar un nuevo contacto(del cliente del
-                  dominio o individual) para cada uno.
-                </CardDescription>
-                {domains.length > 0 ? (
-                  <ul className="space-y-4">
-                    {domains.map((domain, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center justify-between gap-4"
-                      >
-                        <span className="text-sm font-medium">
-                          {domain.name}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <Select
-                            onValueChange={(value) =>
-                              setSelectedContacts((prev) => ({
-                                ...prev,
-                                [domain.id]: parseInt(value, 10)
-                              }))
-                            }
-                          >
-                            <SelectTrigger className="w-[200px]">
-                              <SelectValue placeholder="Seleccione un contacto" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                <div className="px-2 text-sm font-semibold text-gray-500">
-                                  Cliente {domain.client?.name}
-                                </div>
-                                {contactsByDomain[domain.id]
-                                  ?.filter(
-                                    (contact) => contact.clientId !== null
-                                  )
-                                  .map((contact) => (
-                                    <SelectItem
-                                      key={contact.id}
-                                      value={contact.id.toString()}
-                                    >
-                                      {contact.name}
-                                    </SelectItem>
-                                  ))}
-                              </SelectGroup>
-                              <div className="my-2 border-t border-gray-200" />
-                              <SelectGroup>
-                                <div className="px-2 text-sm font-semibold text-gray-500">
-                                  Individuales
-                                </div>
-                                {contactsByDomain[domain.id]
-                                  ?.filter(
-                                    (contact) => contact.clientId === null
-                                  )
-                                  .map((contact) => (
-                                    <SelectItem
-                                      key={contact.id}
-                                      value={contact.id.toString()}
-                                    >
-                                      {contact.name}
-                                    </SelectItem>
-                                  ))}
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                          <Button variant="outline" size="sm" asChild>
-                            <a href="/contacts/new">Crear</a>
-                          </Button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="flex items-center justify-center">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <p className="text-sm text-muted-foreground">
-                        No hay dominios asociados a este contacto.
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Nombre</p>
+                      <p className="text-sm font-medium leading-none">
+                        {updatedContact?.name}
                       </p>
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <CardTitle className="mb-2">Dominios afectados</CardTitle>
-                <CardDescription className="mb-4">
-                  Los siguientes dominios se verán afectados por los cambios
-                  realizados:
-                </CardDescription>
-                {domains.length > 0 ? (
-                  <ul className="space-y-4">
-                    {domains.map((domain, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center justify-between gap-4"
-                      >
-                        <span className="text-sm font-medium">
-                          {domain.name}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="flex items-center justify-center">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <p className="text-sm text-muted-foreground">
-                        No hay dominios asociados a este contacto.
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <Phone className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Teléfono</p>
+                      <p className="text-sm font-medium leading-none">
+                        {updatedContact?.phone}
                       </p>
                     </div>
                   </div>
-                )}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <Mail className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium leading-none">
+                        {updatedContact?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <Activity className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Estado</p>
+                      <p
+                        className={`text-sm font-medium leading-none ${
+                          updatedContact?.status === "Inactivo"
+                            ? "text-destructive"
+                            : ""
+                        }`}
+                      >
+                        {updatedContact?.status}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <CheckCircle className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Tipo</p>
+                      <p className="text-sm font-medium leading-none">
+                        {updatedContact?.type === "Tecnico"
+                          ? "Técnico"
+                          : updatedContact?.type}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <CheckCircle className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Cliente</p>
+                      <p className="text-sm font-medium leading-none">
+                        {updatedContact?.client?.name}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          )}
+            {updatedContact?.status === "Inactivo" &&
+            oldContacts?.status !== "Inactivo" ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <CardTitle className="mb-2">Dominios afectados</CardTitle>
+                  <CardDescription className="mb-4">
+                    Los siguientes dominios se verán afectados por la baja del
+                    dominio, deberá seleccionar un nuevo contacto(del cliente
+                    del dominio o individual) para cada uno.
+                  </CardDescription>
+                  {domains.length > 0 ? (
+                    <ul className="space-y-4">
+                      {domains.map((domain, index) => (
+                        <li
+                          key={index}
+                          className="flex items-center justify-between gap-4"
+                        >
+                          <span className="text-sm font-medium">
+                            {domain.name}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Select
+                              onValueChange={(value) =>
+                                setSelectedContacts((prev) => ({
+                                  ...prev,
+                                  [domain.id]: parseInt(value, 10)
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="Seleccione un contacto" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectGroup>
+                                  <div className="px-2 text-sm font-semibold text-gray-500">
+                                    Contactos de {domain.client?.name}
+                                  </div>
+                                  {contactsByDomain[domain.id]
+                                    ?.filter(
+                                      (contact) => contact.clientId !== null
+                                    )
+                                    .map((contact) => (
+                                      <SelectItem
+                                        key={contact.id}
+                                        value={contact.id.toString()}
+                                      >
+                                        {contact.name}
+                                      </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                                <div className="my-2 border-t border-gray-200" />
+                                <SelectGroup>
+                                  <div className="px-2 text-sm font-semibold text-gray-500">
+                                    Contactos individuales
+                                  </div>
+                                  {contactsByDomain[domain.id]
+                                    ?.filter(
+                                      (contact) => contact.clientId === null
+                                    )
+                                    .map((contact) => (
+                                      <SelectItem
+                                        key={contact.id}
+                                        value={contact.id.toString()}
+                                      >
+                                        {contact.name}
+                                      </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              onClick={() => setIsCreateContactModalOpen(true)}
+                            >
+                              Crear
+                            </Button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <p className="text-sm text-muted-foreground">
+                          No hay dominios asociados a este contacto.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="pt-6">
+                  <CardTitle className="mb-2">Dominios afectados</CardTitle>
+                  <CardDescription className="mb-4">
+                    Los siguientes dominios se verán afectados por los cambios
+                    realizados:
+                  </CardDescription>
+                  {domains.length > 0 ? (
+                    <ul className="space-y-4">
+                      {domains.map((domain, index) => (
+                        <li
+                          key={index}
+                          className="flex items-center justify-between gap-4"
+                        >
+                          <span className="text-sm font-medium">
+                            {domain.name}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <p className="text-sm text-muted-foreground">
+                          No hay dominios asociados a este contacto.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-          <div className="flex justify-end">
-            <Button onClick={handleConfirm} disabled={isSubmitting}>
-              {isSubmitting ? "Aplicando..." : "Aplicar Cambios"}
-            </Button>
+            <div className="flex justify-end">
+              <Button onClick={handleConfirm} disabled={isSubmitting}>
+                {isSubmitting ? "Aplicando..." : "Aplicar Cambios"}
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      {/* MODAL PARA AGREGAR NUEVO CONTACTO  */}
+      <Dialog
+        open={isCreateContactModalOpen}
+        onOpenChange={setIsCreateContactModalOpen}
+      >
+        <DialogTrigger asChild>
+          <Button variant="default" className="h-8 px-2 lg:px-3">
+            Crear contacto
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Contacto</DialogTitle>
+          </DialogHeader>
+
+          <CreateContactModal from="contacts" onSuccess={handleNewContact} />
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

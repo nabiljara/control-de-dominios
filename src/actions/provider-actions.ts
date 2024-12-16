@@ -2,7 +2,7 @@
 import db from "@/db";
 import { providers } from "@/db/schema";
 import { desc, eq, or } from "drizzle-orm";
-import { Provider } from "@/db/schema";
+import { Provider, ProviderInsert } from "@/db/schema";
 import { setUserId } from "./user-action/user-actions";
 import { ProviderWithRelations } from "@/db/schema";
 
@@ -54,7 +54,7 @@ export async function updateProvider(providerData: Omit<ProviderWithRelations, '
   }
 };
 
-export async function insertProvider(provider: Provider) {
+export async function insertProvider(provider: ProviderInsert) {
   try {
     const existingProvider = await db.query.providers.findFirst({
       where: or(eq(providers.name, provider.name), eq(providers.url, provider.url))

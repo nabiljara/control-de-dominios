@@ -16,7 +16,7 @@ export const contactSchema = z.object({
   //   { message: "El correo ya está registrado en el sistema" }
   // ),
 
-  phone: z.string().min(11, { message: "El número no es válido." }).max(14, { message: "El número no es válido." }).nullable(),
+  phone: z.string().min(11, { message: "El número no es válido." }).max(14, { message: "El número no es válido." }).optional(),
     // .refine(
     //   async (phone) => await validatePhone(phone as string),
     //   { message: "El teléfono ya está registrado en el sistema" }
