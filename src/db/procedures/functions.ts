@@ -346,21 +346,48 @@ export async function createFunctions() {
                     (v_audit_id, NULL, NEW.status, 'Estado del contacto'),
                     (v_audit_id, NULL, NEW.created_at, 'Fecha de creación'),
                     (v_audit_id, NULL, NEW.updated_at, 'Fecha de actualización');
+
+                    INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
+                    VALUES (NEW.id, NEW.provider_id, 'providers', NOW(), NULL, true),
+                    (NEW.id, NEW.contact_id, 'contacts', NOW(), NULL, true),
+                    (NEW.id, NEW.client_id, 'clients', NOW(), NULL, true);
     
                 ELSEIF TG_OP = 'UPDATE' THEN
                     IF OLD.client_id IS DISTINCT FROM NEW.client_id THEN
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
                         VALUES (v_audit_id, OLD.client_id, NEW.client_id, 'ID Cliente');
+
+                        UPDATE domain_history SET active = false, end_date = NOW()
+                        WHERE (domain_id = OLD.id AND entity = 'clients' AND active = true); 
+
+                        INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
+                        VALUES (OLD.id, NEW.client_id, 'clients', NOW(), NULL, true);
+
                     END IF;
   
                     IF OLD.provider_id IS DISTINCT FROM NEW.provider_id THEN
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
                         VALUES (v_audit_id, OLD.provider_id, NEW.provider_id, 'provider_id');
+
+                        UPDATE domain_history SET active = false, end_date = NOW()
+                        WHERE (domain_id = OLD.id AND entity = 'providers' AND active = true); 
+
+                        INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
+                        VALUES (OLD.id, NEW.provider_id, 'providers', NOW(), NULL, true);
+
+
                     END IF;
   
                     IF OLD.contact_id IS DISTINCT FROM NEW.contact_id THEN
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
                         VALUES (v_audit_id, OLD.contact_id, NEW.contact_id, 'Telefono');
+
+                        UPDATE domain_history SET active = false, end_date = NOW()
+                        WHERE (domain_id = OLD.id AND entity = 'contacts' AND active = true); 
+
+                        INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
+                        VALUES (OLD.id, NEW.contact_id, 'contacts', NOW(), NULL, true); 
+
                     END IF;
 
                     IF OLD.name IS DISTINCT FROM NEW.name THEN
@@ -401,6 +428,15 @@ export async function createFunctions() {
 
                 INSERT INTO audits_details (audit_id, old_value, new_value, field)
                 VALUES (v_audit_id, OLD.name, NULL, 'Nombre');
+
+                UPDATE domain_history SET active = false, end_date = NOW()
+                WHERE (domain_id = OLD.id AND entity = 'clients' AND active = true);
+
+                UPDATE domain_history SET active = false, end_date = NOW()
+                WHERE (domain_id = OLD.id AND entity = 'providers' AND active = true);
+                
+                UPDATE domain_history SET active = false, end_date = NOW()
+                WHERE (domain_id = OLD.id AND entity = 'contacts' AND active = true); 
 
               END IF;
   
