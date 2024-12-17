@@ -74,7 +74,7 @@ export const columns: ColumnDef<Provider>[] = [
         row={row}
         entityEdit={"providers/" + row.getValue("id")}
         canDelete={false}
-        canEdit={true}
+        canEdit={false}
       />
     )
   }

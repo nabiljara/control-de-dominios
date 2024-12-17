@@ -33,7 +33,6 @@ import {
 import { toast } from "sonner"
 import { ContactPerDomain } from "../../../../../types/contact-types"
 import { CreateContactModal } from "./create-contact-modal"
-import { is } from "valibot"
 
 type ConfirmationModalProps = {
   isOpen: boolean
@@ -361,23 +360,20 @@ export function ConfirmationModal({
         </DialogContent>
       </Dialog>
       {/* MODAL PARA AGREGAR NUEVO CONTACTO  */}
-      <Dialog
-        open={isCreateContactModalOpen}
-        onOpenChange={setIsCreateContactModalOpen}
-      >
-        <DialogTrigger asChild>
-          <Button variant="default" className="h-8 px-2 lg:px-3">
-            Crear contacto
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Crear Nuevo Contacto</DialogTitle>
-          </DialogHeader>
+      {isOpen && (
+        <Dialog
+          open={isCreateContactModalOpen}
+          onOpenChange={setIsCreateContactModalOpen}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Contacto</DialogTitle>
+            </DialogHeader>
 
-          <CreateContactModal from="contacts" onSuccess={handleNewContact} />
-        </DialogContent>
-      </Dialog>
+            <CreateContactModal from="contacts" onSuccess={handleNewContact} />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }

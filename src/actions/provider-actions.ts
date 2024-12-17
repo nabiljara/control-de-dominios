@@ -1,7 +1,7 @@
 "use server"
 import db from "@/db";
 import { providers } from "@/db/schema";
-import { desc, eq, or } from "drizzle-orm";
+import { and, desc, eq, not, or } from "drizzle-orm";
 import { Provider, ProviderInsert } from "@/db/schema";
 import { setUserId } from "./user-action/user-actions";
 import { ProviderWithRelations } from "@/db/schema";
@@ -35,6 +35,21 @@ export async function getProvider(id: number) {
 export async function updateProvider(providerData: Omit<ProviderWithRelations, 'access'>) {
   try {
     await setUserId()
+    console.log(providerData)
+    const existingName = await db.query.providers.findFirst({
+      where: and(eq(providers.name, providerData.name), not(eq(providers.id, providerData.id))),
+    })
+    const existingUrl = await db.query.providers.findFirst({
+      where: and(eq(providers.url, providerData.url), not(eq(providers.id, providerData.id))),
+    })
+
+    if (existingName) {
+      throw new Error("Ya existe un proveedor con el mismo nombre");
+    }
+    if (existingUrl) {
+      throw new Error("Ya existe un proveedor con el mismo url");
+    }
+
     await db.update(providers) 
         .set({ name: providerData.name, url: providerData.url})
         .where(eq(providers.id, providerData.id)).returning({ id: providers.id });
@@ -56,18 +71,24 @@ export async function updateProvider(providerData: Omit<ProviderWithRelations, '
 
 export async function insertProvider(provider: ProviderInsert) {
   try {
-    const existingProvider = await db.query.providers.findFirst({
-      where: or(eq(providers.name, provider.name), eq(providers.url, provider.url))
+    const existingName = await db.query.providers.findFirst({
+      where: eq(providers.name, provider.name),
     })
-    if (existingProvider) {
-      throw new Error("El proveedor ya existe");
+    const existingUrl = await db.query.providers.findFirst({
+      where: eq(providers.url, provider.url),
+    })
+
+    if (existingName) {
+      throw new Error("Ya existe un proveedor con el mismo nombre");
     }
-    console.log(provider)
+    if (existingUrl) {
+      throw new Error("Ya existe un proveedor con el mismo url");
+    }
+    
     await setUserId()
     const result = await db.insert(providers).values(provider).returning();
     return result;
   } catch (error) {
-    // console.error("Error al insertar proveedor:", error);
     throw error;
   }
 };

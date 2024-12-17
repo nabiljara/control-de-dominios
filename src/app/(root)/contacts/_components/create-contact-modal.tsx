@@ -28,25 +28,6 @@ import { toast } from "sonner"
 import { insertContact } from "@/actions/contacts-actions"
 import { contactSchema } from "@/validators/contacts-validator"
 //TODO: cambiarlo a el de schema
-// const contactSchema = z.object({
-//   email: z.string().email({ message: "Debe ser un correo electrónico válido" }),
-//   name: z
-//     .string()
-//     .min(1, { message: "El nombre es obligatorio" })
-//     .max(255, { message: "El nombre no puede superar los 255 caracteres" }),
-//   phone: z
-//     .string()
-//     .min(1, { message: "El teléfono es obligatorio" })
-//     .max(255, { message: "El teléfono no puede superar los 255 caracteres" })
-//     .nullable(),
-//   type: z.enum(["Tecnico", "Administrativo", "Financiero"], {
-//     message: "Seleccione un tipo válido."
-//   }),
-//   status: z.enum(["Activo", "Inactivo"], {
-//     message: "Seleccione un estado válido."
-//   }),
-//   clientId: z.number().nullable()
-// })
 interface CreateContactModalProps {
   from: string
   clientId?: string

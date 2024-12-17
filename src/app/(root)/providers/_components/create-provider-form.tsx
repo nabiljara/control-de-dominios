@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useState } from "react"
-import { Save, Building, Loader2 } from "lucide-react"
+import { Save, Building2, Loader2, Globe } from "lucide-react"
 
 import {
   Form,
@@ -28,16 +28,17 @@ import {
 import { insertProvider } from "@/actions/provider-actions"
 import { toast } from "sonner"
 import { ProviderInsert } from "@/db/schema"
+import { providerSchema } from "@/validators/provider-validator"
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .max(30, { message: "El nombre debe tener como máximo 30 caracteres" })
-    .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-  url: z.string().refine((url) => /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url), {
-    message: "URL inválida"
-  })
-})
+// const formSchema = z.object({
+//   name: z
+//     .string()
+//     .max(30, { message: "El nombre debe tener como máximo 30 caracteres" })
+//     .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
+//   url: z.string().refine((url) => /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url), {
+//     message: "URL inválida"
+//   })
+// })
 
 // type FormValues = z.infer<typeof formSchema>;
 
@@ -49,7 +50,7 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const form = useForm<ProviderInsert>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(providerSchema),
     defaultValues: {
       name: "",
       url: ""
@@ -81,11 +82,19 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
             description: error.message
           })
         } else {
+          if (error.message.includes("nombre")) {
+            form.setError("name", { type: "server", message: error.message })
+          }
+          if (error.message.includes("url")) {
+            form.setError("url", { type: "server", message: error.message })
+          }
           toast.error("Error al registrar proveedor ", {
             description: error.message
           })
         }
       }
+    } finally {
+      setIsConfirmationModalOpen(false)
     }
   }
 
@@ -132,7 +141,6 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
         onOpenChange={setIsConfirmationModalOpen}
       >
         <DialogContent className="sm:max-w-[425px]">
-          {/* <Toaster /> */}
           <DialogHeader>
             <DialogTitle>Confirmar Registro de Proveedor</DialogTitle>
             <DialogDescription>
@@ -145,12 +153,12 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
               <CardContent className="pt-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4" />
+                    <Building2 className="h-4 w-4" />
                     <span className="font-medium">Nombre:</span>{" "}
                     {form.getValues().name}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4" />
+                    <Globe className="h-4 w-4" />
                     <span className="font-medium">URL:</span>{" "}
                     {form.getValues().url}
                   </div>

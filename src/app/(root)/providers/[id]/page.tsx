@@ -13,6 +13,10 @@ import {
   TableRow
 } from "@/components/ui/table"
 import { ProviderWithRelations } from "@/db/schema"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import z from "zod"
+import { providerSchema } from "@/validators/provider-validator"
 
 export default function ProvidersEditPage({
   params
@@ -27,12 +31,24 @@ export default function ProvidersEditPage({
   >(undefined)
   const [isEditing, setIsEditing] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
-
+  const {
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    setError
+  } = useForm({
+    resolver: zodResolver(providerSchema),
+    defaultValues: provider
+  })
   const fetchProvider = async () => {
     try {
       const prov = await getProvider(params.id)
       setProvider(prov)
       setEditedProvider(prov)
+      if (prov) {
+        setValue("name", prov.name)
+        setValue("url", prov.url)
+      }
     } catch (e) {
       if (e instanceof Error) {
         console.log(e)
@@ -59,14 +75,29 @@ export default function ProvidersEditPage({
   const handleApply = async () => {
     if (editedProvider) {
       try {
-        const updatedProvider = await updateProvider(editedProvider)
-        setProvider(updatedProvider)
-        setIsEditing(false)
-        setHasChanges(false)
-        toast.success("Cambios guardados exitosamente")
+        if (
+          editedProvider.name !== provider?.name ||
+          editedProvider.url !== provider?.url
+        ) {
+          const updatedProvider = await updateProvider(editedProvider)
+          setProvider(updatedProvider)
+          setIsEditing(false)
+          setHasChanges(false)
+          toast.success("Cambios guardados exitosamente")
+        } else {
+          toast.info("No se han modificado los datos")
+        }
       } catch (e) {
         if (e instanceof Error) {
-          toast.error("Error al guardar cambios", { description: e.message })
+          if (e.message.includes("nombre")) {
+            setError("name", { type: "server", message: e.message })
+          }
+          if (e.message.includes("url")) {
+            setError("url", { type: "server", message: e.message })
+          }
+          toast.error("Error al guardar los cambios", {
+            description: e.message
+          })
         }
       }
     }
@@ -75,90 +106,104 @@ export default function ProvidersEditPage({
   return (
     <>
       <Toaster richColors />
-      <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <div className="flex items-center justify-between space-y-2">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Proveedor</h2>
-          </div>
-        </div>
-        {provider && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nombre
-                </label>
-                <Input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={editedProvider?.name || ""}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="url"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  URL
-                </label>
-                <Input
-                  type="text"
-                  id="url"
-                  name="url"
-                  value={editedProvider?.url || ""}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2">
-              {!isEditing && <Button onClick={handleEdit}>Editar</Button>}
-              {isEditing && (
-                <Button onClick={handleApply} disabled={!hasChanges}>
-                  Aplicar cambios
-                </Button>
-              )}
-            </div>
+      <form onSubmit={handleSubmit(handleApply)}>
+        <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
+          <div className="flex items-center justify-between space-y-2">
             <div>
-              <h3 className="mb-2 text-lg font-semibold">Dominios asociados</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Dominio</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Fecha de Vencimiento</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {provider.domains.length === 0 ? (
-                    <TableRow>
-                      <TableCell>No hay dominios asociados</TableCell>
-                    </TableRow>
-                  ) : (
-                    provider.domains.map((domain) => (
-                      <TableRow key={domain.id}>
-                        <TableCell>{domain.name}</TableCell>
-                        <TableCell>{domain.status}</TableCell>
-                        <TableCell>
-                          {new Date(domain.expirationDate).toLocaleDateString(
-                            "es-ES"
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+              <h2 className="text-2xl font-bold tracking-tight">Proveedor</h2>
             </div>
           </div>
-        )}
-      </div>
+          {provider && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Nombre
+                  </label>
+                  <Input
+                    type="text"
+                    id="name"
+                    name="name"
+                    defaultValue={editedProvider?.name || ""}
+                    // value={editedProvider?.name || ""}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-red-500">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="url"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    URL
+                  </label>
+                  <Input
+                    type="text"
+                    id="url"
+                    name="url"
+                    defaultValue={editedProvider?.url || ""}
+                    // value={editedProvider?.url || ""}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                  />
+                  {errors.url && (
+                    <p className="text-sm text-red-500">{errors.url.message}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                {!isEditing && <Button onClick={handleEdit}>Editar</Button>}
+                {isEditing && (
+                  <Button type="submit" disabled={!hasChanges}>
+                    Aplicar cambios
+                  </Button>
+                )}
+              </div>
+              <div>
+                <h3 className="mb-2 text-lg font-semibold">
+                  Dominios asociados
+                </h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Dominio</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Fecha de Vencimiento</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {provider.domains.length === 0 ? (
+                      <TableRow>
+                        <TableCell>No hay dominios asociados</TableCell>
+                      </TableRow>
+                    ) : (
+                      provider.domains.map((domain) => (
+                        <TableRow key={domain.id}>
+                          <TableCell>{domain.name}</TableCell>
+                          <TableCell>{domain.status}</TableCell>
+                          <TableCell>
+                            {new Date(domain.expirationDate).toLocaleDateString(
+                              "es-ES"
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </div>
+      </form>
     </>
   )
 }

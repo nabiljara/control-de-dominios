@@ -6,28 +6,10 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table"
-
-type Domain = {
-  id: number
-  name: string
-  status: "Activo" | "Inactivo" | "Suspendido"
-  createdAt: string
-  updatedAt: string
-  clientId: number
-  providerId: number
-  contactId: number
-  providerRegistrationDate: string
-  expirationDate: string
-  client: {
-    name: string
-  }
-  provider: {
-    name: string
-  }
-}
+import { DomainWithRelations } from "@/db/schema"
 
 type DomainTableProps = {
-  domains: Domain[]
+  domains: Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
 }
 
 export function DomainTable({ domains }: DomainTableProps) {

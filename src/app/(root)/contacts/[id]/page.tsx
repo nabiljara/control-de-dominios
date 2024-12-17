@@ -23,7 +23,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Switch } from "@/components/ui/switch"
 import {
-  getDomains,
   getDomainsByContact,
   updateDomainContact
 } from "@/actions/domains-actions"
@@ -51,6 +50,9 @@ export default function ContactDetailsPage({
   >([])
   const [clients, setClients] = useState<Client[]>([])
   const [hasChanges, setHasChanges] = useState(false)
+  const [activeDomains, setActiveDomains] = useState<
+    Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
+  >([])
   const {
     register,
     handleSubmit,
@@ -68,9 +70,9 @@ export default function ContactDetailsPage({
     try {
       const data = await getDomainsByContact(params.id)
       setDomains(data)
+      setActiveDomains(data.filter((domain) => domain.status === "Activo"))
     } catch (e) {
       if (e instanceof Error) {
-        console.log(e)
         toast.error("Error al obtener los dominios", { description: e.message })
       }
     }
@@ -88,7 +90,6 @@ export default function ContactDetailsPage({
       }
     } catch (e) {
       if (e instanceof Error) {
-        console.log(e)
         toast.error("Error al obtener el contacto", { description: e.message })
       }
     }
@@ -99,7 +100,6 @@ export default function ContactDetailsPage({
       setClients(cli)
     } catch (e) {
       if (e instanceof Error) {
-        console.log(e)
         toast.error("Error al obtener los clientes", { description: e.message })
       }
     }
@@ -118,9 +118,9 @@ export default function ContactDetailsPage({
   //   }
   // }, [contact, reset, editedContact])
 
-  const toggleEdit = () => {
-    setIsEditing(!isEditing)
-  }
+  // const toggleEdit = () => {
+  //   setIsEditing(!isEditing)
+  // }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -170,6 +170,7 @@ export default function ContactDetailsPage({
         await updateDomainContact(contactSelections)
         const response = await updateContact(editedContact)
         const updatedContact = await getContact(response.id)
+        setContact(updatedContact)
         setEditedContact(updatedContact)
         setIsEditing(false)
         setHasChanges(false)
@@ -192,7 +193,6 @@ export default function ContactDetailsPage({
     setIsModalOpen(false)
   }
   if (!contact) {
-    console.log(contact)
     return <div>Cargando...</div>
   } else {
     return (
@@ -394,7 +394,9 @@ export default function ContactDetailsPage({
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={toggleEdit}
+                      onClick={() => {
+                        setIsEditing(!isEditing)
+                      }}
                     >
                       Cancelar
                     </Button>
@@ -415,7 +417,7 @@ export default function ContactDetailsPage({
         <ConfirmationModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          domains={domains}
+          domains={activeDomains}
           onConfirm={applyChanges}
           updatedContact={editedContact}
         />

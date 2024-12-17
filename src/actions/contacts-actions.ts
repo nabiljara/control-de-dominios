@@ -3,6 +3,8 @@ import db from "@/db";
 import { contacts, Contact, ContactWithRelations, ContactInsert } from "@/db/schema";
 import { desc , eq, or, isNull} from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function getContacts() {
     try{
@@ -109,7 +111,6 @@ export async function updateContact(contact : Omit<ContactWithRelations, "domain
         const updatedContact = await db.update(contacts)
         .set({ name: contact.name, email: contact.email, phone: contact.phone, type: contact.type, status: contact.status, clientId: contact.clientId, updatedAt: new Date().toISOString() })
         .where(eq(contacts.id, contact.id)).returning({ id: contacts.id });
-
         return updatedContact[0];
     }
     catch(error){
