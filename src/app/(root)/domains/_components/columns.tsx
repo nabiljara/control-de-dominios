@@ -3,11 +3,11 @@
 import { ColumnDef } from "@tanstack/react-table"
 
 import { sizes, statuses } from "@/app/(root)/clients/data/data"
-import { Client } from "@/app/(root)/clients/data/schema"
+import { Domain } from "@/db/schema"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
 
-export const columns: ColumnDef<Client>[] = [
+export const columns: ColumnDef<Domain>[] = [
   // {
   //   id: "select",
   //   header: ({ table }) => (
@@ -91,38 +91,42 @@ export const columns: ColumnDef<Client>[] = [
       return value.includes(row.getValue(id))
     },
   },
-  {
-    accessorKey: "segment",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Segmento" />
-    ),
-    cell: ({ row }) => {
-      const segment = sizes.find(
-        (segment) => segment.value === row.getValue("segment")
-      )
+  // {
+  //   accessorKey: "segment",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Segmento" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const segment = sizes.find(
+  //       (segment) => segment.value === row.getValue("segment")
+  //     )
 
-      if (!segment) {
-        return null
-      }
+  //     if (!segment) {
+  //       return null
+  //     }
 
-      return (
-        <div className="flex items-center">
-          {segment.icon && (
-            <segment.icon className="mr-2 w-4 h-4 text-muted-foreground" />
-          )}
-          <span>{segment.label}</span>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-  },
+  //     return (
+  //       <div className="flex items-center">
+  //         {segment.icon && (
+  //           <segment.icon className="mr-2 w-4 h-4 text-muted-foreground" />
+  //         )}
+  //         <span>{segment.label}</span>
+  //       </div>
+  //     )
+  //   },
+  //   filterFn: (row, id, value) => {
+  //     return value.includes(row.getValue(id))
+  //   },
+  // },
   {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Acciones" />
     ),
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => <DataTableRowActions row={row}
+      canEdit
+      entityEdit={"domains/" + row.getValue("id")}
+      canDelete={true}
+    />,
   },
 ]

@@ -7,35 +7,30 @@ import db from "@/db"
 import { columns } from "./_components/columns"
 import { DataTable } from "./_components/data-table"
 import { clientSchema } from "@/app/(root)/clients/data/schema"
+import { getDomains } from "@/actions/domains-actions"
 
 export const metadata: Metadata = {
   title: "Dominios",
 }
 
-async function getTasks() {
-  const data = await fs.readFile(
-    path.join(process.cwd(), "src/app/(root)/clients/data/clients.json")
-  )
-  const tasks = JSON.parse(data.toString())
 
-  return z.array(clientSchema).parse(tasks)
-}
 
 export default async function DomainPage() {
-  const tasks = await getTasks()
-
+  const domains = await getDomains()
+  console.log(domains);
+  
   return (
     <>
-      <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <div className="flex items-center justify-between space-y-2">
+      <div className="md:flex flex-col flex-1 space-y-8 hidden p-8 h-full">
+        <div className="flex justify-between items-center space-y-2">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Dominios</h2>
+            <h2 className="font-bold text-2xl tracking-tight">Dominios</h2>
             <p className="text-muted-foreground">
               Listado de todos tus dominios
             </p>
           </div>
         </div>
-        <DataTable data={tasks} columns={columns} />
+        <DataTable data={domains} columns={columns} />
       </div>
     </>
   )

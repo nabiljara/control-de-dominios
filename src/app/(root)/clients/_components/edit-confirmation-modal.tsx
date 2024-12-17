@@ -8,7 +8,7 @@ import { UseFormReturn } from "react-hook-form"
 import { Badge } from '@/components/ui/badge'
 import { ClientWithRelations } from '@/db/schema'
 
-export function ConfirmationClientModal({
+export function EditConfirmationModal({
   handleSubmit,
   form,
   client,

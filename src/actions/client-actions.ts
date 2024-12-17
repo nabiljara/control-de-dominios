@@ -27,6 +27,21 @@ export async function getClients() {
   }
 };
 
+
+export async function getActiveClients() {
+  try {
+    const data = await db.query.clients.findMany({
+      orderBy: [desc(clients.id)],
+      where: eq(clients.status, 'Activo')
+    });
+    return data;
+  }
+  catch (error) {
+    console.error("Error al obtener proveedores:", error);
+    throw error;
+  }
+};
+
 export async function getClient(id: number) {
   try {
     const client = await db.query.clients.findFirst({
@@ -69,7 +84,7 @@ export async function updateClient(client: ClientInsert) {
   }
 }
 
-
+// TODO: NO USAR TIPO DE ZOD USAR EL DE LA BASE DE DATOS
 export async function insertClient(client: ClientFormValues) {
   let success = false;
   try {

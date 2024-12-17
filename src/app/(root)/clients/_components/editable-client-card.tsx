@@ -15,7 +15,7 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { clientFormSchema, ClientFormValues } from '@/validators/client-validator'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
-import { ConfirmationClientModal } from './confirmation-client-modal'
+import { EditConfirmationModal } from './edit-confirmation-modal'
 import { toast } from 'sonner'
 import { updateClient } from '@/actions/client-actions'
 
@@ -223,7 +223,7 @@ export default function EditableClientCard({ client, localities }: EditableClien
         </form>
       </Form>
       <ResponsiveDialog open={isConfirmationModalOpen} onOpenChange={setIsConfirmationModalOpen} title='Confirmar edición del cliente' description='Revise si los datos modificados son correctos y confirme el cambio.' className='sm:max-w-[700px]'>
-        <ConfirmationClientModal handleSubmit={handleFinalSubmit} form={form} client={client} />
+        <EditConfirmationModal handleSubmit={handleFinalSubmit} form={form} client={client} />
       </ResponsiveDialog>
     </>
   )

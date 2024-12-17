@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { AccessType, ContactType, ClientFormValues } from "@/validators/client-validator";
 import { UseFormReturn } from "react-hook-form";
 import { Badge } from '@/components/ui/badge';
+import ContactInfoCard from '../../_components/contact-info-card';
 
-export function ConfirmationModal(
+export function CreateConfirmationModal(
   {
     handleSubmit,
     contacts,
@@ -59,41 +60,8 @@ export function ConfirmationModal(
             <h4 className="font-medium">Contactos</h4>
             <div className="gap-2 grid">
               {contacts.length > 0 ? (
-                contacts.map((contact, index) => (
-                  <Card key={index} className="relative flex p-4 w-full">
-                    {/* Card Content */}
-                    <CardContent className='flex flex-col justify-between items-start gap-2 p-0 h-full'>
-                      <div className='flex items-center gap-2'>
-                        <User className="w-4 h-4" />
-                        <h2 className="font-bold text-md">
-                          {contact.name}
-                        </h2>
-                        <Badge variant='outline' className={contact.status === 'Activo' ? 'bg-green-500' : ''}>
-                          {contact.status}
-                        </Badge>
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        <Mail className="w-4 h-4" />
-                        <span className="text-neutral-500 text-sm overflow-hidden">
-                          {contact.email}
-                        </span>
-                      </div>
-                      {contact.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4" />
-                          <span className="text-neutral-500 text-sm">
-                            {contact.phone}
-                          </span>
-                        </div>
-                      )}
-                      <div className='flex items-center gap-2'>
-                        <Tag className="w-4 h-4" />
-                        <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors focus:outline-none">
-                          {contact.type}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                contacts.map((contact) => (
+                  <ContactInfoCard key={contact.email} {...contact} readOnly />
                 ))
               ) : (
                 <div className="py-4 text-left text-neutral-500">

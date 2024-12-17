@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 
-import { segments, statuses } from "@/app/(root)/clients/data/data"
+import { sizes, statuses } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { CirclePlus } from "lucide-react"
 import Link from "next/link"
@@ -23,7 +23,7 @@ export function DataTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex justify-between items-center">
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Filtrar clientes"
@@ -31,7 +31,7 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-[150px] lg:w-[250px]"
+          className="w-[150px] lg:w-[250px] h-8"
         />
         {table.getColumn("status") && (
           <DataTableFacetedFilter
@@ -44,17 +44,17 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("segment")}
             title="Segmento"
-            options={segments}
+            options={sizes}
           />
         )}
         {isFiltered && (
           <Button
             variant="ghost"
             onClick={() => table.resetColumnFilters()}
-            className="h-8 px-2 lg:px-3"
+            className="px-2 lg:px-3 h-8"
           >
             Reiniciar
-            <Cross2Icon className="ml-2 h-4 w-4" />
+            <Cross2Icon className="ml-2 w-4 h-4" />
           </Button>
         )}
       </div>
@@ -62,12 +62,12 @@ export function DataTableToolbar<TData>({
         <DataTableViewOptions table={table} />
         <Button
           variant="default"
-          className="h-8 px-2 lg:px-3"
+          className="px-2 lg:px-3 h-8"
           asChild
         >
           <Link href="/domains/create">
           Nuevo dominio
-          <CirclePlus className="h-5 w-5 ml-2" />
+          <CirclePlus className="ml-2 w-5 h-5" />
           </Link>
         </Button>
       </div>

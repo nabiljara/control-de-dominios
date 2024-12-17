@@ -16,8 +16,8 @@ import { Contact } from '@/app/(root)/clients/create/_components/contacts/contac
 import { CreateContactForm } from '@/app/(root)/clients/create/_components/contacts/create-contact-form'
 import { Access } from '@/app/(root)/clients/create/_components/accesses/access'
 import { CreateAccessForm } from '@/app/(root)/clients/create/_components/accesses/create-access-form'
-import { ConfirmationModal } from '@/app/(root)/clients/create/_components/confirmation-modal'
-import { Provider } from '@/actions/provider-actions'
+import { CreateConfirmationModal } from '@/app/(root)/clients/create/_components/create-confirmation-modal'
+import { Provider } from '@/db/schema'
 import { Locality } from '@/db/schema'
 import { toast } from 'sonner'
 import { insertClient } from '@/actions/client-actions'
@@ -347,7 +347,7 @@ export function CreateClientForm({
         </CardContent>
       </Card>
       <ResponsiveDialog open={isConfirmationModalOpen} onOpenChange={setIsConfirmationModalOpen} title='Confirmar registro' description='Revise que los datos sean correctos y confirme el registro.' className='sm:max-w-[700px]'>
-        <ConfirmationModal handleSubmit={handleFinalSubmit} contacts={contacts} form={form} accesses={accesses} />
+        <CreateConfirmationModal handleSubmit={handleFinalSubmit} contacts={contacts} form={form} accesses={accesses} />
       </ResponsiveDialog>
     </div>
   )
