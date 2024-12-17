@@ -3,6 +3,7 @@ import { z } from "zod";
 const nameRegex = /^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$/;
 
 export const contactSchema = z.object({
+  id: z.string().optional(),
   name: z
     .string()
     .max(30, { message: "El nombre debe tener como máximo 30 caracteres." })
@@ -64,6 +65,34 @@ export const clientFormSchema = z.object({
   accesses: z.array(accessesSchema).optional()
 })
 
+export const domainFormSchema = z.object({
+  name: z.string()
+    .max(30, { message: "El nombre debe tener como máximo 30 caracteres." })
+    .min(2, { message: "El nombre debe tener al menos 2 caracteres." })
+    .refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
+
+  provider: z.object({
+    id: z.string({ message: "El proveedor es requerido." }),
+    name: z.string({ message: "El proveedor es requerido." }),
+  }),
+
+  client: z.object({
+    id: z.string({ message: "El cliente es requerido." }),
+    name: z.string({ message: "El cliente es requerido." }),
+  }),
+
+  // access: accessesSchema.optional(),
+
+  expirationDate: z.date({ message: 'La fecha de registro es requerida.' }),
+
+  status: z.enum(["Activo", "Vencido", "Dejar vencer", 'Baja permanente'], { message: "El estado del dominio es requerido." }),
+
+  contactId: z.string({ message: 'El contacto es requerido.' }),
+  contact: contactSchema.optional(),
+  isClientContact: z.boolean().optional(),
+})
+
 export type ClientFormValues = z.infer<typeof clientFormSchema>
+export type DomainFormValues = z.infer<typeof domainFormSchema>
 export type ContactType = z.infer<typeof contactSchema>
 export type AccessType = z.infer<typeof accessesSchema>
