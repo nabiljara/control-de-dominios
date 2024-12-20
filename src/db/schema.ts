@@ -22,7 +22,7 @@ export function lower(email: AnyPgColumn): SQL {
 export const userRoleEnum = pgEnum("user_role", ["user", "admin"])
 export const clientSizeEnum = pgEnum("client_size", ["Chico", "Medio", "Grande"])
 export const clientStatusEnum = pgEnum("client_status", ["Activo", "Inactivo", "Suspendido"])
-export const domainStatusEnum = pgEnum("domain_status", ["Activo", "Inactivo", "Suspendido"])
+export const domainStatusEnum = pgEnum("domain_status", ["Activo", "Vencido", "Dejar vencer", "Baja permanente"])
 export const contactTypeEnum = pgEnum("contact_type", ["Tecnico", "Administrativo", "Financiero"])
 export const contactStatusEnum = pgEnum("contact_status", ["Activo", "Inactivo"])
 export const notificationStatusEnum = pgEnum("notification_status", ["delivered", "bounced"])
@@ -365,6 +365,7 @@ export type LocalityWithRelations = Locality & {
   clients: Client[];
 };
 
+
 // PROVEEDORES
 export type Provider = InferSelectModel<typeof providers>;
 export type ProviderInsert = InferInsertModel<typeof providers>;
@@ -387,7 +388,7 @@ export type ClientWithRelations = Client & {
 export type Contact = InferSelectModel<typeof contacts>;
 export type ContactInsert = InferInsertModel<typeof contacts>;
 export type ContactWithRelations = Contact & {
-  client: Client
+  client: Client | null
   domains: Domain[],
 }
 
@@ -396,7 +397,7 @@ export type Access = InferSelectModel<typeof access>;
 export type AccessInsert = InferInsertModel<typeof access>;
 export type AccessWithRelations = Access & {
   client: Client
-  provider: Provider
+  provider: Provider | null
   domainAccess: DomainAccess[],
 }
 

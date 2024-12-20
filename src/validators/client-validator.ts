@@ -62,15 +62,13 @@ export const clientFormSchema = z.object({
 
   status: z.enum(["Activo", "Inactivo", "Suspendido"], { message: "El estado del cliente es requerido." }),
 
-  accesses: z.array(accessesSchema).optional()
+  accesses: z.array(accessesSchema).optional(),
+  
 })
 
 export const domainFormSchema = z.object({
-  name: z.string()
-    .max(30, { message: "El nombre debe tener como máximo 30 caracteres." })
-    .min(2, { message: "El nombre debe tener al menos 2 caracteres." })
-    .refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
-
+  id: z.number().optional(),
+  name: z.string().url('Nombre de dominio inválido.'),
   provider: z.object({
     id: z.string({ message: "El proveedor es requerido." }),
     name: z.string({ message: "El proveedor es requerido." }),
@@ -81,17 +79,24 @@ export const domainFormSchema = z.object({
     name: z.string({ message: "El cliente es requerido." }),
   }),
 
-  // access: accessesSchema.optional(),
+  access: accessesSchema.optional(),
+  accessId: z.string().optional(),
 
-  expirationDate: z.date({ message: 'La fecha de registro es requerida.' }),
+  expirationDate: z.date({ message: 'La fecha de vencimiento es requerida.' }),
 
   status: z.enum(["Activo", "Vencido", "Dejar vencer", 'Baja permanente'], { message: "El estado del dominio es requerido." }),
 
   contactId: z.string({ message: 'El contacto es requerido.' }),
   contact: contactSchema.optional(),
   isClientContact: z.boolean().optional(),
+  isIndividualContact: z.boolean().optional(),
+  hasAccess: z.boolean().optional(),
 })
 
+export const clientUpdateFormSchema = clientFormSchema.extend({
+  domains: z.array(domainFormSchema)
+})
+export type ClientUpdateValues = z.infer<typeof clientUpdateFormSchema>
 export type ClientFormValues = z.infer<typeof clientFormSchema>
 export type DomainFormValues = z.infer<typeof domainFormSchema>
 export type ContactType = z.infer<typeof contactSchema>

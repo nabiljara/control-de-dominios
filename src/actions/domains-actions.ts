@@ -1,8 +1,9 @@
 "use server"
 import db from "@/db";
-import { domains } from "@/db/schema";
+import { DomainInsert, domains } from "@/db/schema";
 import { desc , eq, or} from "drizzle-orm";
 import { ContactPerDomain } from "../../types/contact-types";
+import { setUserId } from "./user-action/user-actions";
 
 
 export async function getDomains() {
@@ -48,11 +49,25 @@ export async function getDomainsByContact(idContact: number){
     }
 };
 
+export async function updateDomain(domain : DomainInsert) {
+    try{
+        if(!domain.id){
+            throw new Error("El ID del dominio no está definido.");
+        }
+        await setUserId()
+        await db.update(domains)
+        .set({ name: domain.name, expirationDate: domain.expirationDate, status: domain.status, updatedAt: (new Date()).toISOString(), clientId: domain.clientId, providerId: domain.providerId, contactId: domain.contactId , providerRegistrationDate: domain.providerRegistrationDate })
+        .where(eq(domains.id, domain.id)).returning({ id: domains.id });
+    }
+    catch(error){
+        console.error("Error al modificar el dominio:", error);
+        throw error;
+    }
+};
+
 export async function updateDomainContact(contactDomain : ContactPerDomain[]) {
     try{
         contactDomain.map(async (contact) => {
-            // console.log("CONTACTO ID: ", contact.contactId)
-            // console.log("DOMINIO ID: ", contact.domainId)
             await db.update(domains)
             .set({ contactId: contact.contactId })
             .where(eq(domains.id, contact.domainId)).returning({ id: domains.id });

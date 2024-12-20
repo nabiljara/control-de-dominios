@@ -48,7 +48,7 @@ export async function getClient(id: number) {
       where: eq(clients.id, id),
       with:
       {
-        domains: true,
+        domains: {with:{provider:true}},
         locality: true,
         access: {
           with: { provider: true }

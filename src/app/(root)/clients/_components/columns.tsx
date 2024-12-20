@@ -9,7 +9,7 @@ import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { Client, ClientWithRelations } from "@/db/schema"
 import { Checkbox } from "@radix-ui/react-checkbox"
 
-  export const columns: ColumnDef<Client>[] = [
+export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -17,7 +17,7 @@ import { Checkbox } from "@radix-ui/react-checkbox"
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
     enableSorting: true,
-    enableHiding: false,
+    enableHiding: false
   },
   {
     accessorKey: "name",
@@ -37,20 +37,20 @@ import { Checkbox } from "@radix-ui/react-checkbox"
       <DataTableColumnHeader column={column} title="Localidad" />
     ),
     cell: ({ row }) => {
-      const locality:{id:number, name:string} = row.getValue("locality");
+      const locality: { id: number; name: string } = row.getValue("locality")
       return (
         <>
-         {/* <div className="flex space-x-2"> */}
+          {/* <div className="flex space-x-2"> */}
           {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-          <span className="max-w-[500px] font-medium truncate">
-          {locality.name || "Sin localidad"}
+          <span className="max-w-[500px] truncate font-medium">
+            {locality.name || "Sin localidad"}
           </span>
-        {/* </div> */}
+          {/* </div> */}
         </>
       )
     },
     filterFn: (row, id, value) => {
-      const locality:{id:number, name:string} = row.getValue(id);
+      const locality: { id: number; name: string } = row.getValue(id)
       return value.includes(locality.id.toString())
     }
   },
@@ -68,9 +68,9 @@ import { Checkbox } from "@radix-ui/react-checkbox"
       }
 
       return (
-        <div className="flex items-center w-[100px]">
+        <div className="flex w-[100px] items-center">
           {status.icon && (
-            <status.icon className="mr-2 w-4 h-4 text-muted-foreground" />
+            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )}
           <span>{status.label}</span>
         </div>
@@ -86,9 +86,7 @@ import { Checkbox } from "@radix-ui/react-checkbox"
       <DataTableColumnHeader column={column} title="Tamaño" />
     ),
     cell: ({ row }) => {
-      const size = sizes.find(
-        (size) => size.value === row.getValue("size")
-      )
+      const size = sizes.find((size) => size.value === row.getValue("size"))
 
       if (!size) {
         return null
@@ -97,7 +95,7 @@ import { Checkbox } from "@radix-ui/react-checkbox"
       return (
         <div className="flex items-center">
           {size.icon && (
-            <size.icon className="mr-2 w-4 h-4 text-muted-foreground" />
+            <size.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )}
           <span>{size.label}</span>
         </div>
@@ -114,10 +112,10 @@ import { Checkbox } from "@radix-ui/react-checkbox"
     id: "actions",
     cell: ({ row }) => (
       <DataTableRowActions
-        canEdit
         row={row}
         entityEdit={"clients/" + row.getValue("id")}
-        canDelete={true}
+        canDelete={false}
+        canEdit={false}
       />
     )
   }

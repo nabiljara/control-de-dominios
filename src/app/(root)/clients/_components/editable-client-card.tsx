@@ -1,47 +1,104 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { User } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import {  ClientInsert, ClientWithRelations, Locality } from '@/db/schema'
-import { formatDate } from '@/lib/utils'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { clientFormSchema, ClientFormValues } from '@/validators/client-validator'
-import { ResponsiveDialog } from '@/components/responsive-dialog'
-import { EditConfirmationModal } from './edit-confirmation-modal'
-import { toast } from 'sonner'
-import { updateClient } from '@/actions/client-actions'
+import { useState } from "react"
+import { User } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import {
+  ClientInsert,
+  ClientWithRelations,
+  Contact,
+  DomainInsert,
+  Locality
+} from "@/db/schema"
+import { formatDate } from "@/lib/utils"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form"
+import { SubmitHandler, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  clientUpdateFormSchema,
+  ClientUpdateValues
+} from "@/validators/client-validator"
+import { ResponsiveDialog } from "@/components/responsive-dialog"
+import { EditConfirmationModal } from "./edit-confirmation-modal"
+import { toast } from "sonner"
+import { updateClient } from "@/actions/client-actions"
+import { updateDomain } from "@/actions/domains-actions"
 
 interface EditableClientCardProps {
-  client: Omit<ClientWithRelations, 'domains' | 'access' | 'contacts'>
+  client: Omit<ClientWithRelations, "access" | "contacts">
   localities: Locality[]
+  contacts: Contact[]
 }
 
-export default function EditableClientCard({ client, localities }: EditableClientCardProps) {
+export default function EditableClientCard({
+  client,
+  localities,
+  contacts
+}: EditableClientCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const activeDomains = client.domains.filter(
+    (domain) => domain.status === "Activo"
+  )
 
-  const form = useForm<Omit<ClientFormValues, "accesses" | "contacts">>({
-    resolver: zodResolver(clientFormSchema.omit({
-      accesses: true,
-      contacts: true
-    })),
+  const form = useForm<Omit<ClientUpdateValues, "accesses" | "contacts">>({
+    resolver: zodResolver(
+      clientUpdateFormSchema.omit({
+        accesses: true,
+        contacts: true
+      })
+    ),
     defaultValues: {
       name: client.name,
       status: client.status,
       size: client.size,
-      locality: { id: client.localityId ? client.localityId.toString() : undefined, name: client.locality.name }
-    },
-  })  
+      locality: {
+        id: client.localityId ? client.localityId.toString() : undefined,
+        name: client.locality.name
+      },
+      domains: activeDomains.map((domain) => {
+        const contact = contacts.find((c) => c.id === domain.contactId)
 
-  const onSubmit: SubmitHandler<ClientFormValues> = () => {
+        return {
+          id: domain.id,
+          name: domain.name,
+          provider: { id: domain.providerId.toString(), name: "" },
+          client: { id: domain.clientId.toString(), name: client.name },
+          contactId: domain.contactId.toString(),
+          expirationDate: new Date(),
+          status: domain.status,
+          contact: contact
+            ? {
+                id: contact.id.toString(),
+                name: contact.name,
+                clientId: contact.clientId ? contact.clientId : undefined
+              }
+            : { id: "", name: "", clientId: undefined },
+          isClientContact: false
+        }
+      })
+    }
+  })
+
+  const onSubmit: SubmitHandler<ClientUpdateValues> = () => {
     setIsConfirmationModalOpen(true)
   }
 
@@ -53,22 +110,90 @@ export default function EditableClientCard({ client, localities }: EditableClien
       localityId: parseInt(form.getValues().locality.id, 10),
       id: client.id
     }
+    const domains = form.getValues().domains
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
+        if (modifiedClient.status === "Inactivo") {
+          form.clearErrors("domains")
+          for (let index = 0; index < domains.length; index++) {
+            const domain = domains[index]
+            if (domain.status === "Activo") {
+              if (
+                modifiedClient.id?.toString() === domain.client.id.toString()
+              ) {
+                //Cliente a dar de baja sigue en seteado en el dominio
+                form.setError(`domains.${index}`, {
+                  type: "manual",
+                  message: "Este dominio tiene errores"
+                })
+                form.setError(`domains.${index}.client.id`, {
+                  type: "manual",
+                  message:
+                    "Debe cambiar el cliente si desea dejar el dominio activo"
+                })
+                reject(new Error("El cliente no puede ser el mismo"))
+                return
+              }
+              if (domain.contact?.clientId === modifiedClient.id) {
+                form.setError(`domains.${index}`, {
+                  type: "manual",
+                  message: "Este dominio tiene errores"
+                })
+                form.setError(`domains.${index}.contactId`, {
+                  type: "manual",
+                  message:
+                    "Debe cambiar el contacto ya que el cliente estará inactivo"
+                })
+                reject(new Error("El cliente no puede ser el mismo"))
+                return
+              }
+              if (!domain.contactId) {
+                form.setError(`domains.${index}`, {
+                  type: "manual",
+                  message: "Este dominio tiene errores"
+                })
+                form.setError(`domains.${index}.contactId`, {
+                  type: "manual",
+                  message: "Debe seleccionar un contacto para este dominio"
+                })
+                reject(new Error("Debe haber un contacto seleccionado"))
+                return
+              }
+            }
+          }
+        }
         try {
-          setIsConfirmationModalOpen(false);
+          domains.map(async (domain) => {
+            try {
+              const modifiedDomain: DomainInsert = {
+                contactId: parseInt(domain.contactId),
+                clientId: parseInt(domain.client.id),
+                id: domain.id ?? domain.id,
+                name: domain.name,
+                status: domain.status,
+                expirationDate: domain.expirationDate.toISOString(),
+                providerId: parseInt(domain.provider.id),
+                providerRegistrationDate: new Date().toISOString()
+              }
+              await updateDomain(modifiedDomain)
+            } catch (error) {
+              console.error(error)
+              reject(error)
+            }
+          })
+          setIsConfirmationModalOpen(false)
           setIsEditing(false)
-          await updateClient(modifiedClient);
-          resolve();
+          await updateClient(modifiedClient)
+          resolve()
         } catch (error) {
           console.error(error)
-          reject(error);
+          reject(error)
         }
       }),
       {
-        loading: 'Editando cliente',
-        success: 'Cliente editado satisfactoriamente',
-        error: 'No se pudo editar el cliente correctamente.'
+        loading: "Editando cliente",
+        success: "Cliente editado satisfactoriamente",
+        error: "No se pudo editar el cliente correctamente."
       }
     )
   }
@@ -77,9 +202,9 @@ export default function EditableClientCard({ client, localities }: EditableClien
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
-            <CardHeader className="flex flex-row justify-between items-center">
+            <CardHeader className="flex flex-row items-center justify-between">
               <div className="flex flex-row items-center gap-2">
-                <User className="w-8 h-8" />
+                <User className="h-8 w-8" />
                 <FormField
                   control={form.control}
                   name="name"
@@ -87,10 +212,17 @@ export default function EditableClientCard({ client, localities }: EditableClien
                     <FormItem>
                       {isEditing ? (
                         <FormControl>
-                          <Input {...field} placeholder="Ingrese el nombre del cliente" autoComplete="name" className="h-auto font-bold text-3xl" />
+                          <Input
+                            {...field}
+                            placeholder="Ingrese el nombre del cliente"
+                            autoComplete="name"
+                            className="h-auto text-3xl font-bold"
+                          />
                         </FormControl>
                       ) : (
-                        <CardTitle className="font-bold text-3xl">{client.name}</CardTitle>
+                        <CardTitle className="text-3xl font-bold">
+                          {client.name}
+                        </CardTitle>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -113,9 +245,14 @@ export default function EditableClientCard({ client, localities }: EditableClien
                   name="status"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-muted-foreground text-sm">Estado:</FormLabel>
+                      <FormLabel className="text-sm text-muted-foreground">
+                        Estado:
+                      </FormLabel>
                       {isEditing ? (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="w-[180px]">
                               <SelectValue />
@@ -127,7 +264,13 @@ export default function EditableClientCard({ client, localities }: EditableClien
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge variant={client.status === "Activo" ? "default" : "destructive"}>
+                        <Badge
+                          variant={
+                            client.status === "Activo"
+                              ? "default"
+                              : "destructive"
+                          }
+                        >
                           {client.status}
                         </Badge>
                       )}
@@ -140,9 +283,14 @@ export default function EditableClientCard({ client, localities }: EditableClien
                   name="size"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-muted-foreground text-sm">Tamaño:</FormLabel>
+                      <FormLabel className="text-sm text-muted-foreground">
+                        Tamaño:
+                      </FormLabel>
                       {isEditing ? (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="w-[180px]">
                               <SelectValue />
@@ -166,29 +314,41 @@ export default function EditableClientCard({ client, localities }: EditableClien
                   name="locality.id"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-muted-foreground text-sm">Localidad:</FormLabel>
+                      <FormLabel className="text-sm text-muted-foreground">
+                        Localidad:
+                      </FormLabel>
                       {isEditing ? (
                         <>
                           <Select
                             onValueChange={(value) => {
-                              field.onChange(value);
-                              const selectedLocality = localities.find((locality) => locality.id.toString() === value);
+                              field.onChange(value)
+                              const selectedLocality = localities.find(
+                                (locality) => locality.id.toString() === value
+                              )
                               if (selectedLocality) {
-                                form.setValue("locality.name", selectedLocality.name);
+                                form.setValue(
+                                  "locality.name",
+                                  selectedLocality.name
+                                )
                               }
                             }}
-                            defaultValue={field.value} name='locality'>
+                            defaultValue={field.value}
+                            name="locality"
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Seleccione la localidad" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {
-                                localities.map((locality) => (
-                                  <SelectItem key={locality.name} value={locality.id.toString()}>{locality.name}</SelectItem>
-                                ))
-                              }
+                              {localities.map((locality) => (
+                                <SelectItem
+                                  key={locality.name}
+                                  value={locality.id.toString()}
+                                >
+                                  {locality.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -200,19 +360,27 @@ export default function EditableClientCard({ client, localities }: EditableClien
                     </FormItem>
                   )}
                 />
-                <span className="text-muted-foreground text-sm">
+                <span className="text-sm text-muted-foreground">
                   Fecha de registro: {formatDate(client.createdAt)}
                 </span>
-                <span className="text-muted-foreground text-sm">
+                <span className="text-sm text-muted-foreground">
                   Fecha de última actualización: {formatDate(client.updatedAt)}
                 </span>
                 {isEditing && form.formState.isDirty && (
-                  <div className="flex gap-2 mt-4">
-                    <Button type="submit">Guardar</Button>
-                    <Button variant="outline" onClick={() => {
-                      form.reset()
-                      setIsEditing(false)
-                    }}>
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => setIsConfirmationModalOpen(true)}
+                    >
+                      Guardar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        form.reset()
+                        setIsEditing(false)
+                      }}
+                    >
                       Cancelar
                     </Button>
                   </div>
@@ -220,11 +388,22 @@ export default function EditableClientCard({ client, localities }: EditableClien
               </div>
             </CardContent>
           </Card>
+          <ResponsiveDialog
+            open={isConfirmationModalOpen}
+            onOpenChange={setIsConfirmationModalOpen}
+            title="Confirmar edición del cliente"
+            description="Revise si los datos modificados son correctos y confirme el cambio."
+            className="sm:max-w-[700px]"
+          >
+            <EditConfirmationModal
+              handleSubmit={handleFinalSubmit}
+              form={form}
+              client={client}
+              contacts={contacts}
+            />
+          </ResponsiveDialog>
         </form>
       </Form>
-      <ResponsiveDialog open={isConfirmationModalOpen} onOpenChange={setIsConfirmationModalOpen} title='Confirmar edición del cliente' description='Revise si los datos modificados son correctos y confirme el cambio.' className='sm:max-w-[700px]'>
-        <EditConfirmationModal handleSubmit={handleFinalSubmit} form={form} client={client} />
-      </ResponsiveDialog>
     </>
   )
 }
