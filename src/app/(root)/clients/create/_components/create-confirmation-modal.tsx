@@ -6,6 +6,8 @@ import { AccessType, ContactType, ClientFormValues } from "@/validators/client-v
 import { UseFormReturn } from "react-hook-form";
 import { Badge } from '@/components/ui/badge';
 import ContactInfoCard from '../../_components/contact-info-card';
+import { Access, Contact } from '@/db/schema';
+import { AccessInfoCard } from '../../_components/access-info-card';
 
 export function CreateConfirmationModal(
   {
@@ -20,14 +22,6 @@ export function CreateConfirmationModal(
     form: UseFormReturn<ClientFormValues>
   }
 ) {
-  const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
-
-  const toggleShowPassword = (index: number) => {
-    setShowPasswords((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
-  };
   return (
     <>
       <div className="gap-4 grid py-4">
@@ -60,9 +54,20 @@ export function CreateConfirmationModal(
             <h4 className="font-medium">Contactos</h4>
             <div className="gap-2 grid">
               {contacts.length > 0 ? (
-                contacts.map((contact) => (
-                  <ContactInfoCard key={contact.email} {...contact} readOnly />
-                ))
+                contacts.map((contact) => {
+                  const newContact: Contact = {
+                    id: 0,
+                    name: contact.name,
+                    email: contact.email,
+                    phone: contact.phone ? contact.phone : null,
+                    status: contact.status,
+                    type: contact.type,
+                    createdAt: '',
+                    updatedAt: '',
+                    clientId: null
+                  }
+                  return <ContactInfoCard key={contact.email} contact={newContact} readOnly />
+                })
               ) : (
                 <div className="py-4 text-left text-neutral-500">
                   Sin información
@@ -75,53 +80,19 @@ export function CreateConfirmationModal(
             <h4 className="font-medium">Accesos</h4>
             <div className="gap-2 grid">
               {accesses.length > 0 ? (
-                accesses.map((access, index) => (
-                  <Card key={index} className="relative flex shadow-sm hover:shadow-md p-4 w-full transition-all duration-200">
-                    {/* Card Content */}
-                    <CardContent className='flex flex-col justify-between items-start gap-2 p-0 h-full'>
-                      <div className='flex items-center gap-2'>
-                        <Box className="w-4 h-4" />
-                        <h2 className="font-bold text-md">
-                          {access.provider.name}
-                        </h2>
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        <User className="w-4 h-4" />
-                        <span className="text-neutral-500 text-sm">
-                          {access.username}
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        <Lock className="w-4 h-4" />
-                        <span className="text-neutral-500 text-sm">
-                          {showPasswords[index] ? access.password : '•'.repeat(access.password.length)}
-                        </span>
-                        <Button
-                          onClick={() => toggleShowPassword(index)}
-                          aria-label={showPasswords[index] ? 'Esconder contraseña' : 'Mostrar contraseña'}
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="hover:bg-transparent px-3 py-2 h-full"
-                        >
-                          {showPasswords[index] ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-                      {access.notes && (
-                        <div className="flex items-start gap-2">
-                          <StickyNote className="w-4 h-4 shrink-0" />
-                          <span className="text-neutral-500 text-sm">
-                            {access.notes}
-                          </span>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
+                accesses.map((access, index) => {
+                  const newAccess: Access = {
+                    id: 0,
+                    username: access.username,
+                    password: access.password,
+                    createdAt: '',
+                    updatedAt: '',
+                    notes: access.notes ? access.notes : null,
+                    clientId: null,
+                    providerId: null
+                  }
+                  return <AccessInfoCard key={access.username} access={newAccess} readOnly index={index} provider={access.provider.name} />
+                })
               ) : (
                 <div className="py-4 text-left text-neutral-500">
                   Sin información

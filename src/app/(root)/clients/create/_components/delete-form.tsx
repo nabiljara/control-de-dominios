@@ -6,30 +6,21 @@ import { Button } from "@/components/ui/button"
 export function DeleteForm({
   index,
   remove,
-  setIsOpen,
+  onClose
 }: {
   index: number;
   remove: (index: number) => void;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  onClose: () => void;
 }) {
   return (
 
-    <div className="w-full flex flex-col md:flex-row justify-center gap-5">
-      <Button
-        variant="outline"
-        className="w-full"
-        onClick={() => {
-          setIsOpen(false)
-        }}
-      >
-        Cancelar
-      </Button>
+    <div className="flex md:flex-row flex-col justify-center gap-5 w-full">
       <Button
         variant="destructive"
         className="w-full"
         onClick={() => {
           remove(index)
-          setIsOpen(false)
+          onClose()
         }}
       >
         Eliminar

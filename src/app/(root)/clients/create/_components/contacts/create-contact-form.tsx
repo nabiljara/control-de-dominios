@@ -17,10 +17,12 @@ const typeOptions = originalContactSchema.shape.type.options;
 
 export function CreateContactForm({
   onSave,
-  contactSchema
+  contactSchema,
+  onClose,
 }: {
   onSave: (contact: ContactType) => void;
   contactSchema: z.Schema;
+  onClose?: () => void;
 }) {
 
   const [isPending, setIsPending] = useState(false)
@@ -45,7 +47,9 @@ export function CreateContactForm({
     if (isValid) {
       const data = form.getValues()
       onSave(data)
-      form.reset()
+      if(onClose){
+        onClose()
+      }
     }
     setIsPending(false)
   }

@@ -341,7 +341,6 @@ export async function createFunctions() {
                     (v_audit_id, NULL, NEW.provider_id, 'ID Proveedor'),
                     (v_audit_id, NULL, NEW.contact_id, 'ID Contacto'),
                     (v_audit_id, NULL, NEW.name, 'Nombre'),
-                    (v_audit_id, NULL, NEW.provider_registration_date, 'Fecha de registro'),
                     (v_audit_id, NULL, NEW.expiration_date, 'Fecha de expiración'),
                     (v_audit_id, NULL, NEW.status, 'Estado del contacto'),
                     (v_audit_id, NULL, NEW.created_at, 'Fecha de creación'),
@@ -393,11 +392,6 @@ export async function createFunctions() {
                     IF OLD.name IS DISTINCT FROM NEW.name THEN
                         INSERT INTO audits_details (audit_id, old_value, new_value, field)
                         VALUES (v_audit_id, OLD.name, NEW.name, 'Tipo de contacto');
-                    END IF;
-                    
-                    IF OLD.provider_registration_date IS DISTINCT FROM NEW.provider_registration_date THEN
-                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                        VALUES (v_audit_id, OLD.provider_registration_date, NEW.provider_registration_date, 'Estado del contacto');
                     END IF;
 
                     IF OLD.expiration_date IS DISTINCT FROM NEW.expiration_date THEN

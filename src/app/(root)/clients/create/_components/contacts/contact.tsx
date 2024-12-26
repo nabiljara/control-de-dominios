@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ContactType } from '@/validators/client-validator';
-import { Circle, Mail, MoreVertical, Phone, SquarePen, Tag, Trash2, User } from 'lucide-react';
+import { Circle, Mail, MoreVertical, Pencil, Phone, SquarePen, Tag, Trash, Trash2, User } from 'lucide-react';
 import { EditContactForm } from '@/app/(root)/clients/create/_components/contacts/edit-contact-form';
 import { z } from 'zod';
 import { DeleteForm } from '@/app/(root)/clients/create/_components/delete-form';
@@ -33,24 +33,37 @@ export function Contact({
   contactSchema: z.Schema;
 }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);  
+
+  const handleEdit = (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsEditOpen(true)
+  }
+
+  const handleDelete = (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDeleteOpen(true)
+  }
+
   return (
     <>
       <ResponsiveDialog
         open={isEditOpen}
-        onOpenChange={setIsEditOpen}
+        onOpenChange={() => setIsEditOpen(false)}
         title="Editar contacto"
         description='Edite los datos correspondientes al contacto.'
       >
-        <EditContactForm setIsOpen={setIsEditOpen} editContact={editContact} index={index} contactSchema={contactSchema} contact={contact} />
+        <EditContactForm onClose={() => setIsEditOpen(false)} editContact={editContact} index={index} contactSchema={contactSchema} contact={contact} />
       </ResponsiveDialog>
       <ResponsiveDialog
         open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+        onOpenChange={() => setIsDeleteOpen(false)}
         title="Eliminar contacto"
         description="Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este contacto?"
       >
-        <DeleteForm setIsOpen={setIsDeleteOpen} index={index} remove={removeContact} />
+        <DeleteForm onClose={() => setIsDeleteOpen(false)} index={index} remove={removeContact} />
       </ResponsiveDialog>
       <Card className="relative flex shadow-sm hover:shadow-md p-4 w-full transition-all duration-200">
         {/* Card Content */}
@@ -60,9 +73,9 @@ export function Contact({
             <h2 className="font-bold text-md">
               {contact.name}
             </h2>
-              <Badge variant='outline' className={contact.status === 'Activo' ? 'bg-green-500' : ''}>
-                {contact.status}
-              </Badge>
+            <Badge variant='outline' className={contact.status === 'Activo' ? 'bg-green-500' : ''}>
+              {contact.status}
+            </Badge>
           </div>
           <div className='flex items-center gap-2'>
             <Mail className="w-4 h-4" />
@@ -84,54 +97,24 @@ export function Contact({
               {contact.type}
             </span>
           </div>
+          <div className="top-4 right-4 z-10 absolute flex justify-between">
+            <Button
+              onClick={handleEdit}
+              className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-neutral-900 transition-all duration-75"
+              variant='ghost'
+            >
+              <SquarePen className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={handleDelete}
+              className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-red-500 hover:text-red-500 transition-all duration-75"
+              variant='ghost'
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         </CardContent>
-
-        {/* Dropdown Menu */}
-        <div className="top-4 right-4 z-10 absolute">
-          <span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex data-[state=open]:bg-muted p-0 w-8 h-8"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                  <span className="sr-only">Abrir menú</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="z-50 w-[160px]">
-                <DropdownMenuItem className="flex justify-between items-center p-0 w-full font-base text-left text-neutral-500 text-sm group">
-                  <button
-                    onClick={() => {
-                      setIsEditOpen(true);
-                    }}
-                    className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-neutral-900 transition-all duration-75"
-                  >
-                    <IconMenu
-                      text="Editar"
-                      icon={<SquarePen className="w-4 h-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex justify-between items-center p-0 w-full font-base text-left text-neutral-500 text-sm group">
-                  <button
-                    onClick={() => {
-                      setIsDeleteOpen(true);
-                    }}
-                    className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-red-500 transition-all duration-75"
-                  >
-                    <IconMenu
-                      text="Eliminar"
-                      icon={<Trash2 className="w-4 h-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </span>
-        </div>
-      </Card>
+      </Card >
     </>
   );
 }

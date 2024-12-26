@@ -20,16 +20,16 @@ const typeOptions = originalContactSchema.shape.type.options;
 
 export function EditContactForm({
   contactSchema,
-  setIsOpen,
   editContact,
   index,
-  contact
+  contact,
+  onClose
 }: {
   contactSchema: z.Schema;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
   editContact: (index: number, updatedContact: ContactType) => void;
   index: number;
-  contact: ContactType
+  contact: ContactType;
+  onClose: () => void;
 }) {
   const [isPending, setIsPending] = useState(false)
 
@@ -52,8 +52,7 @@ export function EditContactForm({
     if (isValid) {
       const data = form.getValues()
       editContact(index, data)
-      form.reset()
-      setIsOpen(false);
+      onClose()
     }
     setIsPending(false)
   }

@@ -80,8 +80,8 @@ export function CreateClientForm({
         });
       }
 
-      const alreadyRegistered = await validateUsername(username, parseInt(provider.id,10))
-      console.log(alreadyRegistered); 
+      const alreadyRegistered = await validateUsername(username, parseInt(provider.id, 10))
+      console.log(alreadyRegistered);
 
       if (!alreadyRegistered) {
         ctx.addIssue({
@@ -99,7 +99,6 @@ export function CreateClientForm({
 
   const addContact = (contact: ContactType) => {
     setContacts([...contacts, contact])
-    setIsCreateContactModalOpen(false)
   }
   const removeContact = (index: number) => {
     setContacts(contacts.filter((_, i) => i !== index))
@@ -111,7 +110,6 @@ export function CreateClientForm({
 
   const addAccess = (access: AccessType) => {
     setAccesses([...accesses, access])
-    setIsCreateAccessModalOpen(false)
   }
   const removeAccess = (index: number) => {
     setAccesses(accesses.filter((_, i) => i !== index))
@@ -255,11 +253,18 @@ export function CreateClientForm({
                   <>
                     <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
                       {contacts.map((contact, index) => (
-                        <Contact key={contact.email} contact={contact} index={index} removeContact={removeContact} editContact={editContact} contactSchema={getContactSchema(index)} />
+                        <Contact
+                          key={contact.email}
+                          contact={contact}
+                          index={index}
+                          removeContact={removeContact}
+                          editContact={editContact}
+                          contactSchema={getContactSchema(index)}
+                        />
                       ))}
                     </div>
-                    <ResponsiveDialog open={isCreateContactModalOpen} onOpenChange={setIsCreateContactModalOpen} title='Agregar contacto' description='Agregue los datos correspondientes al contacto.'>
-                      <CreateContactForm onSave={addContact} contactSchema={getContactSchema(null)} />
+                    <ResponsiveDialog open={isCreateContactModalOpen} onOpenChange={() => setIsCreateContactModalOpen(false)} title='Agregar contacto' description='Agregue los datos correspondientes al contacto.'>
+                      <CreateContactForm onSave={addContact} contactSchema={getContactSchema(null)} onClose={() => setIsCreateContactModalOpen(false)} />
                     </ResponsiveDialog>
                   </>
                 </FormControl>
@@ -284,11 +289,19 @@ export function CreateClientForm({
                   <>
                     <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
                       {accesses.map((access, index) => (
-                        <Access key={index} access={access} index={index} removeAccess={removeAccess} editAccess={editAccess} accessSchema={getAccessSchema(index)} providers={providers} />
+                        <Access
+                          key={index}
+                          access={access}
+                          index={index}
+                          removeAccess={removeAccess}
+                          editAccess={editAccess}
+                          accessSchema={getAccessSchema(index)}
+                          providers={providers}
+                        />
                       ))}
                     </div>
-                    <ResponsiveDialog open={isCreateAccessModalOpen} onOpenChange={setIsCreateAccessModalOpen} title='Agregar acceso' description='Agregue los datos correspondientes al acceso.'>
-                      <CreateAccessForm onSave={addAccess} accessSchema={getAccessSchema(null)} providers={providers} />
+                    <ResponsiveDialog open={isCreateAccessModalOpen} onOpenChange={() => setIsCreateAccessModalOpen(false)} title='Agregar acceso' description='Agregue los datos correspondientes al acceso.'>
+                      <CreateAccessForm onSave={addAccess} accessSchema={getAccessSchema(null)} providers={providers} onClose={() => setIsCreateAccessModalOpen(false)} />
                     </ResponsiveDialog>
                   </>
                 </FormControl>
@@ -349,6 +362,6 @@ export function CreateClientForm({
       <ResponsiveDialog open={isConfirmationModalOpen} onOpenChange={setIsConfirmationModalOpen} title='Confirmar registro' description='Revise que los datos sean correctos y confirme el registro.' className='sm:max-w-[700px]'>
         <CreateConfirmationModal handleSubmit={handleFinalSubmit} contacts={contacts} form={form} accesses={accesses} />
       </ResponsiveDialog>
-    </div>
+    </div >
   )
 }

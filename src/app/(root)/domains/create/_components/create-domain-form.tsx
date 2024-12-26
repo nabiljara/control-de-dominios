@@ -4,33 +4,33 @@ import { useState, useEffect } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
+import { addDays, format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { CalendarIcon, PlusCircle, Loader2, Eye, User, Users, Building, UserPlus, Globe, Plus, ChevronsUpDown, Check } from "lucide-react"
+import { CalendarIcon, Loader2, Globe, Plus, ChevronsUpDown, Check } from "lucide-react"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import SearchableSelect from '@/components/searchable-select'
 import { AccessType, ContactType, domainFormSchema, DomainFormValues } from '@/validators/client-validator'
 import { toast } from 'sonner'
-import { Client, Provider } from '@/db/schema'
-import { Contact } from '@/app/(root)/clients/create/_components/contacts/contact'
-import { getContactsByClient, validateEmail, validatePhone } from '@/actions/contacts-actions'
+import { Client, Contact as ContactDBType, Access as AccessDBType, ContactInsert, Provider, AccessWithRelations, DomainInsert } from '@/db/schema'
+import { getContactsByClientId, getIndividualContacts, insertContact, validateEmail, validatePhone } from '@/actions/contacts-actions'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import { CreateContactForm } from '@/app/(root)/clients/create/_components/contacts/create-contact-form'
 import ContactInfoCard from '@/app/(root)/clients/_components/contact-info-card'
 import { cn } from '@/lib/utils'
-
+import { CreateAccessForm } from '@/app/(root)/clients/create/_components/accesses/create-access-form'
+import { getAccessByClientAndProviderId, validateUsername } from '@/actions/accesses-actions'
+import { NewClientContactConfirmationModal } from './new-client-contact-confirmation-modal'
+import { AccessInfoCard } from '@/app/(root)/clients/_components/access-info-card'
+import NewClientAccessConfirmationModal from './new-client-access-confirmation-modal'
+import { es } from "date-fns/locale"
+import { CreateDomainConfirmationModal } from './create-domain-confirmation-modal'
+import { insertDomain, validateDomainName } from '@/actions/domains-actions'
 
 export default function CreateDomainForm({
   providers,
@@ -41,22 +41,69 @@ export default function CreateDomainForm({
 }
 ) {
 
+  //** CONTACTOS:
+
+  // Contactos del cliente
+  const [clientContacts, setClientContacts] = useState<ContactDBType[]>([])
+
+  //Contactos individuales
+  const [individualContacts, setIndividualContacts] = useState<ContactDBType[]>([])
+
+  // Estado para mostrar el modal de creación de contacto
   const [isCreateContactModalOpen, setIsCreateContactModalOpen] = useState(false)
-  const [contacts, setContacts] = useState<ContactType[]>([])
-  const [temporaryContact, setTemporaryContact] = useState<ContactType[]>([])
+
+  //Estado para mostrar el modal de confirmación de nuevo contacto de base de datos
+  const [isNewDBContactConfirmationModalOpen, setIsNewDBContactConfirmationModalOpen] = useState(false)
+
+  //Estado para manejar el nuevo contacto de la base de datos
+  const [newDBContact, setNewDBClientContact] = useState<ContactType>({
+    email: '',
+    name: '',
+    status: 'Activo',
+    type: 'Administrativo',
+  })
+
+  //Estado para manejar el contacto seleccionado de la base de datos
+  const [selectedContact, setSelectedContact] = useState<ContactDBType>()
+
+  //** ACCESOS
+  //Accesos del cliente con la relacion de proveedores
+  const [clientAccess, setClientAccess] = useState<Omit<AccessWithRelations, "domainAccess" | "client">[]>([])
+
+  //Estado para mostrar el modal de creación de acceso
   const [isCreateAccessModalOpen, setIsCreateAccessModalOpen] = useState(false)
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+
+  //Estado para mostrar el modal de confirmación de nuevo acceso de base de datos
+  const [isNewDBAccessConfirmationModalOpen, setIsNewDBAccessConfirmationModalOpen] = useState(false)
+
+  //Estado para manejar el nuevo acceso de la base de datos
+  const [newDBAccess, setNewDBAccess] = useState<AccessType>(
+    {
+      username: '',
+      password: '',
+      provider: { id: '', name: '' }
+    }
+  );
+  //Estado para manejar el acceso seleccionado de la base de datos
+  const [selectedAccess, setSelectedAccess] = useState<AccessDBType>()
+
+
+  //** FORMULARIO
+
+  //Estado para manejar manualmente el envío del formulario
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedContactId, setSelectedContactId] = useState<string | undefined>(undefined);
-  const [access, setAccess] = useState<AccessType>()
+
+  //Opciones de los estados del dominio
   const statusOptions = domainFormSchema.shape.status.options;
 
+  //Estado para mostrar el modal de confirmación final del dominio
+  const [isConfirmationDomainModalOpen, setIsConfirmationDomainModalOpen] = useState(false)
+
   const onSubmit: SubmitHandler<DomainFormValues> = () => {
-    // setIsConfirmationModalOpen(true)
-    console.log('Hola');
+    setIsConfirmationDomainModalOpen(true)
   }
 
-  const getContactSchema = (editingIndex: number | null) => {
+  const getContactSchema = () => {
     return domainFormSchema.shape.contact.superRefine(
       async (data, ctx) => {
         const { email, phone } = data ? data : { email: undefined, phone: undefined };
@@ -85,33 +132,61 @@ export default function CreateDomainForm({
     )
   };
 
-
-  const addContact = (contact: ContactType) => {
-    setTemporaryContact([...temporaryContact, contact])
-    setIsCreateContactModalOpen(false)
-  }
-  const removeContact = (index: number) => {
-    setTemporaryContact(temporaryContact.filter((_, i) => i !== index))
-  }
-
-  const editContact = (index: number, updatedContact: ContactType) => {
-    setTemporaryContact(temporaryContact.map((contact, i) => (i === index ? updatedContact : contact)));
+  const getAccessSchema = () => {
+    return domainFormSchema.shape.access.superRefine(async (data, ctx) => {
+      const { provider, username } = data ? data : { provider: undefined, username: undefined };
+      if (username && provider) {
+        const alreadyRegistered = await validateUsername(username, parseInt(provider.id, 10))
+        if (!alreadyRegistered) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El usuario o email ya está registrado en el sistema para el proveedor seleccionado.",
+            path: ["username"],
+          });
+        }
+      }
+    });
   };
 
-  const handleSelectContact = (contactId: string) => {
-    setSelectedContactId(contactId)
+  const addNewDbContact = (contact: ContactType) => {
+    setNewDBClientContact(contact)
+    setIsNewDBContactConfirmationModalOpen(true)
+  }
+
+  const addNewDbAccess = (access: AccessType) => {
+    setNewDBAccess(access)
+    setIsNewDBAccessConfirmationModalOpen(true)
+  }
+
+  const handleSelectContact = (contactId: string, contact: ContactDBType) => {
     form.setValue('contactId', contactId)
+    form.trigger()
+    setSelectedContact(contact)
+  };
+
+  const handleSelectAccess = (accessId: string, access: AccessDBType) => {
+    form.setValue('accessId', accessId)
+    form.trigger()
+    setSelectedAccess(access)
   };
 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
-    // const domain = { ...form.getValues(), contact, access }
+    const data = { ...form.getValues(), expirationDate: format(form.getValues('expirationDate'), "yyyy-MM-dd HH:mm:ss.SSSSSS") }
+    const domain : DomainInsert = {
+      name: data.name,
+      providerId: parseInt(data.provider.id, 10),
+      clientId: parseInt(data.client.id, 10),
+      contactId: parseInt(data.contactId, 10),
+      expirationDate: data.expirationDate,
+      status: data.status,
+    }
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          // await insertDomain(domain);
+          await insertDomain(domain, form.getValues('hasAccess') ? form.getValues('accessId') : undefined);
           resolve();
-          setIsConfirmationModalOpen(false);
+          setIsConfirmationDomainModalOpen(false);
         } catch (error) {
           console.error(error)
           reject(error);
@@ -127,55 +202,169 @@ export default function CreateDomainForm({
     )
   }
 
-  const form = useForm<z.infer<typeof domainFormSchema>>({
-    resolver: zodResolver(domainFormSchema),
+  const handleNewDBContactSubmit = async () => {
+    setIsSubmitting(true);
+    const contact: ContactInsert = {
+      clientId: form.getValues('isClientContact') ? parseInt(form.getValues('client.id'), 10) : undefined,
+      name: newDBContact.name,
+      email: newDBContact.email,
+      status: newDBContact.status,
+      type: newDBContact.type,
+      phone: newDBContact.phone
+    }
+    toast.promise(
+      new Promise<void>(async (resolve, reject) => {
+        try {
+          await insertContact(contact);
+          resolve();
+          setIsNewDBContactConfirmationModalOpen(false);
+          setIsCreateContactModalOpen(false)
+          setNewDBClientContact(
+            {
+              email: '',
+              name: '',
+              status: 'Activo',
+              type: 'Administrativo',
+            }
+          )
+        } catch (error) {
+          console.error(error)
+          reject(error);
+        } finally {
+          setIsSubmitting(false);
+        }
+      }),
+      {
+        loading: 'Registrando contacto',
+        success: 'Contacto registrado satisfactoriamente',
+        error: 'No se pudo registrar el contacto correctamente.'
+      }
+    )
+  }
+
+  const handleNewDBAccessSubmit = async () => {
+    setIsSubmitting(true);
+    const contact: ContactInsert = {
+      clientId: form.getValues('isClientContact') ? parseInt(form.getValues('client.id'), 10) : undefined,
+      name: newDBContact.name,
+      email: newDBContact.email,
+      status: newDBContact.status,
+      type: newDBContact.type,
+      phone: newDBContact.phone
+    }
+    toast.promise(
+      new Promise<void>(async (resolve, reject) => {
+        try {
+          await insertContact(contact);
+          resolve();
+          setIsNewDBContactConfirmationModalOpen(false);
+          setIsCreateContactModalOpen(false)
+          setNewDBClientContact(
+            {
+              email: '',
+              name: '',
+              status: 'Activo',
+              type: 'Administrativo',
+            }
+          )
+        } catch (error) {
+          console.error(error)
+          reject(error);
+        } finally {
+          setIsSubmitting(false);
+        }
+      }),
+      {
+        loading: 'Registrando contacto',
+        success: 'Contacto registrado satisfactoriamente',
+        error: 'No se pudo registrar el contacto correctamente.'
+      }
+    )
+  }
+
+  const getDomainSchema = () => {
+    return domainFormSchema.superRefine(
+      async (data, ctx) => {
+        const { contactId , name} = data;
+        if (contactId === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El contacto es requerido.",
+            path: ["contactId"],
+          });
+        }
+
+        const alreadyRegistered = await validateDomainName(name)
+        if (!alreadyRegistered) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El nombre de dominio ya está registrado en el sistema.",
+            path: ["name"],
+          });
+        }
+      }
+    )
+  };
+
+  const newDomainSchema = getDomainSchema()
+
+  const form = useForm<z.infer<typeof newDomainSchema>>({
+    resolver: zodResolver(newDomainSchema),
     defaultValues: {
       name: '',
       provider: { id: undefined, name: undefined },
       client: { id: undefined, name: undefined },
-      contact: undefined,
-      contactId: undefined,
-      isClientContact: false
+      contactId: '',
+      isClientContact: false,
+      hasAccess: false
     },
   })
 
   const clientId = parseInt(form.getValues('client').id, 10)
-  // console.log(form.getValues('name'));
-  // console.log(form.getValues('client.id'));
-  // console.log(form.getValues('client.name'));
-  // console.log(form.getValues('expirationDate'));
-  // console.log(form.getValues('provider.id'));
-  // console.log(form.getValues('provider.name'));
-  // console.log(form.getValues('status'));
-  console.log(form.getValues('contactId'));
+  const providerId = parseInt(form.getValues('provider').id, 10)
+  useEffect(() => {
+    if (clientId) {
+      const fetchClientContacts = async () => {
+        try {
+          const clientContacts = await getContactsByClientId(clientId)
+          setClientContacts(clientContacts);
+          form.setValue('contactId', '')
+          setSelectedContact(undefined)
+        } catch (error) {
+          console.error("Error al cargar los contactos del cliente:", error);
+        }
+      };
+      fetchClientContacts();
+    }
+  }, [clientId, form, newDBContact]);
+
+  useEffect(() => {
+    const fetchContactsWithoutClient = async () => {
+      try {
+        const individualContacts = await getIndividualContacts();
+        setIndividualContacts(individualContacts);
+      } catch (error) {
+        console.error("Error al cargar los contactos individuales:", error);
+      }
+    };
+    fetchContactsWithoutClient();
+  }, [newDBContact]);
 
 
   useEffect(() => {
-    const fetchClientContacts = async () => {
-      try {
-        if (clientId) {
-          const contacts = await getContactsByClient(clientId);
-          const newContacts: ContactType[] = []
-          contacts.map((contact) => {
-            const newContact: ContactType = {
-              name: contact.name,
-              email: contact.email,
-              status: contact.status,
-              type: contact.type,
-              id: contact.id.toString(),
-              phone: contact.phone ? contact.phone : undefined,
-            }
-            newContacts.push(newContact)
-          })
-          setContacts(newContacts);
-          setSelectedContactId(undefined)
+    if (clientId && providerId) {
+      const fetchClientAccess = async () => {
+        try {
+          const clientAccess = await getAccessByClientAndProviderId(clientId, providerId);
+          setClientAccess(clientAccess);
+        } catch (error) {
+          console.error("Error al cargar los accesos del cliente:", error);
         }
-      } catch (error) {
-        console.error("Error al cargar las localidades:", error);
-      }
-    };
-    fetchClientContacts();
-  }, [clientId]);
+      };
+      fetchClientAccess();
+    }
+  }, [clientId, providerId]);
+
 
   return (
     <div className="bg-gradient-to-b from-gray-50 dark:from-gray-900 to-gray-100/50 dark:to-gray-800 p-4 min-h-screen">
@@ -188,6 +377,9 @@ export default function CreateDomainForm({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
+
+                {/* Nombre */}
+
                 <FormField
                   control={form.control}
                   name="name"
@@ -195,12 +387,20 @@ export default function CreateDomainForm({
                     <FormItem>
                       <FormLabel>Nombre <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="Ingrese el nombre del dominio" autoComplete='name' {...field} />
+                        <Input placeholder="Ingrese el nombre del dominio" autoComplete='name' {...field}
+                          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              e.stopPropagation()
+                            }
+                          }} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {/* PROVEEDOR */}
 
                 <FormField
                   control={form.control}
@@ -232,6 +432,8 @@ export default function CreateDomainForm({
                     </FormItem>
                   )}
                 />
+
+                {/* CLIENTE */}
 
                 <FormField
                   control={form.control}
@@ -295,7 +497,7 @@ export default function CreateDomainForm({
                   )}
                 />
 
-                {/* TODO DINÁMICO */}
+                {/* ESTADO -> TODO DINÁMICO */}
                 <FormField
                   control={form.control}
                   name="status"
@@ -331,6 +533,9 @@ export default function CreateDomainForm({
                   )}
                 />
               </div>
+
+              {/* FECHA DE VENCIMIENTO */}
+
               <FormField
                 control={form.control}
                 name="expirationDate"
@@ -355,13 +560,13 @@ export default function CreateDomainForm({
                       </PopoverTrigger>
                       <PopoverContent className="p-0 w-auto" align="start">
                         <Calendar
+                          captionLayout="dropdown-buttons"
                           mode="single"
+                          fromDate={addDays(new Date(), 1)}
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date()
-                          }
                           initialFocus
+                          locale={es}
                         />
                       </PopoverContent>
                     </Popover>
@@ -370,88 +575,228 @@ export default function CreateDomainForm({
                 )}
               />
 
-              {!form.watch('isClientContact') && form.watch('client.id') &&
-                <FormItem>
-                  <div className="flex items-center gap-5">
-                    <span className='peer-disabled:opacity-70 mb-4 font-medium text-sm leading-none peer-disabled:cursor-not-allowed'>Contacto <span className="text-red-500">*</span></span>
-                    {temporaryContact.length <= 0 && <Button
-                      aria-labelledby="button-label"
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsCreateContactModalOpen(true);
-                      }}
-                      className='rounded-full w-8 h-8'
-                    >
-                      <Plus />
-                    </Button>}
-                  </div>
-                  <div className="gap-4 w-1/2">
-                    {temporaryContact.map((contact, index) => (
-                      <Contact key={contact.email} contact={contact} index={index} removeContact={removeContact} editContact={editContact} contactSchema={getContactSchema(null)} />
-                    ))
-                    }
-                  </div>
-                  <ResponsiveDialog open={isCreateContactModalOpen} onOpenChange={setIsCreateContactModalOpen} title='Agregar contacto' description='Agregue los datos correspondientes al contacto.'>
-                    <CreateContactForm onSave={addContact} contactSchema={getContactSchema(null)} />
-                  </ResponsiveDialog>
-                </FormItem>}
+              {/* CONTACTO DEL CLIENTE */}
 
-
-              {form.watch('client.id') &&
-
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="isClientContact"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Usar contacto del cliente</FormLabel>
-                          <FormDescription>
-                            Activar para usar el contacto del cliente seleccionado
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
+              <div className="space-y-4">
+                <span className='items-center peer-disabled:opacity-70 font-medium text-center text-sm leading-none peer-disabled:cursor-not-allowed'>Contacto <span className="text-red-500">*</span></span>
+                <FormField
+                  control={form.control}
+                  name="isClientContact"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Usar un contacto activo del cliente</FormLabel>
+                        <FormDescription>
+                          Activar para seleccionar un contacto del cliente.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('contactId', '')
+                            setSelectedContact(undefined)
+                            form.setValue('isIndividualContact', false)
+                          }}
+                          disabled={!form.watch('client.id')}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                {form.watch("isClientContact") && (
+                  <>
+                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsCreateContactModalOpen(true);
+                        }}
+                        className='w-full h-36 [&_svg]:size-9'
+                      >
+                        <Plus className='text-gray-700' />
+                      </Button>
+                      <ResponsiveDialog
+                        open={isCreateContactModalOpen}
+                        onOpenChange={() => setIsCreateContactModalOpen(false)}
+                        title='Agregar nuevo contacto del cliente'
+                        description='Agregue los datos correspondientes al contacto.'
+                      >
+                        <CreateContactForm
+                          onSave={addNewDbContact}
+                          contactSchema={getContactSchema()}
+                        />
+                      </ResponsiveDialog>
+                      {clientContacts.length > 0 && (
+                        clientContacts.map((contact) => {
+                          return <ContactInfoCard
+                            key={contact.email}
+                            contact={contact}
+                            isSelected={form.getValues('contactId') === contact.id.toString()}
+                            onSelect={handleSelectContact}
                           />
-                        </FormControl>
-                      </FormItem>
+                        })
+                      )}
+                    </div>
+                    {clientContacts.length === 0 && (
+                      <p className='font-medium text-destructive text-sm'>
+                        Este cliente no tiene contactos.
+                      </p>
                     )}
-                  />
-                  {form.formState.errors.contactId && <p
+                  </>
+                )}
+
+                {/* CONTACTO INDIVIDUAL */}
+
+
+                <FormField
+                  control={form.control}
+                  name="isIndividualContact"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Usar un contacto activo individual</FormLabel>
+                        <FormDescription>
+                          Activar para seleccionar un contacto que no pertenece a un cliente.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('contactId', '')
+                            setSelectedContact(undefined)
+                            form.setValue('isClientContact', false)
+                          }}
+                          disabled={!form.watch('client.id')}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("isIndividualContact") &&
+                  <>
+                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsCreateContactModalOpen(true);
+                        }}
+                        className='w-full h-36 [&_svg]:size-9'
+                      >
+                        <Plus className='text-gray-700' />
+                      </Button>
+                      <ResponsiveDialog open={isCreateContactModalOpen} onOpenChange={() => setIsCreateContactModalOpen(false)} title='Agregar nuevo contacto individual' description='Agregue los datos correspondientes al contacto.'>
+                        <CreateContactForm onSave={addNewDbContact} contactSchema={getContactSchema()} />
+                      </ResponsiveDialog>
+                      {individualContacts.map((contact) => (
+                        <ContactInfoCard
+                          key={contact.email}
+                          contact={contact}
+                          isSelected={form.getValues('contactId') === contact.id.toString()}
+                          onSelect={handleSelectContact} />
+                      ))}
+                    </div>
+                    {individualContacts.length === 0 && (
+                      <p className='font-medium text-destructive text-sm'>
+                        No hay contactos individuales creados.
+                      </p>
+                    )}
+                  </>
+                }
+
+                {form.formState.errors.contactId &&
+                  <p
                     className='font-medium text-destructive text-sm'>
                     {form.formState.errors.contactId.message}
                   </p>
-                  }
+                }
+              </div>
 
-                  {form.watch("isClientContact") && (contacts.length > 0 ? (
-                    <>
-                      <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
-                        {contacts.map((contact) => (
-                          <ContactInfoCard
-                            key={contact.email}
-                            {...contact}
-                            isSelected={selectedContactId === contact.id}
-                            onSelect={handleSelectContact} />
-                        ))}
+
+              {/* ACCESO */}
+
+              <div className="space-y-4">
+                <span className='items-center peer-disabled:opacity-70 font-medium text-center text-sm leading-none peer-disabled:cursor-not-allowed'>Acceso</span>
+                <FormField
+                  control={form.control}
+                  name="hasAccess"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Seleccionar un acceso o crear uno nuevo</FormLabel>
+                        <FormDescription>
+                          Activar para seleccionar o crear un acceso del cliente y proveedor seleccionado.
+                        </FormDescription>
                       </div>
-                    </>
-                  ) :
-                    (
-                      <div>
-                        Este cliente no tiene contactos
-                      </div>
-                    )
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('accessId', '')
+                            setSelectedAccess(undefined)
+                          }}
+                          disabled={!form.watch('client.id') || !form.watch('provider.id')}
+                        />
+                      </FormControl>
+                    </FormItem>
                   )}
-                </div>
-              }
-
-              {/* {form.watch('client.id') && form.watch('provider.id') &&  */}
-
-              {/* } */}
+                />
+                {form.watch("hasAccess") && (
+                  <>
+                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsCreateAccessModalOpen(true);
+                        }}
+                        className='w-full h-36 [&_svg]:size-9'
+                      >
+                        <Plus className='text-gray-700' />
+                      </Button>
+                      <ResponsiveDialog
+                        open={isCreateAccessModalOpen}
+                        onOpenChange={() => setIsCreateAccessModalOpen(false)}
+                        title='Agregar nuevo acceso del cliente'
+                        description='Agregue los datos correspondientes al acceso para el cliente y proveedor seleccionado.'
+                      >
+                        <CreateAccessForm
+                          onSave={addNewDbAccess}
+                          accessSchema={getAccessSchema()}
+                          providers={providers}
+                          providerId={form.getValues('provider.id')}
+                        />
+                      </ResponsiveDialog>
+                      {clientAccess.length > 0 && (
+                        clientAccess.map((access, index) => (
+                          <AccessInfoCard
+                            key={access.username}
+                            access={access}
+                            index={index}
+                            provider={access.provider?.name}
+                            isSelected={form.getValues('accessId') === access.id.toString()}
+                            onSelect={handleSelectAccess} />
+                        ))
+                      )}
+                    </div>
+                    {clientAccess.length === 0 && (
+                      <p className='font-medium text-destructive text-sm'>
+                        El cliente no tiene accesos para el proveedor seleccionado.
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
 
               <div className='flex justify-end'>
                 <Button
@@ -476,6 +821,15 @@ export default function CreateDomainForm({
           </Form>
         </CardContent>
       </Card>
-    </div>
+      <ResponsiveDialog open={isNewDBContactConfirmationModalOpen} onOpenChange={() => setIsNewDBContactConfirmationModalOpen(false)} title='Confirmar registro de nuevo contacto' description='Revise que los datos sean correctos y confirme el registro.' className='sm:max-w-[700px]'>
+        <NewClientContactConfirmationModal contact={newDBContact} handleSubmit={handleNewDBContactSubmit} />
+      </ResponsiveDialog>
+      <ResponsiveDialog open={isNewDBAccessConfirmationModalOpen} onOpenChange={() => setIsNewDBAccessConfirmationModalOpen(false)} title='Confirmar registro del nuevo acceso' description='Revise que los datos sean correctos y confirme el registro.' className='sm:max-w-[700px]'>
+        <NewClientAccessConfirmationModal access={newDBAccess} handleSubmit={handleNewDBAccessSubmit} />
+      </ResponsiveDialog>
+      <ResponsiveDialog open={isConfirmationDomainModalOpen} onOpenChange={() => setIsConfirmationDomainModalOpen(false)} title='Confirmar registro' description='Revise que los datos sean correctos y confirme el registro.' className='sm:max-w-[700px]'>
+        <CreateDomainConfirmationModal handleSubmit={handleFinalSubmit} form={form} selectedContact={selectedContact} selectedAccess={selectedAccess} provider={form.getValues('provider.name')}/>
+      </ResponsiveDialog>
+    </div >
   )
 }

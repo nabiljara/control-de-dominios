@@ -1,23 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { IconMenu } from '@/components/icon-menu';
 import { ResponsiveDialog } from '@/components/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import { AccessType } from '@/validators/client-validator';
-import { Box, MoreVertical, SquarePen, StickyNote, Trash2, User } from 'lucide-react';
+import { Box, SquarePen, StickyNote, Trash2, User } from 'lucide-react';
 import { z } from 'zod';
 import { EditAccessForm } from '@/app/(root)/clients/create/_components/accesses/edit-access-form';
 import { DeleteForm } from '@/app/(root)/clients/create/_components/delete-form';
-import { Provider } from '@/actions/provider-actions';
+import { Provider } from '@/db/schema';
 
 export function Access({
   access,
@@ -36,6 +29,19 @@ export function Access({
 }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const handleEdit = (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsEditOpen(true)
+  }
+
+  const handleDelete = (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDeleteOpen(true)
+  }
+
   return (
     <>
       <ResponsiveDialog
@@ -44,7 +50,7 @@ export function Access({
         title="Editar acceso"
         description='Edite los campos correspondientes al acceso.'
       >
-        <EditAccessForm setIsOpen={setIsEditOpen} editAccess={editAccess} index={index} accessSchema={accessSchema} access={access} providers={providers}/>
+        <EditAccessForm setIsOpen={setIsEditOpen} editAccess={editAccess} index={index} accessSchema={accessSchema} access={access} providers={providers} />
       </ResponsiveDialog>
       <ResponsiveDialog
         open={isDeleteOpen}
@@ -52,7 +58,7 @@ export function Access({
         title="Eliminar accesso"
         description="Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este accesso?"
       >
-        <DeleteForm setIsOpen={setIsDeleteOpen} index={index} remove={removeAccess} />
+        <DeleteForm onClose={() => setIsDeleteOpen(false)} index={index} remove={removeAccess} />
       </ResponsiveDialog>
       <Card className="relative flex shadow-sm hover:shadow-md p-4 w-full transition-all duration-200">
         {/* Card Content */}
@@ -77,53 +83,23 @@ export function Access({
               </span>
             </div>
           )}
+          <div className="top-4 right-4 z-10 absolute flex justify-between">
+            <Button
+              onClick={handleEdit}
+              className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-neutral-900 transition-all duration-75"
+              variant='ghost'
+            >
+              <SquarePen className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={handleDelete}
+              className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-red-500 hover:text-red-500 transition-all duration-75"
+              variant='ghost'
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         </CardContent>
-
-        {/* Dropdown Menu */}
-        <div className="top-4 right-4 z-10 absolute">
-          <span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex data-[state=open]:bg-muted p-0 w-8 h-8"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                  <span className="sr-only">Abrir menú</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="z-50 w-[160px]">
-                <DropdownMenuItem className="flex justify-between items-center p-0 w-full font-base text-left text-neutral-500 text-sm group">
-                  <button
-                    onClick={() => {
-                      setIsEditOpen(true);
-                    }}
-                    className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-neutral-900 transition-all duration-75"
-                  >
-                    <IconMenu
-                      text="Editar"
-                      icon={<SquarePen className="w-4 h-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex justify-between items-center p-0 w-full font-base text-left text-neutral-500 text-sm group">
-                  <button
-                    onClick={() => {
-                      setIsDeleteOpen(true);
-                    }}
-                    className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-red-500 transition-all duration-75"
-                  >
-                    <IconMenu
-                      text="Eliminar"
-                      icon={<Trash2 className="w-4 h-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </span>
-        </div>
       </Card>
     </>
   );

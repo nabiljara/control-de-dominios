@@ -15,11 +15,15 @@ import { Provider } from '@/db/schema'
 export function CreateAccessForm({
   onSave,
   accessSchema,
-  providers
+  providers,
+  onClose,
+  providerId
 }: {
   onSave: (access: AccessType) => void;
   accessSchema: z.Schema;
   providers: Provider[]
+  onClose?: () => void;
+  providerId?: string | undefined
 }) {
   const [isPending, setIsPending] = useState(false)
 
@@ -42,7 +46,9 @@ export function CreateAccessForm({
     if (isValid) {
       const data = form.getValues()
       onSave(data)
-      form.reset()
+      if (onClose) {
+        onClose()
+      }
     }
     setIsPending(false)
   }
@@ -61,7 +67,11 @@ export function CreateAccessForm({
                 if (selectedProvider) {
                   form.setValue("provider.name", selectedProvider.name);
                 }
-              }} name='provider'>
+              }}
+                defaultValue={providerId ? providerId : undefined}
+                disabled={providerId !== undefined}
+                name='provider'
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione el proveedor" />

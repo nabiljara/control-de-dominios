@@ -12,7 +12,7 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import { AccessType } from '@/validators/client-validator'
 import { Textarea } from '@/components/ui/textarea'
 import { PasswordInput } from '@/components/password-input'
-import { Provider } from '@/actions/provider-actions'
+import { Provider } from '@/db/schema'
 
 export function EditAccessForm({
   accessSchema,
