@@ -19,6 +19,7 @@ import {
 import { formatDate } from "@/lib/utils"
 import {
   Calendar,
+  Contact,
   Eye,
   Globe,
   Mail,
@@ -36,10 +37,11 @@ import EditableClientCard from "../_components/editable-client-card"
 import { ClientWithRelations } from "@/db/schema"
 import { getLocalities } from "@/actions/locality-actions"
 import { getContactsByClient } from "@/actions/contacts-actions"
-import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { getProviders } from "@/actions/provider-actions"
-import { clientFormSchema } from "@/validators/client-validator"
-import { CreateAccessModal } from "./create-access-modal"
+
+import { CreateContactModal } from "../../contacts/_components/create-contact-modal"
+import { CreateAccessModal } from "../../../../components/access/create-access-modal"
+import { accessesSchema } from "@/validators/client-validator"
 
 export default async function ClientPage({
   params
@@ -52,7 +54,6 @@ export default async function ClientPage({
   // const saveAccess = async () => {
   //   console.log("SAVE")
   // }
-
   if (client) {
     const { access, contacts, ...clientWithoutRelations } = client
     const clientWithoutRelationsTyped = clientWithoutRelations as Omit<
@@ -71,11 +72,21 @@ export default async function ClientPage({
         />
         <div className="md:grid-rows grid gap-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Contactos</CardTitle>
-              <CardDescription>
-                Información de los contactos del cliente
-              </CardDescription>
+            <CardHeader className="flex">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Contactos</CardTitle>
+                  <CardDescription>
+                    Información de los contactos del cliente
+                  </CardDescription>
+                </div>
+                <div className="flex items-center">
+                  <CreateContactModal
+                    from="clients"
+                    client={clientWithoutRelationsTyped}
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -144,8 +155,11 @@ export default async function ClientPage({
                           {formatDate(contact.updatedAt)}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Link href={`/contacts/${contact.id}`}>
+                      <TableCell className="flex items-center justify-center">
+                        <Link
+                          className="flex items-center justify-center text-center"
+                          href={`/contacts/${contact.id}`}
+                        >
                           <Eye className="mr-2 h-4 w-4 opacity-70" />
                         </Link>
                       </TableCell>
@@ -157,23 +171,21 @@ export default async function ClientPage({
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>
-                {/* <div>
-                  <div> */}
-                Accesos
-                <CardDescription>
-                  Información de los accesos del cliente
-                </CardDescription>
-                {/* </div>
-                  <div>
-                    <CreateAccessModal
-                      // onSave={saveAccess}
-                      providers={providers}
-                    />
-                  </div>
-                </div> */}
-              </CardTitle>
+            <CardHeader className="flex">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Accesos</CardTitle>
+                  <CardDescription>
+                    Información de los accesos del cliente
+                  </CardDescription>
+                </div>
+                <div className="flex items-center">
+                  <CreateAccessModal
+                    providers={providers}
+                    client={clientWithoutRelationsTyped}
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -249,11 +261,16 @@ export default async function ClientPage({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Dominio</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Proveedor</TableHead>
-                    <TableHead>Fecha de expiración</TableHead>
-                    <TableHead>Ultima modificación</TableHead>
+                    <TableHead className="text-center">Dominio</TableHead>
+                    <TableHead className="text-center">Estado</TableHead>
+                    <TableHead className="text-center">Proveedor</TableHead>
+                    <TableHead className="text-center">
+                      Fecha de expiración
+                    </TableHead>
+                    <TableHead className="text-center">
+                      Ultima modificación
+                    </TableHead>
+                    <TableHead className="text-center">Ver</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -266,15 +283,29 @@ export default async function ClientPage({
                   ) : (
                     client.domains.map((domain, index) => (
                       <TableRow key={index}>
-                        <TableCell>
-                          <div className="flex items-center">
+                        <TableCell className="text-center">
+                          <div className="justify- flex items-center justify-center">
                             <Globe className="mr-2 h-4 w-4 opacity-70" />
-                            {domain.name}
+                            <Link
+                              className="cursor-pointer hover:underline"
+                              href={`/domains/${domain.id}`}
+                            >
+                              {domain.name}
+                            </Link>
                           </div>
                         </TableCell>
-                        <TableCell>{domain.status}</TableCell>
-                        <TableCell>{domain.provider.name}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
+                          {domain.status}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Link
+                            className="cursor-pointer hover:underline"
+                            href={`/providers/${domain.provider.id}`}
+                          >
+                            {domain.provider.name}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-center">
                           {new Date(
                             domain.expirationDate as string
                           ).toLocaleString("es-ES", {
@@ -284,7 +315,7 @@ export default async function ClientPage({
                             hour12: false
                           })}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           {new Date(domain.updatedAt as string).toLocaleString(
                             "es-ES",
                             {
@@ -296,6 +327,14 @@ export default async function ClientPage({
                               hour12: false
                             }
                           )}
+                        </TableCell>
+                        <TableCell className="flex items-center justify-center">
+                          <Link
+                            className="flex items-center justify-center text-center"
+                            href={`/domains/${domain.id}`}
+                          >
+                            <Eye className="mr-2 h-4 w-4 opacity-70" />
+                          </Link>
                         </TableCell>
                       </TableRow>
                     ))
