@@ -23,29 +23,41 @@ import {
 import PhoneInput from "react-phone-input-2"
 import "react-phone-input-2/lib/high-res.css"
 import { getClients } from "@/actions/client-actions"
-import { Client, ContactInsert } from "@/db/schema"
+import { Client, ClientWithRelations, ContactInsert } from "@/db/schema"
 import { toast } from "sonner"
 import { insertContact } from "@/actions/contacts-actions"
 import { contactSchema } from "@/validators/contacts-validator"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog"
+import { Contact } from "lucide-react"
+import { useRouter } from "next/navigation"
 //TODO: cambiarlo a el de schema
 interface CreateContactModalProps {
   from: string
-  clientId?: string
-  onSuccess: () => void
+  client?: Omit<ClientWithRelations, "access" | "contacts">
+  // domain?: Domain
+  // onSuccess?: () => void
 }
 export function CreateContactModal({
   from,
-  clientId,
-  onSuccess
+  client
+  // domain
+  // onSuccess
 }: CreateContactModalProps) {
   const [isPending, setIsPending] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const form = useForm<ContactInsert>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
       name: "",
       email: "",
       phone: undefined,
-      clientId: null,
+      clientId: from === "clients" ? client?.id : null,
       status: "Activo",
       type: undefined
     }
@@ -61,18 +73,28 @@ export function CreateContactModal({
       }
     }
   }
+
   useEffect(() => {
     fetchClients()
   }, [])
 
+  const route = useRouter()
   const onSubmit = async (data: ContactInsert) => {
     setIsPending(true)
     try {
       await insertContact(data)
       form.reset()
       setIsPending(false)
-      onSuccess()
       toast.success("Contacto ingresado correctamente")
+      if (from === "contacts") {
+        route.push("/contacts")
+      } else if (from === "clients") {
+        route.push("/clients/" + client?.id)
+      }
+      // else if (from === "domains") {
+      //   route.push("/domains/" + domain?.id)
+      // }
+      setIsModalOpen(false)
     } catch (error) {
       setIsPending(false)
       if (error instanceof z.ZodError) {
@@ -86,188 +108,218 @@ export function CreateContactModal({
       }
     }
   }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Nombre <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ingrese el nombre del contacto"
-                  autoComplete="name"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Email <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="Ingrese el email del contacto"
-                  autoComplete="email"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel htmlFor="phone">Teléfono</FormLabel>
-              <FormControl>
-                <PhoneInput
-                  inputStyle={{
-                    width: "100%",
-                    height: "2.5rem",
-                    borderRadius: "0.375rem",
-                    borderColor: "rgb(226 232 240)",
-                    paddingLeft: "60px"
-                  }}
-                  buttonStyle={{
-                    backgroundColor: "rgb(255 255 255)",
-                    borderColor: "rgb(226 232 240)"
-                  }}
-                  country={"ar"}
-                  preferredCountries={["ar", "us", "br"]}
-                  countryCodeEditable={false}
-                  value={field.value}
-                  onChange={(value) => {
-                    field.onChange(value.toString())
-                  }}
-                  inputProps={{
-                    name: "phone",
-
-                    id: "phone",
-                    placeholder: "Escribe tu número",
-                    autoComplete: "phone"
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault()
-                      event.stopPropagation()
-                    }
-                  }}
-                  autoFormat={false}
-                  enableSearch={true}
-                  disableSearchIcon={true}
-                  searchPlaceholder={"Buscar"}
-                  searchNotFound={"No hay resultados"}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Tipo <span className="text-red-500">*</span>
-              </FormLabel>
-              <Select onValueChange={field.onChange} name="type">
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione el tipo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Tecnico">Técnico</SelectItem>
-                  <SelectItem value="Administrativo">Administrativo</SelectItem>
-                  <SelectItem value="Financiero">Financiero</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Estado <span className="text-red-500">*</span>
-              </FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                name="status"
-                defaultValue={field.value || "Activo"}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione el tipo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Activo">Activo</SelectItem>
-                  <SelectItem value="Inactivo">Inactivo</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {from === "contacts" && (
-          <FormField
-            control={form.control}
-            name="clientId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cliente</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(parseInt(value, 10))
-                  }}
-                  name="clientId"
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione el cliente" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem
-                        key={client.id}
-                        value={client.id ? client.id.toString() : ""}
-                      >
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? "Agregando..." : "Agregar"}
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="default"
+          className="h-8 px-2 lg:px-3"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Nuevo contacto
+          <Contact className="ml-2 h-5 w-5" />
         </Button>
-      </form>
-    </Form>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            Nuevo contacto{" "}
+            {client ? (
+              <>
+                del cliente <span className="underline">{client.name}</span>
+              </>
+            ) : (
+              ""
+            )}
+          </DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Nombre <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ingrese el nombre del contacto"
+                      autoComplete="name"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Email <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="Ingrese el email del contacto"
+                      autoComplete="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="phone">Teléfono</FormLabel>
+                  <FormControl>
+                    <PhoneInput
+                      inputStyle={{
+                        width: "100%",
+                        height: "2.5rem",
+                        borderRadius: "0.375rem",
+                        borderColor: "rgb(226 232 240)",
+                        paddingLeft: "60px"
+                      }}
+                      buttonStyle={{
+                        backgroundColor: "rgb(255 255 255)",
+                        borderColor: "rgb(226 232 240)"
+                      }}
+                      country={"ar"}
+                      preferredCountries={["ar", "us", "br"]}
+                      countryCodeEditable={false}
+                      value={field.value}
+                      onChange={(value) => {
+                        field.onChange(value.toString())
+                      }}
+                      inputProps={{
+                        name: "phone",
+
+                        id: "phone",
+                        placeholder: "Escribe tu número",
+                        autoComplete: "phone"
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault()
+                          event.stopPropagation()
+                        }
+                      }}
+                      autoFormat={false}
+                      enableSearch={true}
+                      disableSearchIcon={true}
+                      searchPlaceholder={"Buscar"}
+                      searchNotFound={"No hay resultados"}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Tipo <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} name="type">
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione el tipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Tecnico">Técnico</SelectItem>
+                      <SelectItem value="Administrativo">
+                        Administrativo
+                      </SelectItem>
+                      <SelectItem value="Financiero">Financiero</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Estado <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    name="status"
+                    defaultValue={field.value || "Activo"}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione el tipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Activo">Activo</SelectItem>
+                      <SelectItem value="Inactivo">Inactivo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="clientId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cliente</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(parseInt(value, 10))
+                    }}
+                    name="clientId"
+                    defaultValue={
+                      from === "clients" ? client?.id.toString() : undefined
+                    }
+                    disabled={from === "clients" || from === "domains"}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione el cliente" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem
+                          key={client.id}
+                          value={client.id ? client.id.toString() : ""}
+                        >
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" disabled={isPending} className="w-full">
+              {isPending ? "Agregando..." : "Agregar"}
+            </Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   )
 }

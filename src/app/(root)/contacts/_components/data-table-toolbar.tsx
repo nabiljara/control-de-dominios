@@ -60,27 +60,7 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex space-x-2">
         <DataTableViewOptions table={table} />
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button variant="default" className="h-8 px-2 lg:px-3">
-              Nuevo contacto
-              <CirclePlus className="ml-2 h-5 w-5" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Crear Nuevo Contacto</DialogTitle>
-            </DialogHeader>
-            {/* <ResponsiveDialog
-              open={isCreateContactModalOpen}
-              // onOpenChange={setIsCreateContactModalOpen}
-              title="Agregar contacto"
-              description="Agregue los datos correspondientes al contacto."
-            > */}
-            <CreateContactModal from="contacts" onSuccess={handleSuccess} />
-            {/* </ResponsiveDialog> */}
-          </DialogContent>
-        </Dialog>
+        <CreateContactModal from="contacts" />
       </div>
     </div>
   )

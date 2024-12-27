@@ -172,8 +172,8 @@ export default function EditableClientCard({
                 name: domain.name,
                 status: domain.status,
                 expirationDate: domain.expirationDate.toISOString(),
-                providerId: parseInt(domain.provider.id),
-                providerRegistrationDate: new Date().toISOString()
+                providerId: parseInt(domain.provider.id)
+                // providerRegistrationDate: new Date().toISOString()
               }
               await updateDomain(modifiedDomain)
             } catch (error) {
