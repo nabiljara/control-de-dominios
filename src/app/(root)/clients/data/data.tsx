@@ -1,6 +1,6 @@
-import { Ban, Building, Check, Pause, User, Users } from "lucide-react"
+import { Ban, Building, Check, Hourglass, Pause, User, Users } from "lucide-react"
 
-export const statuses = [
+export const clientStatus = [
   {
     value: "Activo",
     label: "Activo",
@@ -14,6 +14,29 @@ export const statuses = [
   {
     value: "Suspendido",
     label: "Suspendido",
+    icon: Ban,
+  }
+]
+
+export const domainStatus = [
+  {
+    value: "Activo",
+    label: "Activo",
+    icon: Check,
+  },
+  {
+    value: "Vencido",
+    label: "Vencido",
+    icon: Pause,
+  },
+  {
+    value: "Dejar vencer",
+    label: "Dejar vencer",
+    icon: Hourglass,
+  },
+  {
+    value: "Baja permanente",
+    label: "Baja permanente",
     icon: Ban,
   }
 ]

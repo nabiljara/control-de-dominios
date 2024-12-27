@@ -1,0 +1,177 @@
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DomainWithRelations } from "@/db/schema";
+import { Box, CalendarDays, Clock, Contact, ExternalLink, Globe, History, Mail, Phone, User } from "lucide-react";
+import {formatDate } from "@/lib/utils"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
+import { Key, FileText } from 'lucide-react'
+import Link from "next/link";
+import { UsernameCopy } from "@/app/(root)/clients/_components/username-copy";
+import { PasswordCell } from "@/app/(root)/clients/_components/password-cell";
+
+
+interface DomainInfoCardProps {
+  domain: DomainWithRelations
+}
+
+
+interface SectionProps {
+  title: string
+  icon: React.ReactNode
+  children: React.ReactNode
+}
+
+function Section({ title, icon, children }: SectionProps) {
+  return (
+    <Card className="flex-1">
+      <CardHeader>
+        <CardTitle className="flex items-center text-lg">
+          {icon}
+          <span className="ml-2">{title}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  )
+}
+
+export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
+  // TODO: Cambiar a español
+  const historyTabs = ['clients', 'contacts', 'providers']
+
+  return (
+    <Card className="w-full">
+      <CardHeader className="lg:flex-row lg:justify-between lg:items-center space-y-6 lg:space-y-0 pb-0">
+        <CardTitle>
+          <Link href={domain.name} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
+            <span className="flex items-center text-2xl">
+              <Globe className="mr-2" />
+              {domain.name}
+            </span>
+          </Link>
+        </CardTitle>
+        <div className="flex items-center text-muted-foreground">
+          <CalendarDays className="mr-2" />
+          <span>Expira: {formatDate(domain.expirationDate)}</span>
+        </div>
+        <div className="flex items-center text-muted-foreground">
+          <Clock className="mr-2" />
+          <span>Actualizado: {formatDate(domain.updatedAt)}</span>
+        </div>
+        <Badge variant={domain.status === 'Activo' ? 'default' : 'secondary'} className="px-3 py-1 w-min text-lg">
+          {domain.status}
+        </Badge>
+      </CardHeader>
+      <CardContent>
+        <Separator className="my-6" />
+
+        <div className={`gap-4 grid grid-cols-1 md:${domain.accessData ? 'grid-cols-2' : ''} lg:${domain.accessData ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
+          <Section title="Cliente" icon={<User className="mr-2" />}>
+            <div className="space-y-2">
+              <p className="font-medium">{domain.client.name}</p>
+              <p>Tamaño: {domain.client.size}</p>
+              <p>Estado: {domain.client.status}</p>
+            </div>
+          </Section>
+
+          <Section title="Contacto" icon={<Contact className="mr-2" />}>
+            <div className="space-y-2">
+              <p className="font-medium">{domain.contact.name}</p>
+              <p className="flex items-center">
+                <Mail className="mr-2" />
+                <a href={`mailto:${domain.contact.email}`} className="text-blue-500 hover:underline">
+                  {domain.contact.email}
+                </a>
+              </p>
+              <p className="flex items-center">
+                <Phone className="mr-2" />
+                <Link href={`tel:${domain.contact.phone}`} className="text-blue-500 hover:underline">
+                  {domain.contact.phone}
+                </Link>
+              </p>
+              <p>Tipo: {domain.contact.type}</p>
+            </div>
+          </Section>
+
+          <Section title="Proveedor" icon={<Box className="mr-2" />}>
+            <div className="space-y-2">
+              <p className="font-medium">{domain.provider.name}</p>
+              <Link href={domain.provider.url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
+                <ExternalLink className="mr-2" />
+                {domain.provider.url}
+              </Link>
+            </div>
+          </Section>
+
+          {domain.accessData && (
+            <Section title="Acceso" icon={<Key className="mr-2" />}>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <User className="mr-2" />
+                  {/* <span>Usuario: {domain.accessData.access.username}</span> */}
+                  <UsernameCopy username={domain.accessData.access.username} />
+                </div>
+                <div className="flex items-center">
+                  <PasswordCell password={domain.accessData.access.password} />
+                </div>
+                <p className="flex items-center">
+                  <FileText className="mr-2" />
+                  <span>Notas: {domain.accessData.access.notes}</span>
+                </p>
+              </div>
+            </Section>
+          )
+          }
+        </div>
+
+        <Separator className="my-6" />
+
+        <div className="mt-6">
+          <h3 className="flex items-center mb-4 font-semibold text-xl">
+            <History className="mr-2" />Historial
+          </h3>
+          <Tabs defaultValue="clients">
+            <TabsList>
+              {historyTabs.map((tab) => (
+                <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>
+              ))}
+            </TabsList>
+            {historyTabs.map((tab) => (
+              <TabsContent key={tab} value={tab}>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">ID</TableHead>
+                      <TableHead>Inicio</TableHead>
+                      <TableHead>Fin</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {domain.history
+                      .filter(item => item.entity === tab)
+                      .map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.id}</TableCell>
+                          <TableCell>{formatDate(item.startDate)}</TableCell>
+                          <TableCell>{item.endDate ? formatDate(item.endDate) : '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={item.active ? 'default' : 'secondary'}>
+                              {item.active ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

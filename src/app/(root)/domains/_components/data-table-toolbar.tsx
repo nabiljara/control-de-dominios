@@ -8,13 +8,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 
-import { sizes, statuses } from "@/app/(root)/clients/data/data"
+import { sizes, domainStatus } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { CirclePlus } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { getClients } from "@/actions/client-actions"
+import { getProviders } from "@/actions/provider-actions"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+}
+
+type Options = {
+  label: string
+  value: string
+  icon?: React.ComponentType<{ className?: string }>
 }
 
 export function DataTableToolbar<TData>({
@@ -22,11 +31,56 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
 
+  const [clients, setClients] = useState<Options[]>([]);
+
+  const [providers, setProviders] = useState<Options[]>([]);
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const providers = await getProviders();
+        const newProviders: Options[] = []
+        providers.map((provider) => {
+          const newProvider: Options = {
+            label: provider.name,
+            value: provider.id.toString()
+          }
+          newProviders.push(newProvider)
+        })
+        setProviders(newProviders);
+      } catch (error) {
+        console.error("Error al cargar las localidades:", error);
+      }
+    };
+
+    fetchProviders();
+  }, []);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const clients = await getClients();
+        const newClients: Options[] = []
+        clients.map((client) => {
+          const newClient: Options = {
+            label: client.name,
+            value: client.id.toString()
+          }
+          newClients.push(newClient)
+        })
+        setClients(newClients);
+      } catch (error) {
+        console.error("Error al cargar las localidades:", error);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filtrar clientes"
+          placeholder="Filtrar dominios"
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -37,16 +91,27 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Estado"
-            options={statuses}
+            options={domainStatus}
           />
         )}
-        {table.getColumn("segment") && (
+
+
+        {table.getColumn("client") && (
           <DataTableFacetedFilter
-            column={table.getColumn("segment")}
-            title="Segmento"
-            options={sizes}
+            column={table.getColumn("client")}
+            title="Cliente"
+            options={clients}
           />
         )}
+
+        {table.getColumn("provider") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("provider")}
+            title="Proveedor"
+            options={providers}
+          />
+        )}
+
         {isFiltered && (
           <Button
             variant="ghost"
@@ -66,8 +131,8 @@ export function DataTableToolbar<TData>({
           asChild
         >
           <Link href="/domains/create">
-          Nuevo dominio
-          <CirclePlus className="ml-2 w-5 h-5" />
+            Nuevo dominio
+            <CirclePlus className="ml-2 w-5 h-5" />
           </Link>
         </Button>
       </div>

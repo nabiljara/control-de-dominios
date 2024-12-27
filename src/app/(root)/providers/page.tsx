@@ -5,7 +5,7 @@ import { getProviders } from "@/actions/provider-actions"
 import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
-  title: "Provedores"
+  title: "Proveedores"
 }
 
 export default async function ProvidersPage() {
@@ -14,12 +14,12 @@ export default async function ProvidersPage() {
   return (
     <>
       <Toaster richColors />
-      <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <div className="flex items-center justify-between space-y-2">
+      <div className="md:flex flex-col flex-1 space-y-8 hidden p-8 h-full">
+        <div className="flex justify-between items-center space-y-2">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Provedores</h2>
+            <h2 className="font-bold text-2xl tracking-tight">Proveedores</h2>
             <p className="text-muted-foreground">
-              Listado de todos los provedores
+              Listado de todos los proveedores
             </p>
           </div>
         </div>

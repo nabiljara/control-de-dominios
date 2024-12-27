@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 
-import { sizes, statuses } from "@/app/(root)/clients/data/data"
+import { sizes, clientStatus } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { CirclePlus } from "lucide-react"
 import Link from "next/link"
@@ -74,7 +74,7 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Estado"
-            options={statuses}
+            options={clientStatus}
           />
         )}
         {table.getColumn("size") && (

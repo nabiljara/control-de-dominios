@@ -1,12 +1,12 @@
 "use server"
 import db from "@/db";
-import { domainAccess, DomainInsert, domains } from "@/db/schema";
+import { domainAccess, DomainInsert, domains, DomainWithRelations } from "@/db/schema";
 import { desc, eq, or } from "drizzle-orm";
 import { ContactPerDomain } from "../../types/contact-types";
 import { setUserId } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { parse } from "path";
+import { decryptPassword } from "@/lib/utils";
 
 
 export async function getDomains() {
@@ -16,11 +16,13 @@ export async function getDomains() {
             with: {
                 provider: {
                     columns: {
+                        id: true,
                         name: true,
                     }
                 },
                 client: {
                     columns: {
+                        id: true,
                         name: true,
                     }
                 }
@@ -33,6 +35,36 @@ export async function getDomains() {
         throw error;
     }
 };
+
+export async function getDomain(id: number): Promise<DomainWithRelations | undefined> {
+    try {
+        const domain = await db.query.domains.findFirst({
+            where: eq(domains.id, id),
+            with:
+            {
+                client: true,
+                contact: true,
+                provider: true,
+                history: true,
+                accessData: {
+                    with: {
+                        access: true
+                    }
+                }
+            }
+        });
+        if (domain?.accessData) {
+            const decryptedPassword = decryptPassword(domain.accessData.access.password)
+            domain.accessData.access.password = decryptedPassword ? decryptedPassword : '';
+        }
+        return domain;
+    }
+    catch (error) {
+        console.error("Error al obtener el dominio:", error);
+        throw error;
+    }
+};
+
 
 export async function getDomainsByContact(idContact: number) {
     try {

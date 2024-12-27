@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 
-import { sizes, statuses } from "@/app/(root)/clients/data/data"
+import { sizes, clientStatus } from "@/app/(root)/clients/data/data"
 
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
@@ -26,10 +26,7 @@ export const columns: ColumnDef<Client>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
     enableSorting: true,
-    enableHiding: true
-    // filterFn: (row, id, value) => {
-    //   return value.includes(row.getValue(id))
-    // },
+    enableHiding: true,
   },
   {
     accessorKey: "locality",
@@ -42,7 +39,7 @@ export const columns: ColumnDef<Client>[] = [
         <>
           {/* <div className="flex space-x-2"> */}
           {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-          <span className="max-w-[500px] truncate font-medium">
+          <span className="max-w-[500px] font-medium truncate">
             {locality.name || "Sin localidad"}
           </span>
           {/* </div> */}
@@ -60,7 +57,7 @@ export const columns: ColumnDef<Client>[] = [
       <DataTableColumnHeader column={column} title="Estado" />
     ),
     cell: ({ row }) => {
-      const status = statuses.find(
+      const status = clientStatus.find(
         (status) => status.value === row.getValue("status")
       )
       if (!status) {
@@ -68,9 +65,9 @@ export const columns: ColumnDef<Client>[] = [
       }
 
       return (
-        <div className="flex w-[100px] items-center">
+        <div className="flex items-center w-[100px]">
           {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            <status.icon className="mr-2 w-4 h-4 text-muted-foreground" />
           )}
           <span>{status.label}</span>
         </div>
@@ -95,7 +92,7 @@ export const columns: ColumnDef<Client>[] = [
       return (
         <div className="flex items-center">
           {size.icon && (
-            <size.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            <size.icon className="mr-2 w-4 h-4 text-muted-foreground" />
           )}
           <span>{size.label}</span>
         </div>
