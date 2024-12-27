@@ -24,7 +24,6 @@ import { AccessType } from "@/validators/client-validator"
 import { Textarea } from "@/components/ui/textarea"
 import { PasswordInput } from "@/components/password-input"
 import { ClientWithRelations, Provider } from "@/db/schema"
-import { ResponsiveDialog } from "../responsive-dialog"
 import { accessesSchema } from "@/validators/client-validator"
 import {
   Dialog,
@@ -81,7 +80,6 @@ export function CreateAccessModal({
       const data = form.getValues()
       if (onSave) {
         onSave(data)
-        form.reset()
       } else if (client) {
         try {
           const response = await insertAccess(data, client.id)
@@ -95,7 +93,9 @@ export function CreateAccessModal({
           throw error
         }
       }
+      form.reset()
       setIsModalOpen(false)
+      //Aca iba el onClose en caso de ser necesario se puede volver a usar (solo se usaba para cerrar modales)
     }
     setIsPending(false)
   }

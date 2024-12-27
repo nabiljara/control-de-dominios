@@ -26,27 +26,27 @@ export function DataTableToolbar<TData>({
   }
   const entities = [
     {
-      value: "providers",
+      value: "Proveedores",
       label: "Proveedores"
     },
     {
-      value: "localities",
+      value: "Localidades",
       label: "Localidades"
     },
     {
-      value: "domains",
+      value: "Dominios",
       label: "Dominios"
     },
     {
-      value: "access",
+      value: "Accesos",
       label: "Accesos"
     },
     {
-      value: "clients",
+      value: "Clientes",
       label: "Clientes"
     },
     {
-      value: "users",
+      value: "Usuarios",
       label: "Usuarios"
     }
   ]

@@ -24,7 +24,7 @@ export async function createFunctions() {
          IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                VALUES (v_user_id, TG_OP, 'Proveedores', NOW(), NEW.id)
                 RETURNING id INTO v_audit_id;
     
                 IF TG_OP = 'INSERT' THEN
@@ -46,7 +46,7 @@ export async function createFunctions() {
                 
               ELSEIF TG_OP = 'DELETE' THEN
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                VALUES (v_user_id, TG_OP, 'Proveedores', NOW(), OLD.id)
                 RETURNING id INTO v_audit_id;
               END IF;
   
@@ -67,7 +67,7 @@ export async function createFunctions() {
               IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                VALUES (v_user_id, TG_OP, 'Localidades', NOW(), NEW.id)
                 RETURNING id INTO v_audit_id;
     
                 IF TG_OP = 'INSERT' THEN
@@ -83,7 +83,7 @@ export async function createFunctions() {
                 
               ELSEIF TG_OP = 'DELETE' THEN
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                VALUES (v_user_id, TG_OP, 'Localidades', NOW(), OLD.id)
                 RETURNING id INTO v_audit_id;
               END IF;
   
@@ -104,7 +104,7 @@ export async function createFunctions() {
             IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 
               INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-              VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+              VALUES (v_user_id, TG_OP, 'Clientes', NOW(), NEW.id)
               RETURNING id INTO v_audit_id;
   
               IF TG_OP = 'INSERT' THEN
@@ -151,7 +151,7 @@ export async function createFunctions() {
               
             ELSEIF TG_OP = 'DELETE' THEN
               INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-              VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+              VALUES (v_user_id, TG_OP, 'Clientes', NOW(), OLD.id)
               RETURNING id INTO v_audit_id;
 
               INSERT INTO audits_details (audit_id, old_value, new_value, field)
@@ -177,7 +177,7 @@ export async function createFunctions() {
             IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 
               INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-              VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+              VALUES (v_user_id, TG_OP, 'Accesos', NOW(), NEW.id)
               RETURNING id INTO v_audit_id;
   
               IF TG_OP = 'INSERT' THEN
@@ -224,7 +224,7 @@ export async function createFunctions() {
               
             ELSEIF TG_OP = 'DELETE' THEN
               INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-              VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+              VALUES (v_user_id, TG_OP, 'Accesos', NOW(), OLD.id)
               RETURNING id INTO v_audit_id;
 
               INSERT INTO audits_details (audit_id, old_value, new_value, field)
@@ -248,7 +248,7 @@ export async function createFunctions() {
               IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
   
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                VALUES (v_user_id, TG_OP, 'Contactos', NOW(), NEW.id)
                 RETURNING id INTO v_audit_id;
     
                 IF TG_OP = 'INSERT' THEN
@@ -307,7 +307,7 @@ export async function createFunctions() {
                 
               ELSEIF TG_OP = 'DELETE' THEN
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                VALUES (v_user_id, TG_OP, 'Contactos', NOW(), OLD.id)
                 RETURNING id INTO v_audit_id;
 
                 INSERT INTO audits_details (audit_id, old_value, new_value, field)
@@ -331,7 +331,7 @@ export async function createFunctions() {
               IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
   
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                VALUES (v_user_id, TG_OP, 'Dominios', NOW(), NEW.id)
                 RETURNING id INTO v_audit_id;
     
                 IF TG_OP = 'INSERT' THEN
@@ -347,9 +347,9 @@ export async function createFunctions() {
                     (v_audit_id, NULL, NEW.updated_at, 'Fecha de actualización');
 
                     INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
-                    VALUES (NEW.id, NEW.provider_id, 'providers', NOW(), NULL, true),
-                    (NEW.id, NEW.contact_id, 'contacts', NOW(), NULL, true),
-                    (NEW.id, NEW.client_id, 'clients', NOW(), NULL, true);
+                    VALUES (NEW.id, NEW.provider_id, 'Proveedores', NOW(), NULL, true),
+                    (NEW.id, NEW.contact_id, 'Contactos', NOW(), NULL, true),
+                    (NEW.id, NEW.client_id, 'Clientes', NOW(), NULL, true);
     
                 ELSEIF TG_OP = 'UPDATE' THEN
                     IF OLD.client_id IS DISTINCT FROM NEW.client_id THEN
@@ -357,10 +357,10 @@ export async function createFunctions() {
                         VALUES (v_audit_id, OLD.client_id, NEW.client_id, 'ID Cliente');
 
                         UPDATE domain_history SET active = false, end_date = NOW()
-                        WHERE (domain_id = OLD.id AND entity = 'clients' AND active = true); 
+                        WHERE (domain_id = OLD.id AND entity = 'Clientes' AND active = true); 
 
                         INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
-                        VALUES (OLD.id, NEW.client_id, 'clients', NOW(), NULL, true);
+                        VALUES (OLD.id, NEW.client_id, 'Clientes', NOW(), NULL, true);
 
                     END IF;
   
@@ -369,10 +369,10 @@ export async function createFunctions() {
                         VALUES (v_audit_id, OLD.provider_id, NEW.provider_id, 'provider_id');
 
                         UPDATE domain_history SET active = false, end_date = NOW()
-                        WHERE (domain_id = OLD.id AND entity = 'providers' AND active = true); 
+                        WHERE (domain_id = OLD.id AND entity = 'Proveedores' AND active = true); 
 
                         INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
-                        VALUES (OLD.id, NEW.provider_id, 'providers', NOW(), NULL, true);
+                        VALUES (OLD.id, NEW.provider_id, 'Proveedores', NOW(), NULL, true);
 
 
                     END IF;
@@ -382,10 +382,10 @@ export async function createFunctions() {
                         VALUES (v_audit_id, OLD.contact_id, NEW.contact_id, 'Telefono');
 
                         UPDATE domain_history SET active = false, end_date = NOW()
-                        WHERE (domain_id = OLD.id AND entity = 'contacts' AND active = true); 
+                        WHERE (domain_id = OLD.id AND entity = 'Contactos' AND active = true); 
 
                         INSERT INTO domain_history (domain_id, entity_id, entity, start_date, end_date, active)
-                        VALUES (OLD.id, NEW.contact_id, 'contacts', NOW(), NULL, true); 
+                        VALUES (OLD.id, NEW.contact_id, 'Contactos', NOW(), NULL, true); 
 
                     END IF;
 
@@ -417,7 +417,7 @@ export async function createFunctions() {
                 
               ELSEIF TG_OP = 'DELETE' THEN
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                VALUES (v_user_id, TG_OP, 'Dominios', NOW(), OLD.id)
                 RETURNING id INTO v_audit_id;
 
                 INSERT INTO audits_details (audit_id, old_value, new_value, field)
@@ -450,7 +450,7 @@ export async function createFunctions() {
               IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
   
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), NEW.id)
+                VALUES (v_user_id, TG_OP, 'Usuarios', NOW(), NEW.id)
                 RETURNING id INTO v_audit_id;
     
                 IF TG_OP = 'INSERT' THEN
@@ -486,7 +486,7 @@ export async function createFunctions() {
                 
               ELSEIF TG_OP = 'DELETE' THEN
                 INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
-                VALUES (v_user_id, TG_OP, TG_TABLE_NAME, NOW(), OLD.id)
+                VALUES (v_user_id, TG_OP, 'Usuarios', NOW(), OLD.id)
                 RETURNING id INTO v_audit_id;
 
                 INSERT INTO audits_details (audit_id, old_value, new_value, field)

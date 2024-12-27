@@ -33,7 +33,7 @@ export const accessesSchema = z.object({
     name: z.string({ message: "El proveedor es requerido." }),
   }),
   username: z.string()
-    .max(30, { message: "El usuario o email debe tener como máximo 30 caracteres." })
+    .max(50, { message: "El usuario o email debe tener como máximo 50 caracteres." })
     .min(1, { message: "El usuario o email es requerido." }),
   password: z.string()
     .max(30, { message: "La contraseña debe tener como máximo 30 caracteres." })
