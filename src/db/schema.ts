@@ -149,6 +149,7 @@ export const domainsRelation = relations(domains, ({ one, many }) => ({
     references: [contacts.id],
   }),
   history: many(domainHistory),
+  accessData: one(domainAccess)
 }))
 
 export const domainAccess = pgTable("domain_access", {
@@ -160,7 +161,7 @@ export const domainAccess = pgTable("domain_access", {
 },
 )
 
-export const domainAccessRelations = relations(domainAccess, ({ one, many }) => ({
+export const domainAccessRelations = relations(domainAccess, ({ one }) => ({
   access: one(access, {
     fields: [domainAccess.accessId],
     references: [access.id],
@@ -177,7 +178,7 @@ export const domainHistory = pgTable("domain_history", {
   domainId: integer("domain_id")
     .references(() => domains.id, { onDelete: "cascade" }),
   entityId: integer("entity_id").notNull(),
-  entity: domainHistoryEntityEnum("entity").notNull(),
+  entity: varchar("entity", { length: 255 }).notNull(),
   startDate: timestamp("start_date", { mode: "string" }).notNull().defaultNow(),
   endDate: timestamp("end_date", { mode: "string" }),
   active: boolean("active").default(true)
@@ -403,7 +404,7 @@ export type AccessWithRelations = Access & {
 //DOMAIN ACCESS
 export type DomainAccess = InferSelectModel<typeof domainAccess>;
 export type DomainAccessInsert = InferInsertModel<typeof domainAccess>;
-export type DomainAccessWithRelations = Access & {
+export type DomainAccessWithRelations = DomainAccess & {
   access: Access,
   domain: Domain,
 }
@@ -415,7 +416,8 @@ export type DomainWithRelations = Domain & {
   client: Client,
   provider: Provider,
   contact: Contact,
-  history: DomainHistory
+  history: DomainHistory[]
+  accessData: Omit<DomainAccessWithRelations,'domain'> | null
 }
 
 //HISTORIAL DE DOMINIO
