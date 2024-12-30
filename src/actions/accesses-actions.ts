@@ -1,11 +1,13 @@
 "use server"
 
 import db from "@/db";
-import { access } from "@/db/schema";
+import { access, AccessWithRelations } from "@/db/schema";
 import { decrypt, encrypt } from "@/lib/utils";
 import { and, desc, eq } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { AccessType } from "@/validators/client-validator";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 
 export async function getAccessByClientAndProviderId(clientId: number, providerId: number) {
@@ -52,7 +54,7 @@ export async function validateUsername(username: string, providerId: number) {
     console.error("Error al validar el email")
   }
 }
-
+//TODO: Hacer la redireccion o el revalidatePath aca para el cliente pero no para el dominio
 export async function insertAccess(acc: AccessType, clientId: number) {
   let success = false;
   try {
@@ -70,5 +72,20 @@ export async function insertAccess(acc: AccessType, clientId: number) {
   } catch (error) {
     console.error("Error al insertar el acceso:", error);
     throw error;
+  }
+}
+export async function deleteAccess(acc: Omit<AccessWithRelations, "client" | "domainAccess">) {
+  let success = false;
+  try {
+    await setUserId()
+    await db.delete(access).where(eq(access.id, acc.id)); 
+    success = true;
+  } catch (error) {
+    console.error("Error al insertar el acceso:", error);
+    throw error;
+  }
+  if (success) {
+    revalidatePath('/clients/' + acc.clientId);
+    redirect('/clients/' + acc.clientId);
   }
 }

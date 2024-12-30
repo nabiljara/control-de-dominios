@@ -303,7 +303,7 @@ export default function EditableClientCard({
                           </SelectContent>
                         </Select>
                       ) : (
-                        <span>{client.size}</span>
+                        <span className="pb-2">{client.size}</span>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -354,7 +354,7 @@ export default function EditableClientCard({
                           <FormMessage />
                         </>
                       ) : (
-                        <span>{client.locality.name}</span>
+                        <span className="pb-2">{client.locality.name}</span>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -364,7 +364,7 @@ export default function EditableClientCard({
                   Fecha de registro: {formatDate(client.createdAt)}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  Fecha de última actualización: {formatDate(client.updatedAt)}
+                  Última actualización: {formatDate(client.updatedAt)}
                 </span>
                 {isEditing && form.formState.isDirty && (
                   <div className="mt-4 flex gap-2">

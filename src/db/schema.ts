@@ -427,4 +427,7 @@ export type DomainHistoryWithRelations = Domain & {
   domain: Domain
 }
 
+//USERS
+export type User = InferSelectModel<typeof users>
+
 

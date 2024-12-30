@@ -28,6 +28,7 @@ import {
   Shield,
   StickyNote,
   Tag,
+  Trash,
   User
 } from "lucide-react"
 import Link from "next/link"
@@ -42,6 +43,7 @@ import { getProviders } from "@/actions/provider-actions"
 import { CreateContactModal } from "../../contacts/_components/create-contact-modal"
 import { CreateAccessModal } from "../../../../components/access/create-access-modal"
 import { accessesSchema } from "@/validators/client-validator"
+import { DeleteAccessModal } from "@/components/access/delete-access-modal"
 
 export default async function ClientPage({
   params
@@ -198,6 +200,7 @@ export default async function ClientPage({
                     </TableHead>
                     <TableHead className="text-center">Contraseña</TableHead>
                     <TableHead className="text-center">Notas</TableHead>
+                    <TableHead className="text-center">Acción</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -220,7 +223,12 @@ export default async function ClientPage({
                           </TableCell>
                           <TableCell className="flex justify-center">
                             <Link
-                              href={`https://${access.provider?.url}`}
+                              href={
+                                access.provider?.url.startsWith("http://") ||
+                                access.provider?.url.startsWith("https://")
+                                  ? access.provider?.url
+                                  : `https://${access.provider?.url}`
+                              }
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="flex w-min items-center justify-center underline"
@@ -242,6 +250,11 @@ export default async function ClientPage({
                             <div className="flex items-center justify-center">
                               <StickyNote className="mr-2 h-4 w-4 opacity-70" />
                               {access.notes}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center">
+                              <DeleteAccessModal access={access} />
                             </div>
                           </TableCell>
                         </TableRow>

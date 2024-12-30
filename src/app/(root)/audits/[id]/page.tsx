@@ -121,8 +121,10 @@ export default function AuditDetailsPage({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Campo</TableHead>
-                    <TableHead>Valor anterior</TableHead>
-                    <TableHead>Valor nuevo</TableHead>
+                    <TableHead className="text-center">
+                      Valor anterior
+                    </TableHead>
+                    <TableHead className="text-center">Valor nuevo</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -131,13 +133,52 @@ export default function AuditDetailsPage({
                       <TableCell>No hay detalles de la auditoría</TableCell>
                     </TableRow>
                   ) : (
-                    audit.audit_details.map((detail) => (
-                      <TableRow key={detail.id}>
-                        <TableCell>{detail.field}</TableCell>
-                        <TableCell>{detail.oldValue}</TableCell>
-                        <TableCell>{detail.newValue}</TableCell>
-                      </TableRow>
-                    ))
+                    audit.audit_details.map((detail) =>
+                      detail.field === "Fecha de actualización" ||
+                      detail.field === "Fecha de creación" ||
+                      detail.field === "Fecha de expiración" ? (
+                        <TableRow key={detail.id}>
+                          <TableCell>{detail.field}</TableCell>
+                          <TableCell className="text-center">
+                            {detail.oldValue
+                              ? new Date(
+                                  detail.oldValue as string
+                                ).toLocaleString("es-ES", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false
+                                })
+                              : "--"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {new Date(detail.newValue as string).toLocaleString(
+                              "es-ES",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false
+                              }
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        <TableRow key={detail.id}>
+                          <TableCell>{detail.field}</TableCell>
+                          <TableCell className="text-center">
+                            {detail.oldValue}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {detail.newValue}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )
                   )}
                 </TableBody>
               </Table>

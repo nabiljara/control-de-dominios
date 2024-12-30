@@ -4,11 +4,10 @@ import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { z } from "zod"
-// { id: number; createdAt: string; entityId: number; entity: string; userId: string | null; action: string; user: { name: string | null; } | null; }
 export const auditsSchema = z.object({
   id: z.number(),
   createdAt: z.string(),
-  entityId: z.number(),
+  entityId: z.string(),
   entity: z.string(),
   userId: z.string().nullable(),
   action: z.string(),
@@ -55,7 +54,7 @@ export const columns: ColumnDef<Audit>[] = [
     enableHiding: true
   },
   {
-    accessorKey: "user_name",
+    accessorKey: "userId",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Usuario" />
     ),

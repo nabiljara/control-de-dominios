@@ -172,6 +172,8 @@ export async function createFunctions() {
         DECLARE
             v_user_id TEXT := NULLIF(current_setting('audit.user_id', true), '');
             v_audit_id INT;
+            v_provider_name TEXT;
+            v_client_name TEXT;
         BEGIN
           
             IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
@@ -227,8 +229,13 @@ export async function createFunctions() {
               VALUES (v_user_id, TG_OP, 'Accesos', NOW(), OLD.id)
               RETURNING id INTO v_audit_id;
 
+              SELECT name FROM providers WHERE id = OLD.provider_id INTO v_provider_name;
+              SELECT name FROM clients WHERE id = OLD.client_id INTO v_client_name;
+
               INSERT INTO audits_details (audit_id, old_value, new_value, field)
-              VALUES (v_audit_id, OLD.username, NULL, 'Nombre de usuario');
+              VALUES (v_audit_id, OLD.username, NULL, 'Nombre de usuario'),
+                     (v_audit_id, v_client_name, NULL, 'Cliente'),
+                     (v_audit_id, v_provider_name, NULL, 'Proveedor');
 
             END IF;
 

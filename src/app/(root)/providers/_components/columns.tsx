@@ -60,7 +60,23 @@ export const columns: ColumnDef<Provider>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="URL" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("url")}</div>,
+    cell: ({ row }) => (
+      <div className="w-[80px]">
+        <a
+          className="hover:underline"
+          href={
+            (row.getValue("url") as string).startsWith("http://") ||
+            (row.getValue("url") as string).startsWith("https://")
+              ? row.getValue("url")
+              : `https://${row.getValue("url")}`
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {row.getValue("url")}
+        </a>
+      </div>
+    ),
     enableSorting: true,
     enableHiding: true
   },

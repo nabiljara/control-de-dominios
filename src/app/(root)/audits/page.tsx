@@ -3,9 +3,11 @@ import { DataTable } from "./_components/data-table"
 import { getAudits } from "@/actions/audits-actions"
 import { Toaster } from "sonner"
 import * as React from "react"
+import { getUsersB } from "@/actions/user-action/user-actions"
 
 export default async function ProvidersPage() {
   const audits = await getAudits()
+  const users = await getUsersB()
 
   return (
     <>
@@ -19,7 +21,7 @@ export default async function ProvidersPage() {
             </p>
           </div>
         </div>
-        <DataTable data={audits} columns={columns} />
+        <DataTable data={audits} columns={columns} users={users} />
       </div>
     </>
   )

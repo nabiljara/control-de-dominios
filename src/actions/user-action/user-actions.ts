@@ -14,6 +14,16 @@ export async function getUsers() {
         throw error;
     }
 };
+export async function getUsersB() {
+    try {
+        const data = await db.query.users.findMany();
+        return data;
+    }
+    catch (error) {
+        console.error("Error al obtener usuarios:", error);
+        throw error;
+    }
+};
 
 export async function setUserId() {
     try {

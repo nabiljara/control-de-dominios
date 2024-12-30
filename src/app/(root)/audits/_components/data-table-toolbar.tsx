@@ -11,13 +11,16 @@ import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { getUsers } from "@/actions/user-action/user-actions"
+import { User } from "@/db/schema"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+  users: User[]
 }
 
 export function DataTableToolbar<TData>({
-  table
+  table,
+  users
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
   interface UserOption {
@@ -64,16 +67,10 @@ export function DataTableToolbar<TData>({
       label: "DELETE"
     }
   ]
-  const users = [
-    {
-      value: null,
-      label: "Sin nombre"
-    },
-    {
-      value: "lucca",
-      label: "lucca"
-    }
-  ]
+  const userActions = users.map((user) => ({
+    value: user.id,
+    label: user.name ?? "Sin Usuario"
+  }))
   const [userOptions, setUserOptions] = useState<UserOption[]>([])
   useEffect(() => {
     async function fetchUsers() {
@@ -120,12 +117,19 @@ export function DataTableToolbar<TData>({
             options={actions}
           />
         )}
+        {table.getColumn("userId") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("userId")}
+            title="Usuario"
+            options={userActions}
+          />
+        )}
         {/* TODO: Obtiene los usuarios pero no muestra bien el valor seleccionado en la tabla */}
         {/* {table.getColumn("user_name") && (
           <DataTableFacetedFilter
             column={table.getColumn("user_name")}
             title="Usuario"
-            options={userOptions}
+            options={userActions}
           />
         )} */}
         {isFiltered && (

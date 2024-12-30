@@ -27,15 +27,18 @@ import {
 
 import { DataTablePagination } from "@/components/data-table-pagination"
 import { DataTableToolbar } from "./data-table-toolbar"
+import { User } from "@/db/schema"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  users: User[]
 }
 
 export function DataTable<TData, TValue>({
   columns,
-  data
+  data,
+  users
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -69,7 +72,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} users={users} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -99,8 +102,6 @@ export function DataTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {/* TODO: Agregar link a la entidad para que se clickee */}
-                      {/* <Link href={entity + "/"} key={cell.id} className="w-full"> */}
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
