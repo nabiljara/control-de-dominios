@@ -120,7 +120,7 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
           />
 
           <Button type="submit">
-            <Save className="mr-2 h-4 w-4" />
+            <Save className="mr-2 w-4 h-4" />
             Registrar Proveedor
           </Button>
         </form>
@@ -131,7 +131,6 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
         onOpenChange={setIsConfirmationModalOpen}
       >
         <DialogContent className="sm:max-w-[425px]">
-          {/* <Toaster /> */}
           <DialogHeader>
             <DialogTitle>Confirmar Registro de Proveedor</DialogTitle>
             <DialogDescription>
@@ -139,17 +138,17 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
               el registro.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="gap-4 grid py-4">
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4" />
+                    <Building className="w-4 h-4" />
                     <span className="font-medium">Nombre:</span>{" "}
                     {form.getValues().name}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4" />
+                    <Building className="w-4 h-4" />
                     <span className="font-medium">URL:</span>{" "}
                     {form.getValues().url}
                   </div>
@@ -172,7 +171,7 @@ export function CreateProviderForm({ onSuccess }: CreateProviderFormProps) {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                   Cargando...
                 </>
               ) : (

@@ -5,9 +5,10 @@ import { z } from "zod"
 import db from "@/db"
 
 import { columns } from "./_components/columns"
-import { DataTable } from "./_components/data-table"
+import { DataTable } from "@/components/data-table"
 import { clientSchema } from "@/app/(root)/clients/data/schema"
 import { getDomains } from "@/actions/domains-actions"
+import { DataTableToolbar } from "./_components/data-table-toolbar"
 
 export const metadata: Metadata = {
   title: "Dominios",
@@ -28,7 +29,7 @@ export default async function DomainPage() {
             </p>
           </div>
         </div>
-        <DataTable data={domains} columns={columns} />
+        <DataTable data={domains} columns={columns} ToolbarComponent={DataTableToolbar} />
       </div>
     </>
   )

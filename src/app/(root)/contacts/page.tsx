@@ -1,7 +1,8 @@
 import { Metadata } from "next"
 import { columns } from "./_components/columns"
-import { DataTable } from "./_components/data-table"
+import { DataTable } from "../../../components/data-table"
 import { getContacts } from "@/actions/contacts-actions"
+import { DataTableToolbar } from "./_components/data-table-toolbar"
 
 export const metadata: Metadata = {
   title: "Contactos"
@@ -11,16 +12,16 @@ export default async function ContactPage() {
   const contacts = await getContacts()
   return (
     <>
-      <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <div className="flex items-center justify-between space-y-2">
+      <div className="md:flex flex-col flex-1 space-y-8 hidden p-8 h-full">
+        <div className="flex justify-between items-center space-y-2">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Contactos</h2>
+            <h2 className="font-bold text-2xl tracking-tight">Contactos</h2>
             <p className="text-muted-foreground">
-              Listado de todos los Contactos
+              Listado de todos los contactos
             </p>
           </div>
         </div>
-        <DataTable data={contacts} columns={columns} />
+        <DataTable data={contacts} columns={columns} ToolbarComponent={DataTableToolbar} />
       </div>
     </>
   )

@@ -3,47 +3,11 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
-import { z } from "zod"
-export const auditsSchema = z.object({
-  id: z.number(),
-  createdAt: z.string(),
-  entityId: z.string(),
-  entity: z.string(),
-  userId: z.string().nullable(),
-  action: z.string(),
-  user: z
-    .object({
-      name: z.string().nullable()
-    })
-    .nullable()
-})
-type Audit = z.infer<typeof auditsSchema>
+import { formatDate } from "@/lib/utils"
+import { Audit } from "@/db/schema"
+
 
 export const columns: ColumnDef<Audit>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={
-  //         table.getIsAllPageRowsSelected() ||
-  //         (table.getIsSomePageRowsSelected() && "indeterminate")
-  //       }
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //       className="translate-y-[2px]"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select row"
-  //       className="translate-y-[2px]"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -54,15 +18,34 @@ export const columns: ColumnDef<Audit>[] = [
     enableHiding: true
   },
   {
-    accessorKey: "userId",
+    accessorKey: "user",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Usuario" />
     ),
-    cell: ({ row }) => (
-      <div className="w-[80px]">{row.original.user?.name ?? "Sin usuario"}</div>
-    ),
-    enableSorting: true,
-    enableHiding: true
+    cell: ({ row }) => {
+      const user: { id: string, name: string } = row.getValue("user")
+      if (user) {
+        return (
+          <span className="max-w-[500px] font-medium truncate">
+            {user.name}
+          </span>
+        )
+      } else {
+        return (
+          <span className="max-w-[500px] font-medium text-destructive truncate">
+            Sin usuario
+          </span>
+        )
+      }
+    },
+    filterFn: (row, id, value) => {
+      const user: { id: string, name: string } = row.getValue(id)
+      if (user) {
+        return value.includes(user.name)
+      } else {
+        return value.includes('Sin usuario')
+      }
+    }
   },
   {
     accessorKey: "action",
@@ -83,48 +66,26 @@ export const columns: ColumnDef<Audit>[] = [
     enableHiding: true
   },
   {
-    accessorKey: "entityId",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID en entidad" />
-    ),
-    cell: ({ row }) => (
-      <div className="w-[80px]">{row.getValue("entityId")}</div>
-    ),
-    enableSorting: true,
-    enableHiding: true
-  },
-  {
     accessorKey: "createdAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Fecha de movimiento" />
     ),
     cell: ({ row }) => (
-      <div className="w-[80px]">
-        {new Date(row.getValue("createdAt") as string).toLocaleString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          // second: "2-digit",
-          hour12: false
-        })}
+      <div>
+        {formatDate(row.getValue("createdAt"))}
       </div>
     ),
     enableSorting: true,
-    enableHiding: true
+    enableHiding: true,
   },
   {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Acciones" />
+      <DataTableColumnHeader column={column} title="Ver" />
     ),
     id: "actions",
     cell: ({ row }) => (
       <DataTableRowActions
-        row={row}
-        entityEdit={"audits/" + row.getValue("id")}
-        canDelete={false}
-        canEdit={false}
+        href={"audits/" + row.getValue("id")}
       />
     )
   }

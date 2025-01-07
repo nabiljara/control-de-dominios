@@ -18,6 +18,34 @@ export const clientStatus = [
   }
 ]
 
+export const contactStatus = [
+  {
+    value: "Activo",
+    label: "Activo",
+    icon: Check,
+  },
+  {
+    value: "Inactivo",
+    label: "Inactivo",
+    icon: Ban,
+  }
+]
+
+export const contactTypes = [
+  {
+    value: "Tecnico",
+    label: "Tecnico",
+  },
+  {
+    value: "Administrativo",
+    label: "Administrativo",
+  },
+  {
+    value: "Financiero",
+    label: "Financiero",
+  }
+]
+
 export const domainStatus = [
   {
     value: "Activo",
@@ -57,4 +85,49 @@ export const sizes = [
     value: "Grande",
     icon: Building,
   },
+]
+
+export const auditEntities = [
+  {
+    value: "Dominios",
+    label: "Dominios"
+  },
+  {
+    value: "Clientes",
+    label: "Clientes"
+  },
+  {
+    value: "Contactos",
+    label: "Contactos"
+  },
+  {
+    value: "Accesos",
+    label: "Accesos"
+  },
+  {
+    value: "Proveedores",
+    label: "Proveedores"
+  },
+  {
+    value: "Localidades",
+    label: "Localidades"
+  },
+  {
+    value: "Usuarios",
+    label: "Usuarios"
+  },
+]
+export const auditActions = [
+  {
+    value: "INSERT",
+    label: "INSERT"
+  },
+  {
+    value: "UPDATE",
+    label: "UPDATE"
+  },
+  {
+    value: "DELETE",
+    label: "DELETE"
+  }
 ]

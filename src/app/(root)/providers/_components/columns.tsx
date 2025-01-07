@@ -13,30 +13,6 @@ export const providerSchema = z.object({
 type Provider = z.infer<typeof providerSchema>
 
 export const columns: ColumnDef<Provider>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={
-  //         table.getIsAllPageRowsSelected() ||
-  //         (table.getIsSomePageRowsSelected() && "indeterminate")
-  //       }
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //       className="translate-y-[2px]"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select row"
-  //       className="translate-y-[2px]"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -87,10 +63,7 @@ export const columns: ColumnDef<Provider>[] = [
     id: "actions",
     cell: ({ row }) => (
       <DataTableRowActions
-        row={row}
-        entityEdit={"providers/" + row.getValue("id")}
-        canDelete={false}
-        canEdit={false}
+        href={"providers/" + row.getValue("id")}
       />
     )
   }

@@ -11,11 +11,7 @@ export async function getContacts() {
         const data = await db.query.contacts.findMany({
             orderBy: [desc(contacts.id)],
             with: {
-                client: {
-                    columns: {
-                        name: true
-                    }
-                }
+                client: true
             }
         });
         return data;

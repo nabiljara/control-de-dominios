@@ -33,6 +33,19 @@ export default function ContactInfoCard({
           toast.warning('Solo puede seleccionar contactos activos.')
         }
       }}
+      role={!readOnly ? 'button' : undefined} 
+      tabIndex={!readOnly ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (!readOnly && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          if (contact?.id && onSelect && contact.status !== 'Inactivo') {
+            onSelect(contact.id.toString(), contact);
+          }
+          if (contact?.status !== 'Activo') {
+            toast.warning('Solo puede seleccionar contactos activos.');
+          }
+        }
+      }}
     >
       <CardContent className='flex flex-col justify-between items-start gap-2 p-0 h-full'>
         <div className='flex items-center gap-2'>

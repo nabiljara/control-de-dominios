@@ -201,10 +201,10 @@ export function CreateClientForm({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100/50 p-4 dark:from-gray-900 dark:to-gray-800">
+    <div className="bg-gradient-to-b from-gray-50 dark:from-gray-900 to-gray-100/50 dark:to-gray-800 p-4 min-h-screen">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+          <CardTitle className="flex items-center gap-2 font-bold text-2xl">
             <User />
             Registro de Cliente
           </CardTitle>
@@ -229,6 +229,7 @@ export function CreateClientForm({
                         placeholder="Ingrese el nombre del cliente"
                         autoComplete="name"
                         {...field}
+                        autoFocus
                       />
                     </FormControl>
                     <FormMessage />
@@ -310,7 +311,7 @@ export function CreateClientForm({
 
               <FormItem>
                 <div className="flex items-center gap-5">
-                  <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  <span className="peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
                     Contactos
                   </span>
                   <Button
@@ -320,14 +321,14 @@ export function CreateClientForm({
                     onClick={() => {
                       setIsCreateContactModalOpen(true)
                     }}
-                    className="h-8 w-8 rounded-full"
+                    className="rounded-full w-8 h-8"
                   >
                     <Plus />
                   </Button>
                 </div>
                 <FormControl>
                   <>
-                    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
                       {contacts.map((contact, index) => (
                         <Contact
                           key={contact.email}
@@ -366,7 +367,7 @@ export function CreateClientForm({
                         from="clients-create"
                         // onClose={() => setIsCreateAccessModalOpen(false)}
                       />
-                      {/* <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      {/* <span className="peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
                     Accesos
                   </span>
                   <Button
@@ -376,13 +377,13 @@ export function CreateClientForm({
                     onClick={() => {
                       setIsCreateAccessModalOpen(true)
                     }}
-                    className="h-8 w-8 rounded-full"
+                    className="rounded-full w-8 h-8"
                   > */}
                       {/* <Plus />
                   </Button> */}
                     </div>
 
-                    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
                       {accesses.map((access, index) => (
                         <Access
                           key={index}
@@ -451,7 +452,7 @@ export function CreateClientForm({
                     </div>
                   ) : (
                     <>
-                      <UserPlus className="h-5 w-5" />
+                      <UserPlus className="w-5 h-5" />
                       Registrar Cliente
                     </>
                   )}

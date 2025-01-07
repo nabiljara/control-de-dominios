@@ -104,22 +104,20 @@ export default function ProvidersEditPage({
   }
 
   return (
-    <>
-      <Toaster richColors />
       <form onSubmit={handleSubmit(handleApply)}>
-        <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
-          <div className="flex items-center justify-between space-y-2">
+        <div className="md:flex flex-col flex-1 space-y-8 p-8 h-full">
+          <div className="flex justify-between items-center space-y-2">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight">Proveedor</h2>
+              <h2 className="font-bold text-2xl tracking-tight">Proveedor</h2>
             </div>
           </div>
           {provider && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="gap-4 grid grid-cols-2">
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block font-medium text-gray-700 text-sm"
                   >
                     Nombre
                   </label>
@@ -133,7 +131,7 @@ export default function ProvidersEditPage({
                     disabled={!isEditing}
                   />
                   {errors.name && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-red-500 text-sm">
                       {errors.name.message}
                     </p>
                   )}
@@ -141,7 +139,7 @@ export default function ProvidersEditPage({
                 <div>
                   <label
                     htmlFor="url"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block font-medium text-gray-700 text-sm"
                   >
                     URL
                   </label>
@@ -155,7 +153,7 @@ export default function ProvidersEditPage({
                     disabled={!isEditing}
                   />
                   {errors.url && (
-                    <p className="text-sm text-red-500">{errors.url.message}</p>
+                    <p className="text-red-500 text-sm">{errors.url.message}</p>
                   )}
                 </div>
               </div>
@@ -168,7 +166,7 @@ export default function ProvidersEditPage({
                 )}
               </div>
               <div>
-                <h3 className="mb-2 text-lg font-semibold">
+                <h3 className="mb-2 font-semibold text-lg">
                   Dominios asociados
                 </h3>
                 <Table>
@@ -204,6 +202,5 @@ export default function ProvidersEditPage({
           )}
         </div>
       </form>
-    </>
   )
 }

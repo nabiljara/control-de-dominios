@@ -68,7 +68,7 @@ export const clientFormSchema = z.object({
 
 export const domainFormSchema = z.object({
   id: z.number().optional(),
-  name: z.string().url('Nombre de dominio inválido.'),
+  name: z.string().url('Nombre de dominio inválido.').max(60,{message: "Máximo 60 caracteres"}),
   provider: z.object({
     id: z.string({ message: "El proveedor es requerido." }),
     name: z.string({ message: "El proveedor es requerido." }),

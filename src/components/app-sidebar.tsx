@@ -56,7 +56,7 @@ export async function AppSidebar() {
                 </div>
                 <div className="flex-1 grid text-left text-sm leading-tight">
                   <span className="font-semibold truncate">SICOM</span>
-                  <span className="text-xs truncate">Comunicación interna y externa</span>
+                  <span className="text-xs truncate">Interna y externa</span>
                 </div>
               </Link>
             </SidebarMenuButton>

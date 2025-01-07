@@ -17,7 +17,7 @@ export const columns: ColumnDef<Client>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
     enableSorting: true,
-    enableHiding: false
+    enableHiding: true
   },
   {
     accessorKey: "name",
@@ -109,10 +109,7 @@ export const columns: ColumnDef<Client>[] = [
     id: "actions",
     cell: ({ row }) => (
       <DataTableRowActions
-        row={row}
-        entityEdit={"clients/" + row.getValue("id")}
-        canDelete={false}
-        canEdit={false}
+        href={"clients/" + row.getValue("id")}
       />
     )
   }

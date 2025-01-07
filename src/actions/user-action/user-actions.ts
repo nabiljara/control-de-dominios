@@ -6,17 +6,15 @@ import { desc, eq, or } from "drizzle-orm";
 
 export async function getUsers() {
     try {
-        const data = await db.query.users.findMany({ columns: { id: true, name: true } });
-        return data;
-    }
-    catch (error) {
-        console.error("Error al obtener usuarios:", error);
-        throw error;
-    }
-};
-export async function getUsersB() {
-    try {
-        const data = await db.query.users.findMany();
+        const data = await db.query.users.findMany(
+            {
+                columns:
+                {
+                    id: true,
+                    name: true,
+                }
+            }
+        );
         return data;
     }
     catch (error) {
@@ -31,7 +29,7 @@ export async function setUserId() {
         if (!session || !session.user) {
             throw new Error("Usuario no autenticado");
         }
-        
+
         const userId = session.user.id;
         if (!userId) {
             throw new Error("ID de usuario no disponible");

@@ -20,15 +20,31 @@ interface DataTableViewOptionsProps<TData> {
 export function DataTableViewOptions<TData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
+  const columnLabels: Record<string, string> = {
+    name: "Nombre",
+    email: "Correo Electrónico",
+    locality: "Localidad",
+    status: "Estado",
+    size: "Tamaño",
+    provider: "Proveedor",
+    client: "Cliente",
+    expirationDate: "Vencimiento",
+    phone:"Teléfono",
+    type: "Tipo",
+    user: "Usuario",
+    action: "Acción",
+    createdAt: "Fecha de movimiento",
+    entity: "Entidad"
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto hidden h-8 lg:flex"
+          className="lg:flex hidden ml-auto h-8"
         >
-          <MixerHorizontalIcon className="mr-2 h-4 w-4" />
+          <MixerHorizontalIcon className="mr-2 w-4 h-4" />
           Ver
         </Button>
       </DropdownMenuTrigger>
@@ -49,7 +65,7 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {columnLabels[column.id] ?? column.id}
               </DropdownMenuCheckboxItem>
             )
           })}

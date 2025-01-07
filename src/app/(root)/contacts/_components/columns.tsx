@@ -3,64 +3,17 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
-import { z } from "zod"
-import { contactSchema } from "@/validators/client-validator"
-
-const extendedContactSchema = contactSchema.extend({
-  id: z.number(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  clientId: z.number().nullable().nullable(),
-  phone: z
-    .string()
-    .min(11, { message: "El número no es válido." })
-    .max(14, { message: "El número no es válido." })
-    .nullable(),
-  client: z
-    .object({
-      id: z.number().optional(),
-      name: z
-        .string()
-        .min(1, { message: "El nombre es obligatorio" })
-        .max(255, { message: "El nombre no puede superar los 255 caracteres" })
-    })
-    .nullable()
-})
-type Contact = z.infer<typeof extendedContactSchema>
+import { Client, Contact } from "@/db/schema"
 
 export const columns: ColumnDef<Contact>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={
-  //         table.getIsAllPageRowsSelected() ||
-  //         (table.getIsSomePageRowsSelected() && "indeterminate")
-  //       }
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //       className="translate-y-[2px]"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select row"
-  //       className="translate-y-[2px]"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
   {
     accessorKey: "id",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
+      <DataTableColumnHeader column={column} title="N°" className="w-8" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => <div>{row.getValue("id")}</div>,
     enableSorting: true,
-    enableHiding: true
+    enableHiding: true,
   },
   {
     accessorKey: "name",
@@ -69,24 +22,28 @@ export const columns: ColumnDef<Contact>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
     enableSorting: true,
+    enableHiding: true,
+    filterFn: (row, id, value) => {
+      const locality: { id: number; name: string } = row.getValue(id)
+      return value.includes(locality.id.toString())
+    }
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("email")}</div>,
+    enableSorting: true,
     enableHiding: true
   },
-  // {
-  //   accessorKey: "email",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Email" />
-  //   ),
-  //   cell: ({ row }) => <div className="w-[80px]">{row.getValue("email")}</div>,
-  //   enableSorting: true,
-  //   enableHiding: true
-  // },
   {
     accessorKey: "phone",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Teléfono" />
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("phone")}</div>,
-    enableSorting: true,
+    enableSorting: false,
     enableHiding: true
   },
   {
@@ -96,7 +53,10 @@ export const columns: ColumnDef<Contact>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("status")}</div>,
     enableSorting: true,
-    enableHiding: true
+    enableHiding: true,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    }
   },
   {
     accessorKey: "type",
@@ -105,20 +65,58 @@ export const columns: ColumnDef<Contact>[] = [
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("type")}</div>,
     enableSorting: true,
-    enableHiding: true
+    enableHiding: true,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    }
+  },
+  {
+    accessorKey: "client",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Cliente" />
+    ),
+    cell: ({ row }) => {
+      const client: Client = row.getValue("client")
+      if (client) {
+        return (
+          <span className="max-w-[500px] font-medium truncate">
+            {client.name}
+          </span>
+        )
+      }
+      return (
+        <span className="max-w-[500px] font-medium text-destructive truncate">
+          Sin cliente
+        </span>
+      )
+    },
+    filterFn: (row, id, value) => {
+      const client: { id: number; name: string } = row.getValue(id)
+      if (client) {
+        return value.includes(client.id.toString())
+      }else {
+        return value.includes('Sin cliente')
+      }
+    }
   },
   {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Acciones" />
+      <DataTableColumnHeader column={column} title="Ver" />
     ),
     id: "actions",
     cell: ({ row }) => (
       <DataTableRowActions
-        row={row}
-        entityEdit={"contacts/" + row.getValue("id")}
-        canDelete={false}
-        canEdit={false}
+        href={"contacts/" + row.getValue("id")}
       />
     )
-  }
+  },
+  {
+    id: "combinedFilter", // Columna virtual para filtrar por múltiples campos
+    filterFn: (row, id, value) => {
+      const name = (row.getValue("name") as string)?.toLowerCase() || "";
+      const email = (row.getValue("email") as string)?.toLowerCase() || "";
+      const search = value.toLowerCase();
+      return name.includes(search) || email.includes(search);
+    },
+  },
 ]

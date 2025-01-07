@@ -1,6 +1,6 @@
 "use client"
 import { getAudit } from "@/actions/audits-actions"
-import { Toaster, toast } from "sonner"
+import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -56,20 +56,19 @@ export default function AuditDetailsPage({
 
   return (
     <>
-      <Toaster richColors />
-      <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <div className="flex items-center justify-between space-y-2">
+      <div className="md:flex flex-col flex-1 space-y-8 p-8 h-full">
+        <div className="flex justify-between items-center space-y-2">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Auditoría</h2>
+            <h2 className="font-bold text-2xl tracking-tight">Auditoría</h2>
           </div>
         </div>
         {audit && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="gap-4 grid grid-cols-2">
               <div>
                 <label
                   htmlFor="name"
-                  className="text-md block font-medium text-gray-700"
+                  className="block font-medium text-gray-700 text-md"
                 >
                   Usuario
                 </label>
@@ -78,7 +77,7 @@ export default function AuditDetailsPage({
               <div>
                 <label
                   htmlFor="url"
-                  className="text-md block font-medium text-gray-700"
+                  className="block font-medium text-gray-700 text-md"
                 >
                   Entidad
                 </label>
@@ -87,7 +86,7 @@ export default function AuditDetailsPage({
               <div>
                 <label
                   htmlFor="url"
-                  className="text-md block font-medium text-gray-700"
+                  className="block font-medium text-gray-700 text-md"
                 >
                   ID Entidad
                 </label>
@@ -96,7 +95,7 @@ export default function AuditDetailsPage({
               <div>
                 <label
                   htmlFor="url"
-                  className="text-md block font-medium text-gray-700"
+                  className="block font-medium text-gray-700 text-md"
                 >
                   Fecha de movimiento
                 </label>
@@ -114,7 +113,7 @@ export default function AuditDetailsPage({
               </div>
             </div>
             <div>
-              <h3 className="mb-2 text-lg font-semibold">
+              <h3 className="mb-2 font-semibold text-lg">
                 Detalles de la auditoría
               </h3>
               <Table>

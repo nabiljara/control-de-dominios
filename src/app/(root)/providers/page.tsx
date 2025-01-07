@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { columns } from "./_components/columns"
-import { DataTable } from "./_components/data-table"
+import { DataTable } from "@/components/data-table"
+import { DataTableToolbar } from "./_components/data-table-toolbar"
 import { getProviders } from "@/actions/provider-actions"
 import { Toaster } from "sonner"
 
@@ -12,8 +13,6 @@ export default async function ProvidersPage() {
   const providers = await getProviders()
 
   return (
-    <>
-      <Toaster richColors />
       <div className="md:flex flex-col flex-1 space-y-8 hidden p-8 h-full">
         <div className="flex justify-between items-center space-y-2">
           <div>
@@ -23,8 +22,7 @@ export default async function ProvidersPage() {
             </p>
           </div>
         </div>
-        <DataTable data={providers} columns={columns} />
+        <DataTable data={providers} columns={columns} ToolbarComponent={DataTableToolbar} />
       </div>
-    </>
   )
 }

@@ -1,8 +1,9 @@
 
 import { Metadata } from "next"
 import { columns } from "./_components/columns"
-import { DataTable } from "./_components/data-table"
+import { DataTable } from "@/components/data-table"
 import { getClients } from "@/actions/client-actions"
+import { DataTableToolbar } from "./_components/data-table-toolbar"
 
 export const metadata: Metadata = {
   title: "Clientes",
@@ -22,7 +23,7 @@ export default async function ClientsPage() {
             </p>
           </div>
         </div>
-        <DataTable data={clients} columns={columns} />
+        <DataTable data={clients} columns={columns} ToolbarComponent={DataTableToolbar} />
       </div>
     </>
   )

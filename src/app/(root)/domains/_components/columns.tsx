@@ -1,7 +1,6 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-
 import { domainStatus } from "@/app/(root)/clients/data/data"
 import { Domain } from "@/db/schema"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
@@ -63,11 +62,9 @@ export const columns: ColumnDef<Domain>[] = [
     cell: ({ row }) => {
       const client: { id: number; name: string } = row.getValue("client")
       return (
-        <>
           <span className="max-w-[500px] font-medium truncate">
             {client.name || "Sin cliente"}
           </span>
-        </>
       )
     },
     filterFn: (row, id, value) => {
@@ -113,13 +110,12 @@ export const columns: ColumnDef<Domain>[] = [
   },
   {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Acciones" />
+      <DataTableColumnHeader column={column} title="Detalle" />
     ),
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row}
-      canEdit={false}
-      entityEdit={"domains/" + row.getValue("id")}
-      canDelete={false}
-    />,
+    cell: ({ row }) =>
+      <DataTableRowActions
+        href={"domains/" + row.getValue("id")}
+      />,
   },
 ]

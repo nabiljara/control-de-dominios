@@ -37,9 +37,19 @@ export function AccessInfoCard(
         ${isSelected ? 'bg-green-100 hover:bg-green-200' : ''}
         ${readOnly ? '' : 'cursor-pointer hover:bg-gray-100'}
       `}
+      role={!readOnly ? 'button' : undefined}
+      tabIndex={!readOnly ? 0 : undefined}
       onClick={() => {
         if (access?.id && onSelect) {
           onSelect(access.id, access);
+        }
+      }}
+      onKeyDown={(e) => {
+        if (!readOnly && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault(); // Evita scroll con Espacio
+          if (access?.id && onSelect) {
+            onSelect(access.id, access);
+          }
         }
       }}
       >

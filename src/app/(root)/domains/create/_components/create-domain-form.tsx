@@ -537,7 +537,6 @@ export default function CreateDomainForm({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
               {/* Nombre */}
-
               <FormField
                 control={form.control}
                 name="name"
@@ -559,6 +558,7 @@ export default function CreateDomainForm({
                             e.stopPropagation()
                           }
                         }}
+                        autoFocus
                       />
                     </FormControl>
                     <FormMessage />

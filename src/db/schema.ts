@@ -271,8 +271,8 @@ export const users = pgTable("users", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  name: text("name"),
-  email: text("email").unique(),
+  name: text("name").notNull(),
+  email: text("email").unique().notNull(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   password: text("password"),
@@ -438,5 +438,15 @@ export type ContactHistory = DomainHistory & {
 
 //USERS
 export type User = InferSelectModel<typeof users>
+
+//AUDITS
+export type Audit = InferSelectModel<typeof audits>
+export type AuditInsert = InferInsertModel<typeof audits>
+export type AuditWithRelations = Audit & {
+  user: User,
+  auditDetails: AuditDetails
+}
+
+export type AuditDetails = InferSelectModel<typeof auditDetails>
 
 
