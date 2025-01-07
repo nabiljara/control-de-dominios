@@ -63,13 +63,17 @@ export function CreateAccessModal({
   const form = useForm<AccessType>({
     resolver: zodResolver(accessSchema ? accessSchema : accessesSchema),
     defaultValues: {
-      provider: { id: provider?.id, name: provider?.name },
       username: "",
       password: "",
       notes: ""
     }
   })
 
+  //Debe setearse manualmente el proveedor ya que si cambia, el default value no cambia y se queda con información vieja.
+  if (provider) {
+    form.setValue('provider.id', provider?.id)
+    form.setValue('provider.name', provider?.name)
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -104,14 +108,14 @@ export function CreateAccessModal({
       <DialogTrigger asChild>
         {from === "clients-create" ? (
           <div className="flex items-center gap-8">
-            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <span className="peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
               Accesos
             </span>
             <Button
               aria-labelledby="button-label"
               type="button"
               variant="outline"
-              className="h-8 w-8 rounded-full"
+              className="rounded-full w-8 h-8"
               onClick={() => setIsModalOpen(true)}
             >
               <Plus />
@@ -123,18 +127,18 @@ export function CreateAccessModal({
             type="button"
             variant="outline"
             onClick={() => setIsModalOpen(true)}
-            className="h-36 w-full [&_svg]:size-9"
+            className="w-full h-36 [&_svg]:size-9"
           >
             <Plus className="text-gray-700" />
           </Button>
         ) : (
           <Button
             variant="default"
-            className="h-8 px-2 lg:px-3"
+            className="px-2 lg:px-3 h-8"
             onClick={() => setIsModalOpen(true)}
           >
             Nuevo Acceso
-            <KeySquare className="ml-2 h-5 w-5" />
+            <KeySquare className="ml-2 w-5 h-5" />
           </Button>
         )}
       </DialogTrigger>

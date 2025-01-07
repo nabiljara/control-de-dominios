@@ -6,14 +6,16 @@ import { domainStatus } from "@/app/(root)/clients/data/data"
 import { Domain } from "@/db/schema"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
+import { formatDate } from "@/lib/utils"
+import Link from "next/link"
 
 export const columns: ColumnDef<Domain>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="N°" />
+      <DataTableColumnHeader column={column} title="N°" className="w-8" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => <div>{row.getValue("id")}</div>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -22,7 +24,14 @@ export const columns: ColumnDef<Domain>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Nombre" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
+    cell: ({ row }) =>
+      <Link
+        href={row.getValue("name")}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center text-blue-500 hover:underline"
+      >
+        {row.getValue("name")}</Link>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -92,6 +101,15 @@ export const columns: ColumnDef<Domain>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
+  },
+  {
+    accessorKey: "expirationDate",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Fecha de vencimiento" />
+    ),
+    cell: ({ row }) => <div className="w-[80px]">{formatDate(row.getValue("expirationDate"))}</div>,
+    enableSorting: true,
+    enableHiding: true,
   },
   {
     header: ({ column }) => (

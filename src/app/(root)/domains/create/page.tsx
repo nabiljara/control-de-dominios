@@ -7,6 +7,8 @@ export default async function DomainCreatePage() {
   const providers = await getProviders()
   const clients = await getActiveClients()
   return (
-    <CreateDomainForm providers={providers} clients={clients} />
+    <div className='space-y-4 p-8'>
+      <CreateDomainForm providers={providers} clients={clients} />
+    </div>
   )
 }

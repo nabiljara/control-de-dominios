@@ -73,7 +73,7 @@ export async function updateClient(client: ClientInsert) {
     await setUserId()
     await db.update(clients)
       .set({ name: client.name, localityId: client.localityId, size: client.size, status: client.status, updatedAt: sql`NOW()` })
-      .where(eq(clients.id, client.id)).returning({ id: clients.id });
+      .where(eq(clients.id, client.id))
     success = true;
   } catch (error) {
     console.error("Error al modificar el cliente:", error);

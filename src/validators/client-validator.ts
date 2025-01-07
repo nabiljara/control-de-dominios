@@ -80,7 +80,7 @@ export const domainFormSchema = z.object({
   }),
 
   access: accessesSchema.optional(),
-  accessId: z.string().optional(),
+  accessId: z.number().optional(),
 
   expirationDate: z.date({ message: 'La fecha de vencimiento es requerida.' }),
 

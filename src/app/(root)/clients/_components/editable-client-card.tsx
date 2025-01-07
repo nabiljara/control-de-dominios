@@ -175,7 +175,7 @@ export default function EditableClientCard({
                 providerId: parseInt(domain.provider.id)
                 // providerRegistrationDate: new Date().toISOString()
               }
-              await updateDomain(modifiedDomain)
+              await updateDomain(modifiedDomain, undefined)
             } catch (error) {
               console.error(error)
               reject(error)
@@ -202,9 +202,9 @@ export default function EditableClientCard({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row justify-between items-center">
               <div className="flex flex-row items-center gap-2">
-                <User className="h-8 w-8" />
+                <User className="w-8 h-8" />
                 <FormField
                   control={form.control}
                   name="name"
@@ -216,11 +216,11 @@ export default function EditableClientCard({
                             {...field}
                             placeholder="Ingrese el nombre del cliente"
                             autoComplete="name"
-                            className="h-auto text-3xl font-bold"
+                            className="h-auto font-bold text-3xl"
                           />
                         </FormControl>
                       ) : (
-                        <CardTitle className="text-3xl font-bold">
+                        <CardTitle className="font-bold text-3xl">
                           {client.name}
                         </CardTitle>
                       )}
@@ -245,7 +245,7 @@ export default function EditableClientCard({
                   name="status"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-sm text-muted-foreground">
+                      <FormLabel className="text-muted-foreground text-sm">
                         Estado:
                       </FormLabel>
                       {isEditing ? (
@@ -283,7 +283,7 @@ export default function EditableClientCard({
                   name="size"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-sm text-muted-foreground">
+                      <FormLabel className="text-muted-foreground text-sm">
                         Tamaño:
                       </FormLabel>
                       {isEditing ? (
@@ -314,7 +314,7 @@ export default function EditableClientCard({
                   name="locality.id"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-sm text-muted-foreground">
+                      <FormLabel className="text-muted-foreground text-sm">
                         Localidad:
                       </FormLabel>
                       {isEditing ? (
@@ -360,14 +360,14 @@ export default function EditableClientCard({
                     </FormItem>
                   )}
                 />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   Fecha de registro: {formatDate(client.createdAt)}
                 </span>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   Última actualización: {formatDate(client.updatedAt)}
                 </span>
                 {isEditing && form.formState.isDirty && (
-                  <div className="mt-4 flex gap-2">
+                  <div className="flex gap-2 mt-4">
                     <Button
                       type="button"
                       onClick={() => setIsConfirmationModalOpen(true)}

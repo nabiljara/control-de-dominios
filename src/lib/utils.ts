@@ -43,9 +43,6 @@ export function decryptPassword(password: string) {
   return decrypt(retrievedEncrypted, retrievedIv);
 }
 
-export const formatDate = (date: string | undefined) => {
-  if (date) {
-    return formatUtil(new Date(date), "dd/MM/yyyy HH:mm")
-  }
-  return null;
+export const formatDate = (date: string) => {
+  return formatUtil(new Date(date), "dd/MM/yyyy HH:mm")
 };

@@ -426,6 +426,15 @@ export type DomainHistoryInsert = InferInsertModel<typeof domainHistory>
 export type DomainHistoryWithRelations = Domain & {
   domain: Domain
 }
+export type ProviderHistory = DomainHistory & {
+  data: Provider
+};
+export type ClientHistory = DomainHistory & {
+  data: Client
+};
+export type ContactHistory = DomainHistory & {
+  data: Contact
+};
 
 //USERS
 export type User = InferSelectModel<typeof users>

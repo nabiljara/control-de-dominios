@@ -1,9 +1,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DomainWithRelations } from "@/db/schema";
+import { ClientHistory, ContactHistory, DomainWithRelations, ProviderHistory } from "@/db/schema";
 import { Box, CalendarDays, Clock, Contact, ExternalLink, Globe, History, Mail, Phone, User } from "lucide-react";
-import {formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
@@ -11,6 +11,8 @@ import { Key, FileText } from 'lucide-react'
 import Link from "next/link";
 import { UsernameCopy } from "@/app/(root)/clients/_components/username-copy";
 import { PasswordCell } from "@/app/(root)/clients/_components/password-cell";
+import { getHistory } from "@/actions/domains-actions";
+import { useEffect, useState } from "react";
 
 
 interface DomainInfoCardProps {
@@ -39,8 +41,28 @@ function Section({ title, icon, children }: SectionProps) {
 }
 
 export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
-  // TODO: Cambiar a español
-  const historyTabs = ['clients', 'contacts', 'providers']
+  const historyTabs = ['Clientes', 'Contactos', 'Proveedores']
+  const [historyWithDetails, setHistoryWithDetails] = useState<{
+    clientsHistory: ClientHistory[] | null;
+    providersHistory: ProviderHistory[] | null;
+    contactsHistory: ContactHistory[] | null;
+  }>({
+    clientsHistory: null,
+    providersHistory: null,
+    contactsHistory: null
+  });
+
+  useEffect(() => {
+    const fetchHistoryWithDetails = async () => {
+      try {
+        const { clientsHistory, providersHistory, contactsHistory } = await getHistory(domain.history)
+        setHistoryWithDetails({ clientsHistory, providersHistory, contactsHistory })
+      } catch (error) {
+        console.error("Error al cargar el historial del dominio:", error)
+      }
+    }
+    fetchHistoryWithDetails()
+  }, [domain.history])
 
   return (
     <Card className="w-full">
@@ -117,10 +139,12 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                 <div className="flex items-center">
                   <PasswordCell password={domain.accessData.access.password} />
                 </div>
-                <p className="flex items-center">
-                  <FileText className="mr-2" />
-                  <span>Notas: {domain.accessData.access.notes}</span>
-                </p>
+                {domain.accessData.access.notes &&
+                  <p className="flex items-center">
+                    <FileText className="mr-2" />
+                    <span>Notas: {domain.accessData.access.notes}</span>
+                  </p>
+                }
               </div>
             </Section>
           )
@@ -133,45 +157,128 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
           <h3 className="flex items-center mb-4 font-semibold text-xl">
             <History className="mr-2" />Historial
           </h3>
-          <Tabs defaultValue="clients">
+          <Tabs defaultValue="Clientes">
             <TabsList>
               {historyTabs.map((tab) => (
                 <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>
               ))}
             </TabsList>
             {historyTabs.map((tab) => (
-              <TabsContent key={tab} value={tab}>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">ID</TableHead>
-                      <TableHead>Inicio</TableHead>
-                      <TableHead>Fin</TableHead>
-                      <TableHead>Estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {domain.history
-                      .filter(item => item.entity === tab)
-                      .map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>{item.id}</TableCell>
-                          <TableCell>{formatDate(item.startDate)}</TableCell>
-                          <TableCell>{item.endDate ? formatDate(item.endDate) : '-'}</TableCell>
-                          <TableCell>
-                            <Badge variant={item.active ? 'default' : 'secondary'}>
-                              {item.active ? 'Activo' : 'Inactivo'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </TabsContent>
+              <TabContent key={tab} tab={tab} />
             ))}
           </Tabs>
         </div>
       </CardContent>
     </Card>
   )
+
+  function TabContent({ tab }: { tab: string }) {
+    switch (tab) {
+      case 'Clientes':
+        return (
+          <TabsContent value={tab}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Tamaño</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Fecha de inicio</TableHead>
+                  <TableHead>Fecha de finalización</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historyWithDetails.clientsHistory && historyWithDetails.clientsHistory
+                  .filter(item => item.entity === tab)
+                  .map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.data?.name}</TableCell>
+                      <TableCell>{item.data?.size}</TableCell>
+                      <TableCell>
+                        <Badge variant={item.active ? 'default' : 'secondary'}>
+                          {item.active ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(item.startDate)}</TableCell>
+                      <TableCell>{item.endDate ? formatDate(item.endDate) : '-'}</TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+        )
+      case 'Contactos':
+        return (
+          <TabsContent value={tab}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Fecha de alta</TableHead>
+                  <TableHead>Fecha de finalización</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historyWithDetails.contactsHistory && historyWithDetails.contactsHistory
+                  .filter(item => item.entity === tab)
+                  .map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.data?.name}</TableCell>
+                      <TableCell>{item.data?.email}</TableCell>
+                      <TableCell>{item.data?.phone ? item.data?.phone : 'Sin información'}</TableCell>
+                      <TableCell>{item.data?.type}</TableCell>
+                      <TableCell>
+                        <Badge variant={item.active ? 'default' : 'secondary'}>
+                          {item.active ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(item.startDate)}</TableCell>
+                      <TableCell>{item.endDate ? formatDate(item.endDate) : '-'}</TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+        )
+      case 'Proveedores':
+        return (
+          <TabsContent value={tab}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Url</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Fecha de alta</TableHead>
+                  <TableHead>Fecha de finalización</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historyWithDetails.providersHistory && historyWithDetails.providersHistory
+                  .filter(item => item.entity === tab)
+                  .map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.data?.name}</TableCell>
+                      <TableCell>{item.data?.url}</TableCell>
+                      <TableCell>
+                        <Badge variant={item.active ? 'default' : 'secondary'}>
+                          {item.active ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(item.startDate)}</TableCell>
+                      <TableCell>{item.endDate ? formatDate(item.endDate) : '-'}</TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+
+        )
+    }
+
+  }
 }

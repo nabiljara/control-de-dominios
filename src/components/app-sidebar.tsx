@@ -46,7 +46,7 @@ export async function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/" className="flex items-center gap-2 font-semibold">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+                <div className="flex justify-center items-center rounded-lg text-sidebar-primary-foreground aspect-square size-8">
                   <Image
                     src="/images/logo.svg"
                     width={20}
@@ -54,9 +54,9 @@ export async function AppSidebar() {
                     alt='Logo'
                   />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Kernel</span>
-                  <span className="truncate text-xs">Control de dominios</span>
+                <div className="flex-1 grid text-left text-sm leading-tight">
+                  <span className="font-semibold truncate">SICOM</span>
+                  <span className="text-xs truncate">Comunicación interna y externa</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -79,7 +79,7 @@ export async function AppSidebar() {
                     <SidebarMenuButton tooltip={item.label}>
                       {item.icon && <item.icon />}
                       <span>{item.label}</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      <ChevronRight className="group-data-[state=open]/collapsible:rotate-90 ml-auto transition-transform duration-200" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>

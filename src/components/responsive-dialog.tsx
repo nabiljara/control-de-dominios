@@ -34,7 +34,15 @@ export function ResponsiveDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={cn("sm:max-w-[425px]", className)}>
+        <DialogContent
+          className={cn("sm:max-w-[425px]", className)}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault()
+          }}
+          onPointerDownOutside={(e) => {
+            e.preventDefault()
+          }}
+        >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description && (
@@ -50,7 +58,7 @@ export function ResponsiveDialog({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className={cn("p-6", className)}>
-        <DrawerHeader className="text-left px-0">
+        <DrawerHeader className="px-0 text-left">
           <DrawerTitle>{title}</DrawerTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DrawerHeader>

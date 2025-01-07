@@ -13,11 +13,9 @@ export const metadata: Metadata = {
   title: "Dominios",
 }
 
-
-
 export default async function DomainPage() {
   const domains = await getDomains()
-  console.log(domains);
+  // console.log(domains);
   
   return (
     <>

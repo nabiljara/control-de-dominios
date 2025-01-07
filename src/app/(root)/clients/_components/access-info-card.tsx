@@ -6,10 +6,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface AccessInfoCardProps {
-  access: Access;
+  access: Access | undefined;
   isSelected?: boolean;
   readOnly?: boolean;
-  onSelect?: (accessId: string, access: Access ) => void;
+  onSelect?: (accessId: number, access: Access ) => void;
   provider: string | undefined
   index: number
 }
@@ -38,8 +38,8 @@ export function AccessInfoCard(
         ${readOnly ? '' : 'cursor-pointer hover:bg-gray-100'}
       `}
       onClick={() => {
-        if (access.id && onSelect) {
-          onSelect(access.id.toString(), access);
+        if (access?.id && onSelect) {
+          onSelect(access.id, access);
         }
       }}
       >
@@ -53,13 +53,13 @@ export function AccessInfoCard(
         <div className='flex items-center gap-2'>
           <User className="w-4 h-4" />
           <span className="text-neutral-500 text-sm">
-            {access.username}
+            {access?.username}
           </span>
         </div>
         <div className='flex items-center gap-2'>
           <Lock className="w-4 h-4" />
           <span className="text-neutral-500 text-sm">
-            {showPasswords[index] ? access.password : '•'.repeat(access.password.length)}
+            {showPasswords[index] ? access?.password : '•'.repeat(access?.password.length ? access?.password.length : 0 )}
           </span>
           <Button
             onClick={() => toggleShowPassword(index)}
@@ -76,7 +76,7 @@ export function AccessInfoCard(
             )}
           </Button>
         </div>
-        {access.notes && (
+        {access?.notes && (
           <div className="flex items-start gap-2">
             <StickyNote className="w-4 h-4 shrink-0" />
             <span className="text-neutral-500 text-sm">

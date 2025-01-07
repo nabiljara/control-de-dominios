@@ -29,7 +29,7 @@ export default function ContactInfoCard({
         if (contact?.id && onSelect && contact.status !== 'Inactivo') {
           onSelect(contact.id.toString(), contact);
         }
-        if (contact?.status !== 'Activo') {
+        if (contact?.status !== 'Activo' && !readOnly) {
           toast.warning('Solo puede seleccionar contactos activos.')
         }
       }}
