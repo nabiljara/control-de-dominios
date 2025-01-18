@@ -444,7 +444,7 @@ export type Audit = InferSelectModel<typeof audits>
 export type AuditInsert = InferInsertModel<typeof audits>
 export type AuditWithRelations = Audit & {
   user: User,
-  auditDetails: AuditDetails
+  audit_details: AuditDetails[]
 }
 
 export type AuditDetails = InferSelectModel<typeof auditDetails>

@@ -1,14 +1,10 @@
-import { promises as fs } from "fs"
-import path from "path"
-import { Metadata } from "next"
-import { z } from "zod"
-import db from "@/db"
 
+import { Metadata } from "next"
 import { columns } from "./_components/columns"
 import { DataTable } from "@/components/data-table"
-import { clientSchema } from "@/app/(root)/clients/data/schema"
 import { getDomains } from "@/actions/domains-actions"
 import { DataTableToolbar } from "./_components/data-table-toolbar"
+import { Globe } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Dominios",
@@ -16,14 +12,16 @@ export const metadata: Metadata = {
 
 export default async function DomainPage() {
   const domains = await getDomains()
-  // console.log(domains);
-  
+
   return (
     <>
-      <div className="md:flex flex-col flex-1 space-y-8 hidden p-8 h-full">
+      <div className="md:flex flex-col flex-1 space-y-8 p-8 h-full">
         <div className="flex justify-between items-center space-y-2">
           <div>
-            <h2 className="font-bold text-2xl tracking-tight">Dominios</h2>
+            <h2 className="flex flex-row items-center gap-2 font-bold text-2xl tracking-tight">
+              <Globe />
+              Dominios
+            </h2>
             <p className="text-muted-foreground">
               Listado de todos tus dominios
             </p>

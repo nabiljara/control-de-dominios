@@ -7,7 +7,7 @@ export default async function ProvidersPage() {
   const audits = await getAudits()
   
   return (
-      <div className="md:flex flex-col flex-1 space-y-8 hidden p-8 h-full">
+      <div className="md:flex flex-col flex-1 space-y-8 p-8 h-full">
         <div className="flex justify-between items-center space-y-2">
           <div>
             <h2 className="font-bold text-2xl tracking-tight">Auditorias</h2>

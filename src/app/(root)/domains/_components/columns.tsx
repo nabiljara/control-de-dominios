@@ -31,7 +31,7 @@ export const columns: ColumnDef<Domain>[] = [
         className="flex items-center text-blue-500 hover:underline"
       >
         {row.getValue("name")}</Link>,
-    enableSorting: true,
+    enableSorting: false,
     enableHiding: true,
   },
   {
@@ -52,7 +52,8 @@ export const columns: ColumnDef<Domain>[] = [
     filterFn: (row, id, value) => {
       const provider: { id: number; name: string } = row.getValue(id)
       return value.includes(provider.id.toString())
-    }
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "client",
@@ -70,7 +71,8 @@ export const columns: ColumnDef<Domain>[] = [
     filterFn: (row, id, value) => {
       const client: { id: number; name: string } = row.getValue(id)
       return value.includes(client.id.toString())
-    }
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "status",
@@ -98,13 +100,14 @@ export const columns: ColumnDef<Domain>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
+    enableSorting: false,
   },
   {
     accessorKey: "expirationDate",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Fecha de vencimiento" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{formatDate(row.getValue("expirationDate"))}</div>,
+    cell: ({ row }) => <span>{formatDate(row.getValue("expirationDate"))}</span>,
     enableSorting: true,
     enableHiding: true,
   },

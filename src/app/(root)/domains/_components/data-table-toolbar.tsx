@@ -1,20 +1,20 @@
 "use client"
-//Filtros 
-//TODO: Hacer también reutilizable
-import { Cross2Icon, PlusCircledIcon } from "@radix-ui/react-icons"
+
+import { Cross2Icon} from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 
-import { sizes, domainStatus } from "@/app/(root)/clients/data/data"
+import { domainStatus } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { CirclePlus } from "lucide-react"
+import { Globe } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { getClients } from "@/actions/client-actions"
 import { getProviders } from "@/actions/provider-actions"
+import Plus from "@/components/plus"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -80,7 +80,7 @@ export function DataTableToolbar<TData>({
     <div className="flex justify-between items-center">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filtrar dominios"
+          placeholder="Filtrar dominios por nombre"
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -94,8 +94,6 @@ export function DataTableToolbar<TData>({
             options={domainStatus}
           />
         )}
-
-
         {table.getColumn("client") && (
           <DataTableFacetedFilter
             column={table.getColumn("client")}
@@ -103,7 +101,6 @@ export function DataTableToolbar<TData>({
             options={clients}
           />
         )}
-
         {table.getColumn("provider") && (
           <DataTableFacetedFilter
             column={table.getColumn("provider")}
@@ -111,7 +108,6 @@ export function DataTableToolbar<TData>({
             options={providers}
           />
         )}
-
         {isFiltered && (
           <Button
             variant="ghost"
@@ -130,9 +126,12 @@ export function DataTableToolbar<TData>({
           className="px-2 lg:px-3 h-8"
           asChild
         >
-          <Link href="/domains/create">
+          <Link href="/domains/create" className="relative gap-3">
+            <div className="relative">
+              <Globe />
+              <Plus />
+            </div>
             Nuevo dominio
-            <CirclePlus className="ml-2 w-5 h-5" />
           </Link>
         </Button>
       </div>

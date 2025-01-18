@@ -1,7 +1,6 @@
 "use client"
-//Filtros 
-//TODO: Hacer también reutilizable
-import { Cross2Icon, PlusCircledIcon } from "@radix-ui/react-icons"
+
+import { Cross2Icon} from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
@@ -10,10 +9,9 @@ import { DataTableViewOptions } from "@/components/data-table-view-options"
 
 import { sizes, clientStatus } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { CirclePlus } from "lucide-react"
+import { UserPlus } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Locality } from "@/db/schema"
 import { getLocalities } from "@/actions/locality-actions"
 
 interface DataTableToolbarProps<TData> {
@@ -102,9 +100,11 @@ export function DataTableToolbar<TData>({
           className="px-2 lg:px-3 h-8"
           asChild
         >
-          <Link href="/clients/create">
+          <Link 
+          href="/clients/create"
+          >
+            <UserPlus className="w-5 h-5" />
             Nuevo cliente
-            <CirclePlus className="ml-2 w-5 h-5" />
           </Link>
         </Button>
       </div>

@@ -13,7 +13,7 @@ export default function RootLayout({
       <AppSidebar />
       <SidebarInset>
         <AppSidebarInset />
-        <Toaster richColors />
+        <Toaster richColors closeButton />
         {children}
       </SidebarInset>
     </SidebarProvider>

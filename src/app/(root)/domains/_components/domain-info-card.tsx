@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientHistory, ContactHistory, DomainWithRelations, ProviderHistory } from "@/db/schema";
-import { Box, CalendarDays, Clock, Contact, ExternalLink, Globe, History, Mail, Phone, User } from "lucide-react";
+import { Box, CalendarDays, Clock, Contact, ExternalLink, ExternalLinkIcon, Eye, Globe, History, Mail, Phone, User } from "lucide-react";
 import { formatDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -24,15 +24,24 @@ interface SectionProps {
   title: string
   icon: React.ReactNode
   children: React.ReactNode
+  href?: string
 }
 
-function Section({ title, icon, children }: SectionProps) {
+function Section({ title, icon, children, href }: SectionProps) {
   return (
     <Card className="flex-1">
       <CardHeader>
-        <CardTitle className="flex items-center text-lg">
+        <CardTitle className="flex items-center gap-2 text-lg">
           {icon}
-          <span className="ml-2">{title}</span>
+          <span>{title}</span>
+          {href &&
+            <Link
+              href={href}
+              className="ml-auto"
+            >
+              <Eye />
+            </Link>
+          }
         </CardTitle>
       </CardHeader>
       <CardContent>{children}</CardContent>
@@ -66,11 +75,11 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
 
   return (
     <Card className="w-full">
-      <CardHeader className="lg:flex-row lg:justify-between lg:items-center space-y-6 lg:space-y-0 pb-0">
+      <CardHeader className="xl:flex-row xl:justify-between xl:items-center gap-4 space-y-6 lg:space-y-0 pb-0">
         <CardTitle>
           <Link href={domain.name} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
             <span className="flex items-center text-2xl">
-              <Globe className="mr-2" />
+              <ExternalLinkIcon className="mr-2" />
               {domain.name}
             </span>
           </Link>
@@ -79,11 +88,11 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
           <CalendarDays className="mr-2" />
           <span>Expira: {formatDate(domain.expirationDate)}</span>
         </div>
-        <div className="flex items-center text-muted-foreground">
+        {/* <div className="flex items-center text-muted-foreground">
           <Clock className="mr-2" />
           <span>Actualizado: {formatDate(domain.updatedAt)}</span>
-        </div>
-        <Badge variant={domain.status === 'Activo' ? 'default' : 'secondary'} className="px-3 py-1 w-min text-lg">
+        </div> */}
+        <Badge variant={domain.status === 'Activo' ? 'default' : 'secondary'} className="px-3 py-1 w-min text-lg text-nowrap">
           {domain.status}
         </Badge>
       </CardHeader>
@@ -91,7 +100,7 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
         <Separator className="my-6" />
 
         <div className={`gap-4 grid grid-cols-1 md:${domain.accessData ? 'grid-cols-2' : ''} lg:${domain.accessData ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
-          <Section title="Cliente" icon={<User className="mr-2" />}>
+          <Section title="Cliente" icon={<User />} href={`/clients/${domain.clientId}`}>
             <div className="space-y-2">
               <p className="font-medium">{domain.client.name}</p>
               <p>Tamaño: {domain.client.size}</p>
@@ -99,7 +108,7 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
             </div>
           </Section>
 
-          <Section title="Contacto" icon={<Contact className="mr-2" />}>
+          <Section title="Contacto" icon={<Contact className="mr-2" />} href={`/contacts/${domain.contactId}`}>
             <div className="space-y-2">
               <p className="font-medium">{domain.contact.name}</p>
               <p className="flex items-center">

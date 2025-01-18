@@ -44,7 +44,6 @@ import {
   Plus,
   ChevronsUpDown,
   Check,
-  Edit
 } from "lucide-react"
 import {
   Command,
@@ -89,7 +88,6 @@ import {
   validateUsername
 } from "@/actions/accesses-actions"
 import { NewClientContactConfirmationModal } from "./new-client-contact-confirmation-modal"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { AccessInfoCard } from "@/app/(root)/clients/_components/access-info-card"
 import NewClientAccessConfirmationModal from "./new-client-access-confirmation-modal"
 import { es } from "date-fns/locale"
@@ -97,6 +95,7 @@ import { CreateDomainConfirmationModal } from "./create-domain-confirmation-moda
 import { insertDomain, updateDomain, validateDomainName } from "@/actions/domains-actions"
 import { CreateAccessModal } from "@/components/access/create-access-modal"
 import { EditDomainConfirmationModal } from "./edit-domain.confirmation-modal"
+import { PreventNavigation } from "@/components/prevent-navigation"
 
 export default function CreateDomainForm({
   providers,
@@ -465,6 +464,8 @@ export default function CreateDomainForm({
       expirationDate: domain?.expirationDate ? new Date(domain.expirationDate) : undefined,
     }
   })
+
+  const isDirty = Object.keys(form.formState.dirtyFields).length !== 0
 
   // console.log('Base de datos: ', domain?.contactId);
   // console.log('Formulario:', form.getValues());
@@ -1109,6 +1110,7 @@ export default function CreateDomainForm({
           provider={form.getValues("provider.name")}
         />
       </ResponsiveDialog>
+      <PreventNavigation isDirty={isDirty} backHref={'/domain'} resetData={form.reset} />
     </Card>
   )
 }

@@ -33,7 +33,7 @@ export function DataTableViewOptions<TData>({
     type: "Tipo",
     user: "Usuario",
     action: "Acción",
-    createdAt: "Fecha de movimiento",
+    createdAt: "Fecha",
     entity: "Entidad"
   };
   return (

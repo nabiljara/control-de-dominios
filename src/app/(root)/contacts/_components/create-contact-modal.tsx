@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog"
 import { Contact } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Plus from "@/components/plus"
 //TODO: cambiarlo a el de schema
 interface CreateContactModalProps {
   from: string
@@ -114,11 +115,14 @@ export function CreateContactModal({
       <DialogTrigger asChild>
         <Button
           variant="default"
-          className="h-8 px-2 lg:px-3"
+          className="gap-3 px-2 lg:px-3 h-8"
           onClick={() => setIsModalOpen(true)}
         >
+          <div className="relative">
+            <Contact />
+            <Plus />
+          </div>
           Nuevo contacto
-          <Contact className="ml-2 h-5 w-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

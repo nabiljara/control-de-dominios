@@ -1,6 +1,3 @@
-"use client"
-
-import { Row } from "@tanstack/react-table"
 import Link from "next/link"
 import { Eye } from "lucide-react"
 
@@ -12,8 +9,8 @@ export function DataTableRowActions({
   href,
 }: DataTableRowActionsProps) {
   return (
-    <Link href={href} className="flex justify-center items-center">
-      <Eye className="mr-2 w-4 h-4" />
+    <Link href={href} className="flex justify-start items-center ml-5">
+      <Eye className="w-4 h-4" />
     </Link>
   )
 }

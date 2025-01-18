@@ -8,9 +8,9 @@ type ProviderInsert = InferInsertModel<typeof providers>;
 const mock = async () => {
   const data: ProviderInsert[] = []
   data.push(
-    { id: 3, name: 'DonWeb', url: 'www.donweb.com' },
-    { id: 2, name: 'GoDaddy', url: 'www.godaddy.com' },
-    { id: 1, name: 'Hostinger', url: 'www.hostinger.com.ar' }
+    { id: 3, name: 'DonWeb', url: 'https://donweb.com' },
+    { id: 2, name: 'GoDaddy', url: 'https://godaddy.com' },
+    { id: 1, name: 'Hostinger', url: 'https://hostinger.com.ar' }
   );
   return data;
 };

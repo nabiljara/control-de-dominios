@@ -7,29 +7,9 @@ import { ClientUpdateValues } from "@/validators/client-validator"
 import { UseFormReturn } from "react-hook-form"
 import { Badge } from "@/components/ui/badge"
 import { ClientWithRelations, Contact } from "@/db/schema"
-// import {
-//   Accordion,
-//   AccordionContent,
-//   AccordionItem,
-//   AccordionTrigger
-// } from "@/components/ui/accordion"
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue
-// } from "@/components/ui/select"
-// import { Label } from "@/components/ui/label"
-// import { Input } from "@/components/ui/input"
-// import { domainFormSchema } from "@/validators/client-validator"
 import { useEffect, useState } from "react"
-// import { Contact } from "@/db/schema"
-import { isDirty } from "zod"
-// import { getContactsByClient } from "@/actions/contacts-actions"
 import UpdateDomain from "./update-domain"
 import { getActiveClients } from "@/actions/client-actions"
-import { getContactsByClient } from "@/actions/contacts-actions"
 
 export function EditConfirmationModal({
   handleSubmit,
@@ -69,15 +49,15 @@ export function EditConfirmationModal({
   ) => {
     if (!isDirty) return null
     return (
-      <div className="rounded-lg bg-muted p-4">
-        <div className="mb-2 flex items-center gap-2">
+      <div className="bg-muted p-4 rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
           {icon}
           <span className="font-medium">{label}</span>
         </div>
-        <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-4">
-          <span className="text-sm text-muted-foreground">{oldValue}</span>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-primary">{newValue}</span>
+        <div className="items-center gap-4 grid grid-cols-[1fr,auto,1fr]">
+          <span className="text-muted-foreground text-sm">{oldValue}</span>
+          <ArrowRight className="w-4 h-4 text-muted-foreground" />
+          <span className="font-medium text-primary text-sm">{newValue}</span>
         </div>
       </div>
     )
@@ -87,26 +67,26 @@ export function EditConfirmationModal({
     <Card>
       <CardContent className="space-y-4 p-0">
         {renderField(
-          <User className="h-4 w-4 text-primary" />,
+          <User className="w-4 h-4 text-primary" />,
           "Nombre",
           client.name,
           name,
           nameState.isDirty
         )}
         {renderField(
-          <BarChart2 className="h-4 w-4 text-primary" />,
+          <BarChart2 className="w-4 h-4 text-primary" />,
           "Tamaño",
           client.size,
           size,
           sizeState.isDirty
         )}
         {statusState.isDirty && (
-          <div className="rounded-lg bg-muted p-4">
-            <div className="mb-2 flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-primary" />
+          <div className="bg-muted p-4 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="w-4 h-4 text-primary" />
               <span className="font-medium">Estado</span>
             </div>
-            <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-4">
+            <div className="items-center gap-4 grid grid-cols-[1fr,auto,1fr]">
               <Badge
                 variant="outline"
                 className={
@@ -117,7 +97,7 @@ export function EditConfirmationModal({
               >
                 {client.status}
               </Badge>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
               <Badge
                 variant="outline"
                 className={
@@ -130,7 +110,7 @@ export function EditConfirmationModal({
           </div>
         )}
         {renderField(
-          <BarChart2 className="h-4 w-4 text-primary" />,
+          <BarChart2 className="w-4 h-4 text-primary" />,
           "Localidad",
           client.locality.name,
           locality.name,
@@ -143,15 +123,15 @@ export function EditConfirmationModal({
           <Button
             onClick={() => {
               handleSubmit()
-              // form.reset({
-              //   name: form.getValues("name"),
-              //   locality: {
-              //     id: form.getValues("locality.id"),
-              //     name: form.getValues("locality.name")
-              //   },
-              //   size: form.getValues("size"),
-              //   status: form.getValues("status")
-              // })
+              form.reset({
+                name: form.getValues("name"),
+                locality: {
+                  id: form.getValues("locality.id"),
+                  name: form.getValues("locality.name")
+                },
+                size: form.getValues("size"),
+                status: form.getValues("status")
+              })
             }}
             className="w-full sm:w-auto"
           >

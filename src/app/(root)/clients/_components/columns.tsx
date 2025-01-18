@@ -6,8 +6,8 @@ import { sizes, clientStatus } from "@/app/(root)/clients/data/data"
 
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { DataTableRowActions } from "@/components/data-table-row-actions"
-import { Client, ClientWithRelations } from "@/db/schema"
-import { Checkbox } from "@radix-ui/react-checkbox"
+import { Client } from "@/db/schema"
+import { formatDate } from "@/lib/utils"
 
 export const columns: ColumnDef<Client>[] = [
   {
@@ -24,7 +24,7 @@ export const columns: ColumnDef<Client>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Nombre" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
+    cell: ({ row }) => <span>{row.getValue("name")}</span>,
     enableSorting: true,
     enableHiding: true,
   },
@@ -36,20 +36,16 @@ export const columns: ColumnDef<Client>[] = [
     cell: ({ row }) => {
       const locality: { id: number; name: string } = row.getValue("locality")
       return (
-        <>
-          {/* <div className="flex space-x-2"> */}
-          {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-          <span className="max-w-[500px] font-medium truncate">
-            {locality.name || "Sin localidad"}
-          </span>
-          {/* </div> */}
-        </>
+        <span className="font-medium truncate">
+          {locality.name || "Sin localidad"}
+        </span>
       )
     },
     filterFn: (row, id, value) => {
       const locality: { id: number; name: string } = row.getValue(id)
       return value.includes(locality.id.toString())
-    }
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "status",
@@ -75,7 +71,8 @@ export const columns: ColumnDef<Client>[] = [
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
-    }
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "size",
@@ -100,11 +97,25 @@ export const columns: ColumnDef<Client>[] = [
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
-    }
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Fecha de registro" />
+    ),
+    cell: ({ row }) => (
+      <div>
+        {formatDate(row.getValue("createdAt"))}
+      </div>
+    ),
+    enableSorting: true,
+    enableHiding: true,
   },
   {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Acciones" />
+      <DataTableColumnHeader column={column} title="Detalle" />
     ),
     id: "actions",
     cell: ({ row }) => (

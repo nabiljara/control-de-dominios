@@ -1,11 +1,7 @@
 'use client'
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   Settings,
-  Sparkles,
   User,
 } from "lucide-react"
 
@@ -54,18 +50,18 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="rounded-lg w-8 h-8">
                 <AvatarImage
                   src={data.user.avatar}
                   alt={name}
                 />
                 <AvatarFallback className="rounded-lg">{getInitials(name)}</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
+              <div className="flex-1 grid text-left text-sm leading-tight">
+                <span className="font-semibold truncate">
                   {name}
                 </span>
-                <span className="truncate text-xs">
+                <span className="text-xs truncate">
                   {email}
                 </span>
               </div>
@@ -73,14 +69,14 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            className="rounded-lg w-[--radix-dropdown-menu-trigger-width] min-w-56"
             side="bottom"
             align="end"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
+                <Avatar className="rounded-lg w-8 h-8">
                   <AvatarImage
                     src={data.user.avatar}
                     alt={name}
@@ -89,11 +85,11 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
                     {getInitials(name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
+                <div className="flex-1 grid text-left text-sm leading-tight">
+                  <span className="font-semibold truncate">
                     {name}
                   </span>
-                  <span className="truncate text-xs">
+                  <span className="text-xs truncate">
                     {email}
                   </span>
                 </div>

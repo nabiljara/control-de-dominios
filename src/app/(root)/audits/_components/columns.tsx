@@ -80,7 +80,7 @@ export const columns: ColumnDef<Audit>[] = [
   },
   {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Ver" />
+      <DataTableColumnHeader column={column} title="Detalle" />
     ),
     id: "actions",
     cell: ({ row }) => (

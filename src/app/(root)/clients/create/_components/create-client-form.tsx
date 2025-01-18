@@ -48,6 +48,7 @@ import {
 import { validateEmail, validatePhone } from "@/actions/contacts-actions"
 import { validateUsername } from "@/actions/accesses-actions"
 import { CreateAccessModal } from "@/components/access/create-access-modal"
+import { PreventNavigation } from "@/components/prevent-navigation"
 
 export function CreateClientForm({
   providers,
@@ -176,6 +177,8 @@ export function CreateClientForm({
     }
   })
 
+  const isDirty = Object.keys(form.formState.dirtyFields).length !== 0 || contacts.length !== 0 || accesses.length !== 0
+
   const handleFinalSubmit = async () => {
     setIsSubmitting(true)
     const client = { ...form.getValues(), contacts, accesses }
@@ -199,6 +202,8 @@ export function CreateClientForm({
       }
     )
   }
+
+
 
   return (
     <div className="bg-gradient-to-b from-gray-50 dark:from-gray-900 to-gray-100/50 dark:to-gray-800 p-4 min-h-screen">
@@ -476,6 +481,7 @@ export function CreateClientForm({
           accesses={accesses}
         />
       </ResponsiveDialog>
+      <PreventNavigation isDirty={isDirty} backHref={'/clients'} resetData={form.reset} />
     </div>
   )
 }

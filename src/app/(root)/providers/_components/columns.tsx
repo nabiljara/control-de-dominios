@@ -58,7 +58,7 @@ export const columns: ColumnDef<Provider>[] = [
   },
   {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Acciones" />
+      <DataTableColumnHeader column={column} title="Detalle" />
     ),
     id: "actions",
     cell: ({ row }) => (

@@ -1,10 +1,10 @@
 "use server"
 import db from "@/db";
 import { providers } from "@/db/schema";
-import { and, desc, eq, not, or } from "drizzle-orm";
-import { Provider, ProviderInsert } from "@/db/schema";
+import { desc, eq} from "drizzle-orm";
+import { ProviderInsert } from "@/db/schema";
 import { setUserId } from "./user-action/user-actions";
-import { ProviderWithRelations } from "@/db/schema";
+import { revalidatePath } from "next/cache";
 
 export async function getProviders() {
   try {
@@ -18,6 +18,7 @@ export async function getProviders() {
     throw error;
   }
 };
+
 export async function getProvider(id: number) {
   try {
     const prov = await db.query.providers.findFirst({
@@ -32,63 +33,61 @@ export async function getProvider(id: number) {
     throw error;
   }
 };
-export async function updateProvider(providerData: Omit<ProviderWithRelations, 'access'>) {
+
+export async function updateProvider(provider: ProviderInsert) {
+  let success = false;
   try {
+    if (!provider.id) {
+      throw new Error("El ID del proveedor no está definido.");
+    }
     await setUserId()
-    console.log(providerData)
-    const existingName = await db.query.providers.findFirst({
-      where: and(eq(providers.name, providerData.name), not(eq(providers.id, providerData.id))),
-    })
-    const existingUrl = await db.query.providers.findFirst({
-      where: and(eq(providers.url, providerData.url), not(eq(providers.id, providerData.id))),
-    })
-
-    if (existingName) {
-      throw new Error("Ya existe un proveedor con el mismo nombre");
-    }
-    if (existingUrl) {
-      throw new Error("Ya existe un proveedor con el mismo url");
-    }
-
-    await db.update(providers) 
-        .set({ name: providerData.name, url: providerData.url})
-        .where(eq(providers.id, providerData.id)).returning({ id: providers.id });
-    
-    const updatedProvider = await db.query.providers.findFirst({
-      where: eq(providers.id, providerData.id),
-      with: {
-        domains: true,
-      },
-    });
-
-    return updatedProvider;
-  }
-  catch (error) {
-    console.error("Error al actualizar el proveedor:", error);
+    await db.update(providers)
+      .set({ name: provider.name, url: provider.url })
+      .where(eq(providers.id, provider.id))
+    success = true;
+  } catch (error) {
+    console.error("Error al modificar el proveedor:", error);
     throw error;
   }
-};
+  if (success) {
+    revalidatePath(`/providers/${provider.id}`);
+  }
+}
 
 export async function insertProvider(provider: ProviderInsert) {
+  let success = false;
   try {
-    const existingName = await db.query.providers.findFirst({
-      where: eq(providers.name, provider.name),
-    })
-    const existingUrl = await db.query.providers.findFirst({
-      where: eq(providers.url, provider.url),
-    })
-
-    if (existingName) {
-      throw new Error("Ya existe un proveedor con el mismo nombre");
-    }
-    if (existingUrl) {
-      throw new Error("Ya existe un proveedor con el mismo url");
-    }
-    
     await setUserId()
-    const result = await db.insert(providers).values(provider).returning();
-    return result;
-  } catch (error) {
+    await db.insert(providers).values(provider)
+    success = true
+  }
+  catch (error) {
+    console.error("Error al registrar el proveedor:", error);
     throw error;
   }
+  if (success) {
+    revalidatePath('/providers');
+  }
 };
+
+export async function validateProviderURL(url: string) {
+  try {
+    const response = await db.query.providers.findFirst({
+      where: eq(providers.url, url)
+    });
+    return response ? false : true;
+  } catch (error) {
+    console.error("Error al validar la url del proveedor")
+  }
+}
+
+export async function validateProviderName(name: string) {
+  try {
+    const response = await db.query.providers.findFirst({
+      where: eq(providers.name, name)
+    });
+    return response ? false : true;
+  } catch (error) {
+    console.error("Error al validar el nombre del proveedor")
+  }
+}
