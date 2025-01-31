@@ -5,62 +5,62 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown } f
 
 export default function DomainManagementSkeleton() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       {/* Title and subtitle */}
       <div className="space-y-2">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-4 w-64" />
+        <Skeleton className="w-40 h-8" />
+        <Skeleton className="w-64 h-4" />
       </div>
 
       {/* Search and filters */}
       <div className="flex justify-between items-center">
         <div className="w-64">
-          <Input disabled placeholder="Filtrar clientes" />
+          <Input disabled placeholder="Filtrar ..." />
         </div>
-        <Skeleton className="h-10 w-24" />
+        <Skeleton className="w-24 h-10" />
       </div>
 
       {/* Table */}
       <div className="border rounded-lg overflow-hidden">
         {/* Table header */}
-        <div className="bg-muted p-4 grid grid-cols-3 gap-4">
-          <Skeleton className="h-6 w-24" />
-          <Skeleton className="h-6 w-24" />
-          <Skeleton className="h-6 w-24" />
+        <div className="gap-4 grid grid-cols-3 bg-muted p-4">
+          <Skeleton className="w-24 h-6" />
+          <Skeleton className="w-24 h-6" />
+          <Skeleton className="w-24 h-6" />
         </div>
         {/* Table rows */}
         {[...Array(10)].map((_, i) => (
-          <div key={i} className="p-4 grid grid-cols-3 gap-4 border-t">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-24" />
-            <Skeleton className="h-6 w-32" />
+          <div key={i} className="gap-4 grid grid-cols-3 p-4 border-t">
+            <Skeleton className="w-full h-6" />
+            <Skeleton className="w-24 h-6" />
+            <Skeleton className="w-32 h-6" />
           </div>
         ))}
       </div>
 
       {/* Pagination */}
       <div className="flex justify-between items-center">
-        <Skeleton className="h-5 w-48" /> {/* "0 de 100 fila(s) seleccionadas." */}
+        <Skeleton className="w-48 h-5" /> {/* "0 de 100 fila(s) seleccionadas." */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <Skeleton className="h-5 w-36" /> {/* "Registros por página" */}
+            <Skeleton className="w-36 h-5" /> {/* "Registros por página" */}
             <Button variant="outline" size="sm" disabled className="w-[70px]">
-              10 <ChevronDown className="h-4 w-4 ml-2" />
+              10 <ChevronDown className="ml-2 w-4 h-4" />
             </Button>
           </div>
-          <Skeleton className="h-5 w-24" /> {/* "Página 1 de 10" */}
+          <Skeleton className="w-24 h-5" /> {/* "Página 1 de 10" */}
           <div className="flex space-x-2">
             <Button variant="outline" size="icon" disabled>
-              <ChevronsLeft className="h-4 w-4" />
+              <ChevronsLeft className="w-4 h-4" />
             </Button>
             <Button variant="outline" size="icon" disabled>
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="w-4 h-4" />
             </Button>
             <Button variant="outline" size="icon" disabled>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
             <Button variant="outline" size="icon" disabled>
-              <ChevronsRight className="h-4 w-4" />
+              <ChevronsRight className="w-4 h-4" />
             </Button>
           </div>
         </div>

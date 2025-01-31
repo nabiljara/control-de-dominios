@@ -27,7 +27,7 @@ export default async function DomainPage() {
             </p>
           </div>
         </div>
-        <DataTable data={domains} columns={columns} ToolbarComponent={DataTableToolbar} />
+        <DataTable data={domains} columns={columns} ToolbarComponent={DataTableToolbar} from="domains" />
       </div>
     </>
   )

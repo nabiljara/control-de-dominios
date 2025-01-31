@@ -29,6 +29,41 @@ export async function getAccessByClientAndProviderId(clientId: number, providerI
   }
 }
 
+export async function getAccess(id: number) {
+  try {
+    const data = await db.query.access.findFirst({
+      where: eq(access.id, id),
+      with: {
+        provider: true,
+        client: true
+      }
+    });
+    return data;
+  } catch (error) {
+    console.error("Error al obtener el acceso:", error);
+    throw error;
+  }
+}
+
+export async function getKernelAccessByProviderId(providerId: number) {
+  try {
+    const data = await db.query.access.findMany({
+      orderBy: [desc(access.id)],
+      where: and(eq(access.clientId, 1), eq(access.providerId, providerId)),
+      with: {
+        provider: true
+      }
+    });
+    data.map((access) => {
+      access.password = proccessPassword(access.password)
+    });
+    return data;
+  } catch (error) {
+    console.error("Error al obtener accesos:", error);
+    throw error;
+  }
+}
+
 const proccessPassword = (password: string) => {
 
   try {
@@ -64,7 +99,7 @@ export async function insertAccess(acc: AccessType, clientId: number) {
       acc.password = `${encrypted}:${iv}`
       acc.providerId = parseInt(acc.provider.id, 10)
       acc.clientId = clientId
-      await tx.insert(access).values(acc); 
+      await tx.insert(access).values(acc);
       console.log("Contactos agregados correctamente.");
     });
     success = true;
@@ -78,7 +113,7 @@ export async function deleteAccess(acc: Omit<AccessWithRelations, "client" | "do
   let success = false;
   try {
     await setUserId()
-    await db.delete(access).where(eq(access.id, acc.id)); 
+    await db.delete(access).where(eq(access.id, acc.id));
     success = true;
   } catch (error) {
     console.error("Error al insertar el acceso:", error);

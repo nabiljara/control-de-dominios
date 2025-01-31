@@ -71,6 +71,35 @@ export async function getDomain(id: number): Promise<DomainWithRelations | undef
   }
 };
 
+export async function getAuditDomain(id: number) {
+  try {
+    if (!id) {
+      throw new Error(`El id del dominio no está definido`);
+    }
+    const domain = await db.query.domains.findFirst({
+      where: eq(domains.id, id),
+      columns: {
+        id:true,
+        name: true,
+        expirationDate: true,
+        status: true,
+        createdAt: true,
+      },
+      with:
+      {
+        client: {columns: {name: true}},
+        contact: {columns: {name: true, email: true}},
+        provider: {columns: {name: true}},
+      }
+    });
+    return domain;
+  }
+  catch (error) {
+    console.error("Error al obtener el dominio:", error);
+    throw error;
+  }
+};
+
 
 export async function getDomainsByContact(idContact: number) {
   try {
@@ -105,7 +134,7 @@ export async function updateDomainContact(contactDomain: ContactPerDomain[]) {
   }
 };
 
-export async function updateDomain(domain: DomainInsert, accessId: number | undefined ) {
+export async function updateDomain(domain: DomainInsert, accessId: number | undefined) {
   let success = false;
   try {
     await setUserId()
@@ -116,7 +145,8 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
       }
 
       await tx.update(domains)
-        .set({ name: domain.name, expirationDate: domain.expirationDate, status: domain.status, updatedAt: sql`NOW()`, clientId: domain.clientId, providerId: domain.providerId, contactId: domain.contactId })
+        // .set({ name: domain.name, expirationDate: domain.expirationDate, status: domain.status, updatedAt: sql`NOW()`, clientId: domain.clientId, providerId: domain.providerId, contactId: domain.contactId })
+        .set(domain)
         .where(eq(domains.id, domain.id))
 
       //Busco si el dominio tiene un acceso asociado

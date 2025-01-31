@@ -1,16 +1,14 @@
 "use client"
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { useEffect, useState } from "react"
 import { getUsers } from "@/actions/user-action/user-actions"
-import { User } from "@/db/schema"
-import { value } from "valibot"
 import { auditActions, auditEntities } from "../../clients/data/data"
+import { CommandShortcut } from "@/components/ui/command"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -51,18 +49,36 @@ export function DataTableToolbar<TData>({
     }
     fetchUsers()
   }, [])
-  
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "f" && (e.metaKey || e.altKey)) {
+        e.preventDefault()
+        document.getElementById("filter")?.focus()
+      }
+    }
+    document.addEventListener("keydown", down)
+    return () => document.removeEventListener("keydown", down)
+  }, [])
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex flex-1 items-center space-x-2">
-        <Input
-          placeholder="Filtrar auditorias"
-          value={(table.getColumn("entity")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("entity")?.setFilterValue(event.target.value)
-          }
-          className="w-[150px] lg:w-[250px] h-8"
-        />
+        <div className="relative w-[250px]">
+          <Input
+            id="filter"
+            placeholder="Filtrar auditorias por entidad"
+            autoFocus
+            value={(table.getColumn("entity")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("entity")?.setFilterValue(event.target.value)
+            }
+            className="w-[150px] lg:w-[250px] h-8"
+          />
+          <div className="right-2 -bottom-[7px] absolute text-gray-400 -translate-y-1/2">
+            <CommandShortcut>⌘F</CommandShortcut>
+          </div>
+        </div>
         {table.getColumn("entity") && (
           <DataTableFacetedFilter
             column={table.getColumn("entity")}

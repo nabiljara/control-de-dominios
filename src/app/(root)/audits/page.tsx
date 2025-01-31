@@ -16,7 +16,7 @@ export default async function ProvidersPage() {
             </p>
           </div>
         </div>
-        <DataTable data={audits} columns={columns} ToolbarComponent={DataTableToolbar}  />
+        <DataTable data={audits} columns={columns} ToolbarComponent={DataTableToolbar} from="audits" />
       </div>
   )
 }

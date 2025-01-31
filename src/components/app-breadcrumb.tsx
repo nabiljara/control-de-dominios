@@ -17,7 +17,7 @@ import React from 'react';
 
 export default function AppBreadcrumb() {
   const pathname = usePathname();
-  const pathSegments = pathname === '/' ? ['dashboard'] : pathname.split('/').filter(segment => segment !== '');
+  const pathSegments = pathname === '/' ? ['home'] : pathname.split('/').filter(segment => segment !== '');
 
   const breadcrumbItems = pathSegments.map((segment, index) => {
     const path = `/${pathSegments.slice(0, index + 1).join('/')}`;

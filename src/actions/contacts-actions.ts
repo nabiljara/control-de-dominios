@@ -120,17 +120,6 @@ export async function getContact(id: number) {
     try {
         const data = await db.query.contacts.findFirst({
             where: eq(contacts.id, id),
-            columns: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                type: true,
-                status: true,
-                clientId: true,
-                updatedAt: true,
-                createdAt: true,
-            },
             with: {
                 client: true,
             }
@@ -161,7 +150,6 @@ export async function validateEmail(email: string) {
         const response = await db.query.contacts.findFirst({
             where: eq(contacts.email, email)
         });
-        console.log(response);
         return response ? false : true;
     } catch (error) {
         console.error("Error al validar el email")

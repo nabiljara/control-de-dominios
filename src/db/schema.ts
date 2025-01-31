@@ -1,4 +1,6 @@
 import { InferInsertModel, InferSelectModel, relations, sql, SQL } from "drizzle-orm"
+import { clientSize, clientStatus, contactStatus, contactTypes, domainStatus} from "@/constants";
+
 import {
   boolean,
   timestamp,
@@ -20,11 +22,11 @@ export function lower(email: AnyPgColumn): SQL {
 }
 
 export const userRoleEnum = pgEnum("user_role", ["user", "admin"])
-export const clientSizeEnum = pgEnum("client_size", ["Chico", "Medio", "Grande"])
-export const clientStatusEnum = pgEnum("client_status", ["Activo", "Inactivo", "Suspendido"])
-export const domainStatusEnum = pgEnum("domain_status", ["Activo", "Vencido", "Dejar vencer", "Baja permanente"])
-export const contactTypeEnum = pgEnum("contact_type", ["Tecnico", "Administrativo", "Financiero"])
-export const contactStatusEnum = pgEnum("contact_status", ["Activo", "Inactivo"])
+export const clientSizeEnum = pgEnum("client_size", clientSize)
+export const clientStatusEnum = pgEnum("client_status", clientStatus)
+export const domainStatusEnum = pgEnum("domain_status", domainStatus)
+export const contactTypeEnum = pgEnum("contact_type", contactTypes)
+export const contactStatusEnum = pgEnum("contact_status", contactStatus )
 export const notificationStatusEnum = pgEnum("notification_status", ["delivered", "bounced"])
 export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts", "providers"])
 
@@ -417,7 +419,7 @@ export type DomainWithRelations = Domain & {
   provider: Provider,
   contact: Contact,
   history: DomainHistory[]
-  accessData: Omit<DomainAccessWithRelations,'domain'> | null
+  accessData: Omit<DomainAccessWithRelations, 'domain'> | null
 }
 
 //HISTORIAL DE DOMINIO
@@ -445,6 +447,7 @@ export type AuditInsert = InferInsertModel<typeof audits>
 export type AuditWithRelations = Audit & {
   user: User,
   audit_details: AuditDetails[]
+  entityDetails: Client | Provider | Contact | Domain | null | Access | Locality | User
 }
 
 export type AuditDetails = InferSelectModel<typeof auditDetails>

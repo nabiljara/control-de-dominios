@@ -6,8 +6,10 @@ import { getActiveClients } from '@/actions/client-actions'
 export default async function DomainCreatePage() {
   const providers = await getProviders()
   const clients = await getActiveClients()
+  console.log(clients);
+  
   return (
-    <div className='space-y-4 p-8'>
+    <div className='p-8'>
       <CreateDomainForm providers={providers} clients={clients} />
     </div>
   )

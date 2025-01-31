@@ -48,7 +48,7 @@ export async function getClient(id: number) {
       where: eq(clients.id, id),
       with:
       {
-        domains: {with:{provider:true}},
+        domains: { with: { provider: true } },
         locality: true,
         access: {
           with: { provider: true }
@@ -59,7 +59,33 @@ export async function getClient(id: number) {
     return client;
   }
   catch (error) {
-    console.error("Error al obtener el proveedor:", error);
+    console.error("Error al obtener el cliente:", error);
+    throw error;
+  }
+};
+
+export async function getAuditClient(id: number) {
+  try {
+    if (!id) {
+      throw new Error(`El id no está definido`);
+    }
+    const client = await db.query.clients.findFirst({
+      where: eq(clients.id, id),
+      columns: {
+        status: true,
+        size: true,
+        name: true,
+        id: true,
+      },
+      with: {
+        locality: { columns: { name: true } }
+      }
+
+    });
+    return client;
+  }
+  catch (error) {
+    console.error("Error al obtener el cliente:", error);
     throw error;
   }
 };
@@ -84,7 +110,8 @@ export async function updateClient(client: ClientInsert) {
   }
 }
 
-// TODO: NO USAR TIPO DE ZOD USAR EL DE LA BASE DE DATOS
+// TODO: NO USAR TIPO DE ZOD USAR EL DE LA BASE DE DATOS 
+//! ARREGLAR
 export async function insertClient(client: ClientFormValues) {
   let success = false;
   try {
@@ -93,6 +120,7 @@ export async function insertClient(client: ClientFormValues) {
       throw new Error("Error de validación del formulario");
     }
     await setUserId()
+
     await db.transaction(async (tx) => {
       const response = await tx.insert(clients)
         .values({

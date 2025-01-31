@@ -30,12 +30,6 @@ import {
 import SignoutButton from "@/components/signout-button"
 import { getInitials } from "@/lib/utils"
 
-const data = {
-  user: {
-    avatar: "https://ui.shadcn.com/avatars/shadcn.jpg",
-  },
-}
-
 interface AppSidebarFooterProps {
   name: string;
   email: string
@@ -51,10 +45,10 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="rounded-lg w-8 h-8">
-                <AvatarImage
+                {/* <AvatarImage
                   src={data.user.avatar}
                   alt={name}
-                />
+                /> */}
                 <AvatarFallback className="rounded-lg">{getInitials(name)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 grid text-left text-sm leading-tight">
@@ -77,10 +71,10 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="rounded-lg w-8 h-8">
-                  <AvatarImage
+                  {/* <AvatarImage
                     src={data.user.avatar}
                     alt={name}
-                  />
+                  /> */}
                   <AvatarFallback className="rounded-lg">
                     {getInitials(name)}
                   </AvatarFallback>

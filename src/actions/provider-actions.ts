@@ -1,10 +1,10 @@
 "use server"
 import db from "@/db";
 import { providers } from "@/db/schema";
-import { desc, eq} from "drizzle-orm";
-import { ProviderInsert } from "@/db/schema";
+import { desc, eq, ilike } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
+import { ProviderFormValues, providerSchema } from "@/validators/client-validator";
 
 export async function getProviders() {
   try {
@@ -34,7 +34,23 @@ export async function getProvider(id: number) {
   }
 };
 
-export async function updateProvider(provider: ProviderInsert) {
+export async function getAuditProvider(id: number) {
+  try {
+    if (!id) {
+      throw new Error(`El id no está definido`);
+    }
+    const provider = await db.query.providers.findFirst({
+      where: eq(providers.id, id),
+    });
+    return provider;
+  }
+  catch (error) {
+    console.error("Error al obtener el proveedor:", error);
+    throw error;
+  }
+};
+
+export async function updateProvider(provider: ProviderFormValues) {
   let success = false;
   try {
     if (!provider.id) {
@@ -54,11 +70,16 @@ export async function updateProvider(provider: ProviderInsert) {
   }
 }
 
-export async function insertProvider(provider: ProviderInsert) {
+export async function insertProvider(provider: ProviderFormValues) {
   let success = false;
   try {
+    const parsed = providerSchema.safeParse(provider);
+
+    if (!parsed.success) {
+      throw new Error("Error al validar los datos del proveedor");
+    }
     await setUserId()
-    await db.insert(providers).values(provider)
+    await db.insert(providers).values({ name: provider.name.trim(), url: provider.url.trim() });
     success = true
   }
   catch (error) {
@@ -73,21 +94,23 @@ export async function insertProvider(provider: ProviderInsert) {
 export async function validateProviderURL(url: string) {
   try {
     const response = await db.query.providers.findFirst({
-      where: eq(providers.url, url)
+      where: ilike(providers.url, url)
     });
     return response ? false : true;
   } catch (error) {
     console.error("Error al validar la url del proveedor")
+    throw error
   }
 }
 
 export async function validateProviderName(name: string) {
   try {
     const response = await db.query.providers.findFirst({
-      where: eq(providers.name, name)
+      where: ilike(providers.name, name)
     });
     return response ? false : true;
   } catch (error) {
     console.error("Error al validar el nombre del proveedor")
+    throw error
   }
 }

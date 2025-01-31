@@ -21,7 +21,7 @@ export default async function ContactPage() {
             </p>
           </div>
         </div>
-        <DataTable data={contacts} columns={columns} ToolbarComponent={DataTableToolbar} />
+        <DataTable data={contacts} columns={columns} ToolbarComponent={DataTableToolbar}  from="contacts"/>
       </div>
     </>
   )

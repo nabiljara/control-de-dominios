@@ -1,4 +1,4 @@
-import { getClients } from "@/actions/client-actions"
+import { getActiveClients, getClients } from "@/actions/client-actions"
 import { getProviders } from "@/actions/provider-actions"
 import EditableDomainCard from "@/app/(root)/domains/_components/editable-domain-card"
 import { getDomain } from "@/actions/domains-actions"
@@ -28,7 +28,7 @@ export default async function DomainDetails({
     return entityNotFound
   }
 
-  const clients = await getClients()
+  const clients = await getActiveClients()
   const providers = await getProviders()
 
   return (

@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
-import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { Client, Contact } from "@/db/schema"
 
 export const columns: ColumnDef<Contact>[] = [
@@ -98,17 +97,6 @@ export const columns: ColumnDef<Contact>[] = [
         return value.includes('Sin cliente')
       }
     }
-  },
-  {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Ver" />
-    ),
-    id: "actions",
-    cell: ({ row }) => (
-      <DataTableRowActions
-        href={"contacts/" + row.getValue("id")}
-      />
-    )
   },
   {
     id: "combinedFilter", // Columna virtual para filtrar por múltiples campos

@@ -2,12 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 
-import { sizes, clientStatus } from "@/app/(root)/clients/data/data"
+import { sizes } from "@/app/(root)/clients/data/data"
 
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
-import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { Client } from "@/db/schema"
 import { formatDate } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+import { clientStatus, statusConfig } from "@/constants"
 
 export const columns: ColumnDef<Client>[] = [
   {
@@ -54,19 +55,18 @@ export const columns: ColumnDef<Client>[] = [
     ),
     cell: ({ row }) => {
       const status = clientStatus.find(
-        (status) => status.value === row.getValue("status")
+        (status) => status === row.getValue("status")
       )
       if (!status) {
         return null
       }
 
       return (
-        <div className="flex items-center w-[100px]">
-          {status.icon && (
-            <status.icon className="mr-2 w-4 h-4 text-muted-foreground" />
-          )}
-          <span>{status.label}</span>
-        </div>
+        <Badge
+        className={statusConfig[row.getValue("status") as keyof typeof statusConfig].color}
+      >
+        {status}
+      </Badge>
       )
     },
     filterFn: (row, id, value) => {
@@ -112,16 +112,5 @@ export const columns: ColumnDef<Client>[] = [
     ),
     enableSorting: true,
     enableHiding: true,
-  },
-  {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Detalle" />
-    ),
-    id: "actions",
-    cell: ({ row }) => (
-      <DataTableRowActions
-        href={"clients/" + row.getValue("id")}
-      />
-    )
   }
 ]

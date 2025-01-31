@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientHistory, ContactHistory, DomainWithRelations, ProviderHistory } from "@/db/schema";
-import { Box, CalendarDays, Clock, Contact, ExternalLink, ExternalLinkIcon, Eye, Globe, History, Mail, Phone, User } from "lucide-react";
+import { Box, CalendarDays, Clock, Contact, ExternalLink, ExternalLinkIcon, Eye, Globe, Handshake, History, Mail, Phone, Tag, User } from "lucide-react";
 import { formatDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -13,6 +13,7 @@ import { UsernameCopy } from "@/app/(root)/clients/_components/username-copy";
 import { PasswordCell } from "@/app/(root)/clients/_components/password-cell";
 import { getHistory } from "@/actions/domains-actions";
 import { useEffect, useState } from "react";
+import { sizeConfig, statusConfig } from "@/constants";
 
 
 interface DomainInfoCardProps {
@@ -92,7 +93,9 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
           <Clock className="mr-2" />
           <span>Actualizado: {formatDate(domain.updatedAt)}</span>
         </div> */}
-        <Badge variant={domain.status === 'Activo' ? 'default' : 'secondary'} className="px-3 py-1 w-min text-lg text-nowrap">
+        <Badge
+          className={statusConfig[domain.status].color}
+        >
           {domain.status}
         </Badge>
       </CardHeader>
@@ -100,11 +103,19 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
         <Separator className="my-6" />
 
         <div className={`gap-4 grid grid-cols-1 md:${domain.accessData ? 'grid-cols-2' : ''} lg:${domain.accessData ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
-          <Section title="Cliente" icon={<User />} href={`/clients/${domain.clientId}`}>
+          <Section title="Cliente" icon={<Handshake />} href={`/clients/${domain.clientId}`}>
             <div className="space-y-2">
               <p className="font-medium">{domain.client.name}</p>
-              <p>Tamaño: {domain.client.size}</p>
-              <p>Estado: {domain.client.status}</p>
+              <p>Tamaño: {' '}
+                <Badge className={sizeConfig[domain.client.size].color}>
+                  {domain.client.size}
+                </Badge>
+              </p>
+              <p>Estado: {' '}
+                <Badge className={statusConfig[domain.client.status].color}>
+                  {domain.client.status}
+                </Badge>
+              </p>
             </div>
           </Section>
 
@@ -123,7 +134,12 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                   {domain.contact.phone}
                 </Link>
               </p>
-              <p>Tipo: {domain.contact.type}</p>
+              <div className='flex items-center gap-2'>
+                <Tag />
+                <Badge className="bg-gray-100 hover:bg-gray-300 text-black">
+                  {domain.contact.type}
+                </Badge>
+              </div>
             </div>
           </Section>
 
@@ -204,7 +220,9 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                       <TableCell>{item.data?.name}</TableCell>
                       <TableCell>{item.data?.size}</TableCell>
                       <TableCell>
-                        <Badge variant={item.active ? 'default' : 'secondary'}>
+                        <Badge
+                          className={statusConfig[item.active ? 'Activo' : 'Inactivo'].color}
+                        >
                           {item.active ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </TableCell>
@@ -241,7 +259,9 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                       <TableCell>{item.data?.phone ? item.data?.phone : 'Sin información'}</TableCell>
                       <TableCell>{item.data?.type}</TableCell>
                       <TableCell>
-                        <Badge variant={item.active ? 'default' : 'secondary'}>
+                        <Badge
+                          className={statusConfig[item.active ? 'Activo' : 'Inactivo'].color}
+                        >
                           {item.active ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </TableCell>
@@ -274,7 +294,9 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                       <TableCell>{item.data?.name}</TableCell>
                       <TableCell>{item.data?.url}</TableCell>
                       <TableCell>
-                        <Badge variant={item.active ? 'default' : 'secondary'}>
+                        <Badge
+                          className={statusConfig[item.active ? 'Activo' : 'Inactivo'].color}
+                        >
                           {item.active ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </TableCell>

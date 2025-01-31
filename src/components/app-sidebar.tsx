@@ -38,7 +38,8 @@ export async function AppSidebar() {
   if (user && user.name && user && user.email) {
     name = user.name
     email = user.email
-  }  
+  } 
+  
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -65,41 +66,6 @@ export async function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
-          {/* <SidebarMenu>
-            {NAV_MAIN.map((item) => (
-              <Collapsible
-                key={item.label}
-                asChild
-                defaultOpen={item.isActive}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.label}>
-                      {item.icon && <item.icon />}
-                      <span>{item.label}</span>
-                      <ChevronRight className="group-data-[state=open]/collapsible:rotate-90 ml-auto transition-transform duration-200" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.label}>
-                          <SidebarMenuSubButton asChild>
-                            <a href={subItem.href}>
-                              <span>{subItem.label}</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            ))}
-          </SidebarMenu> */}
-
           <AppSidebarMenu/>
         </SidebarGroup>
       </SidebarContent>

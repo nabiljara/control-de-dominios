@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
-import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { formatDate } from "@/lib/utils"
 import { Audit } from "@/db/schema"
 
@@ -77,16 +76,5 @@ export const columns: ColumnDef<Audit>[] = [
     ),
     enableSorting: true,
     enableHiding: true,
-  },
-  {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Detalle" />
-    ),
-    id: "actions",
-    cell: ({ row }) => (
-      <DataTableRowActions
-        href={"audits/" + row.getValue("id")}
-      />
-    )
   }
 ]

@@ -4,7 +4,7 @@ import { useState, useEffect, Dispatch, SetStateAction } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { addDays, format } from "date-fns"
+import { addDays, addYears, format, parse } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -38,7 +38,6 @@ import {
   CardTitle
 } from "@/components/ui/card"
 import {
-  CalendarIcon,
   Loader2,
   Globe,
   Plus,
@@ -68,7 +67,6 @@ import {
   Provider,
   AccessWithRelations,
   DomainInsert,
-  AccessInsert,
   DomainWithRelations
 } from "@/db/schema"
 import {
@@ -84,6 +82,7 @@ import ContactInfoCard from "@/app/(root)/clients/_components/contact-info-card"
 import { cn } from "@/lib/utils"
 import {
   getAccessByClientAndProviderId,
+  getKernelAccessByProviderId,
   insertAccess,
   validateUsername
 } from "@/actions/accesses-actions"
@@ -96,6 +95,11 @@ import { insertDomain, updateDomain, validateDomainName } from "@/actions/domain
 import { CreateAccessModal } from "@/components/access/create-access-modal"
 import { EditDomainConfirmationModal } from "./edit-domain.confirmation-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
+import { DropdownNavProps, DropdownProps } from "react-day-picker";
+import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
+import { domainStatus, statusConfig } from "@/constants"
+
 
 export default function CreateDomainForm({
   providers,
@@ -108,6 +112,7 @@ export default function CreateDomainForm({
   domain?: DomainWithRelations
   setIsEditing?: Dispatch<SetStateAction<boolean>>;
 }) {
+
   //** CONTACTOS:
 
   // Contactos del cliente
@@ -145,6 +150,10 @@ export default function CreateDomainForm({
     Omit<AccessWithRelations, "domainAccess" | "client">[]
   >([])
 
+  const [kernelAccess, setKernelAccess] = useState<
+    Omit<AccessWithRelations, "domainAccess" | "client">[]
+  >([])
+
   //Estado para mostrar el modal de creación de acceso
   const [isCreateAccessModalOpen, setIsCreateAccessModalOpen] = useState(false)
 
@@ -167,9 +176,6 @@ export default function CreateDomainForm({
 
   //Estado para manejar manualmente el envío del formulario
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  //Opciones de los estados del dominio
-  const statusOptions = domainFormSchema.shape.status.options
 
   //Estado para mostrar el modal de confirmación final del dominio
   const [isConfirmationDomainModalOpen, setIsConfirmationDomainModalOpen] = useState(false)
@@ -297,7 +303,7 @@ export default function CreateDomainForm({
       toast.promise(
         new Promise<void>(async (resolve, reject) => {
           try {
-            const accessId = form.getValues("hasAccess") ? form.getValues("accessId") : undefined
+            const accessId = form.getValues("isClientAccess") || form.getValues("isKernelAccess") ? form.getValues("accessId") : undefined
             await updateDomain(
               domainInsert,
               accessId
@@ -324,7 +330,7 @@ export default function CreateDomainForm({
       toast.promise(
         new Promise<void>(async (resolve, reject) => {
           try {
-            const accessId = form.getValues("hasAccess") ? form.getValues("accessId") : undefined
+            const accessId = form.getValues("isClientAccess") || form.getValues("isKernelAccess") ? form.getValues("accessId") : undefined
             await insertDomain(
               domainInsert,
               accessId
@@ -459,25 +465,20 @@ export default function CreateDomainForm({
       accessId: domain?.accessData?.access.id,
       isClientContact: domain?.contact.clientId !== undefined && domain?.clientId !== undefined && domain?.contact.clientId === domain?.clientId,
       isIndividualContact: domain?.contact.clientId !== undefined && domain?.clientId !== undefined && domain?.contact.clientId !== domain?.clientId,
-      hasAccess: domain?.accessData ? true : false,
+      isClientAccess: domain?.accessData?.access.clientId !== undefined && domain?.clientId !== undefined && domain?.accessData?.access.clientId === domain?.clientId,
+      isKernelAccess: domain?.accessData?.access.clientId !== undefined && domain?.clientId !== undefined && domain?.accessData?.access.clientId !== domain?.clientId,
       status: domain?.status,
       expirationDate: domain?.expirationDate ? new Date(domain.expirationDate) : undefined,
-    }
+    },
+    mode: 'onSubmit'
   })
 
   const isDirty = Object.keys(form.formState.dirtyFields).length !== 0
-
-  // console.log('Base de datos: ', domain?.contactId);
-  // console.log('Formulario:', form.getValues());
-  // console.log(domain?.contact.clientId);
-  // console.log( domain?.clientId);
-  // console.log( domain?.clientId);
-  // console.log('AccessId:', form.getValues('accessId'));
-  // console.log('Isdirty', form.formState.isDirty);
-  // console.log('DistyFields', form.formState.dirtyFields);
+  const today = new Date();
 
   const clientId = parseInt(form.getValues("client").id, 10)
   const providerId = parseInt(form.getValues("provider").id, 10)
+
   useEffect(() => {
     if (clientId) {
       const fetchClientContacts = async () => {
@@ -496,7 +497,7 @@ export default function CreateDomainForm({
       }
       fetchClientContacts()
     }
-  }, [clientId, form, newDBContact, domain])
+  }, [clientId, form, domain, newDBContact])
 
   useEffect(() => {
     const fetchContactsWithoutClient = async () => {
@@ -523,9 +524,32 @@ export default function CreateDomainForm({
           console.error("Error al cargar los accesos del cliente:", error)
         }
       }
+      const fetchKernelAccess = async () => {
+        try {
+          const kernelAccess = await getKernelAccessByProviderId(
+            providerId
+          )
+          setKernelAccess(kernelAccess)
+        } catch (error) {
+          console.error("Error al cargar los accesos de kernel:", error)
+        }
+      }
       fetchClientAccess()
+      fetchKernelAccess()
     }
   }, [clientId, providerId, newDBAccess])
+
+  const handleCalendarChange = (
+    _value: string | number,
+    _e: React.ChangeEventHandler<HTMLSelectElement>,
+  ) => {
+    const _event = {
+      target: {
+        value: String(_value),
+      },
+    } as React.ChangeEvent<HTMLSelectElement>;
+    _e(_event);
+  };
 
   return (
     <Card>
@@ -537,6 +561,7 @@ export default function CreateDomainForm({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
+
               {/* Nombre */}
               <FormField
                 control={form.control}
@@ -562,6 +587,79 @@ export default function CreateDomainForm({
                         autoFocus
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* CLIENTE */}
+
+              <FormField
+                control={form.control}
+                name="client.id"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-[11px]">
+                    <FormLabel>
+                      Cliente <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "m-0 justify-between w-full",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? clients.find(
+                                (client) =>
+                                  client.id.toString() === field.value
+                              )?.name
+                              : "Seleccionar cliente"}
+                            <ChevronsUpDown className="opacity-50 ml-2 w-4 h-4 shrink-0" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 w-full">
+                        <Command>
+                          <CommandInput placeholder="Buscar cliente..." />
+                          <CommandList>
+                            <CommandEmpty>
+                              Ningún cliente encontrado.
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {clients.map((client) => (
+                                <CommandItem
+                                  value={client.name}
+                                  key={client.id}
+                                  onSelect={() => {
+                                    field.onChange(client.id.toString())
+                                    form.setValue("client.name", client.name)
+                                    form.setValue("isClientContact", false, { shouldDirty: true })
+                                    form.setValue("isClientAccess", false, { shouldDirty: true })
+                                    form.setValue("isKernelAccess", false, { shouldDirty: true })
+                                    form.setValue("accessId", undefined, { shouldDirty: true })
+                                  }}
+                                >
+                                  {client.name}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      client.id.toString() === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -612,75 +710,6 @@ export default function CreateDomainForm({
                 )}
               />
 
-              {/* CLIENTE */}
-
-              <FormField
-                control={form.control}
-                name="client.id"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col gap-[11px]">
-                    <FormLabel>
-                      Cliente <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "m-0 justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? clients.find(
-                                (client) =>
-                                  client.id.toString() === field.value
-                              )?.name
-                              : "Seleccionar cliente"}
-                            <ChevronsUpDown className="opacity-50 ml-2 w-4 h-4 shrink-0" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="p-0 w-[200px]">
-                        <Command>
-                          <CommandInput placeholder="Buscar cliente..." />
-                          <CommandList>
-                            <CommandEmpty>
-                              Ningún cliente encontrado.
-                            </CommandEmpty>
-                            <CommandGroup>
-                              {clients.map((client) => (
-                                <CommandItem
-                                  value={client.name}
-                                  key={client.id}
-                                  onSelect={() => {
-                                    field.onChange(client.id.toString())
-                                    form.setValue("client.name", client.name)
-                                    form.setValue("accessId", undefined, { shouldDirty: true })
-                                  }}
-                                >
-                                  {client.name}
-                                  <Check
-                                    className={cn(
-                                      "ml-auto",
-                                      client.id.toString() === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               {/* ESTADO */}
               <FormField
@@ -698,23 +727,17 @@ export default function CreateDomainForm({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccione un estado" />
+                          <SelectValue placeholder="Seleccionar estado" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {/* <SelectItem value="Activo">
-                            <Badge variant="outline" className="bg-green-500">Activo</Badge>
-                          </SelectItem>
-                          <SelectItem value="Inactivo">
-                            <Badge variant="outline">Inactivo</Badge>
-                          </SelectItem>
-                          <SelectItem value="Suspendido">
-                            <Badge variant="outline" className="bg-red-500">Suspendido</Badge>
-                          </SelectItem> */}
-                        {/* //TODO: COLORES */}
-                        {statusOptions.map((status) => (
+                        {domainStatus.map((status) => (
                           <SelectItem key={status} value={status}>
-                            {status}
+                            <div className="flex items-center gap-2">
+                              <Badge className={statusConfig[status].color}>
+                                {status}
+                              </Badge>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -731,40 +754,77 @@ export default function CreateDomainForm({
               control={form.control}
               name="expirationDate"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem className="flex flex-col w-1/2">
                   <FormLabel>
                     Fecha de Vencimiento{" "}
                     <span className="text-red-500">*</span>
                   </FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP", { locale: es })
-                          ) : (
-                            <span>Seleccione una fecha</span>
-                          )}
-                          <CalendarIcon className="opacity-50 ml-auto w-4 h-4" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-auto" align="start">
-                      <Calendar
-                        captionLayout="dropdown-buttons"
-                        mode="single"
-                        fromDate={addDays(new Date(), 1)}
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                        locale={es}
-                        defaultMonth={field.value || addDays(new Date(), 1)}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    onMonthChange={field.onChange}
+                    month={field.value || addDays(new Date(), 1)}
+                    className="p-2"
+                    locale={es}
+                    classNames={{
+                      month_caption: "mx-0",
+                    }}
+                    disabled={[
+                      { before: today },
+                    ]}
+                    captionLayout="dropdown"
+                    defaultMonth={field.value || addDays(new Date(), 1)}
+                    startMonth={new Date()}
+                    endMonth={addYears(new Date(), 10)}
+                    hideNavigation
+                    components={{
+                      DropdownNav: (props: DropdownNavProps) => {
+                        return <div className="flex items-center gap-2 w-full">{props.children}</div>;
+                      },
+                      Dropdown: (props: DropdownProps) => {
+                        return (
+                          <Select
+                            value={String(props.value)}
+                            onValueChange={(value) => {
+                              if (props.onChange) {
+                                handleCalendarChange(value, props.onChange);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-fit h-8 font-medium first:grow">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
+                              {props.options?.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                  disabled={option.disabled}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      },
+                    }}
+                  />
+                  {
+                    domain && <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start w-min"
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        field.onChange(addYears(field.value || new Date(), 1));
+                      }}
+                    >
+                      Próximo año
+                    </Button>
+                  }
                   <FormMessage />
                 </FormItem>
               )}
@@ -936,7 +996,7 @@ export default function CreateDomainForm({
               )}
             </div>
 
-            {/* ACCESO */}
+            {/* ACCESO DEL CLIENTE */}
 
             <div className="space-y-4">
               <span className="items-center peer-disabled:opacity-70 font-medium text-center text-sm leading-none peer-disabled:cursor-not-allowed">
@@ -944,12 +1004,12 @@ export default function CreateDomainForm({
               </span>
               <FormField
                 control={form.control}
-                name="hasAccess"
+                name="isClientAccess"
                 render={({ field }) => (
                   <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
-                        Seleccionar un acceso o crear uno nuevo
+                        Seleccionar un acceso del cliente o crear uno nuevo
                       </FormLabel>
                       <FormDescription>
                         Activar para seleccionar o crear un acceso del cliente
@@ -960,9 +1020,10 @@ export default function CreateDomainForm({
                       <Switch
                         checked={field.value}
                         onCheckedChange={(value) => {
-                          form.setValue("hasAccess", value, { shouldDirty: false })
+                          form.setValue("isClientAccess", value, { shouldDirty: false })
                           form.setValue("accessId", undefined, { shouldDirty: true })
                           setSelectedAccess(undefined)
+                          form.setValue("isKernelAccess", false)
                         }}
                         disabled={
                           !form.watch("client.id") ||
@@ -973,7 +1034,7 @@ export default function CreateDomainForm({
                   </FormItem>
                 )}
               />
-              {form.watch("hasAccess") && (
+              {form.watch("isClientAccess") && (
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     <CreateAccessModal
@@ -1006,8 +1067,78 @@ export default function CreateDomainForm({
                   )}
                 </>
               )}
+
+              {/* ACCESO DE KERNEL */}
+
+              <FormField
+                control={form.control}
+                name="isKernelAccess"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
+                    <div className="space-y-0.5">
+                      <FormLabel className="flex items-center text-base">
+                        Seleccionar un acceso de Kernel
+                        <div className="flex justify-center items-center rounded-lg text-sidebar-primary-foreground aspect-square size-8">
+                          <Image
+                            src="/images/logo.svg"
+                            width={20}
+                            height={20}
+                            alt='Logo'
+                          />
+                        </div>
+                      </FormLabel>
+                      <FormDescription>
+                        Activar para seleccionar un acceso de Kernel
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(value) => {
+                          form.setValue("isKernelAccess", value, { shouldDirty: false })
+                          form.setValue("accessId", undefined, { shouldDirty: true })
+                          setSelectedAccess(undefined)
+                          form.setValue("isClientAccess", false)
+                        }}
+                        disabled={
+                          !form.watch("client.id") ||
+                          !form.watch("provider.id")
+                        }
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {form.watch("isKernelAccess") && (
+                <>
+                  <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {kernelAccess.length > 0 &&
+                      kernelAccess.map((access, index) => (
+                        <AccessInfoCard
+                          key={access.username}
+                          access={access}
+                          index={index}
+                          provider={access.provider?.name}
+                          isSelected={
+                            form.getValues("accessId") ===
+                            access.id
+                          }
+                          onSelect={handleSelectAccess}
+                        />
+                      ))}
+                  </div>
+                  {kernelAccess.length === 0 && (
+                    <p className="font-medium text-destructive text-sm">
+                      No tienes accesos para el proveedor
+                      seleccionado.
+                    </p>
+                  )}
+                </>
+              )}
+
             </div>
 
+            {/* BOTON SUBMIT */}
             {Object.keys(form.formState.dirtyFields).length !== 0 && domain ?
               (<div className="flex justify-end">
                 <Button
@@ -1054,12 +1185,13 @@ export default function CreateDomainForm({
           </form>
         </Form>
       </CardContent>
+      {/* DIALOGS DE CONFIRMACIÓN */}
       <ResponsiveDialog
         open={isNewDBContactConfirmationModalOpen}
         onOpenChange={() => setIsNewDBContactConfirmationModalOpen(false)}
         title="Confirmar registro de nuevo contacto"
         description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[700px]"
+        className="sm:max-w-[420px]"
       >
         <NewClientContactConfirmationModal
           contact={newDBContact}
@@ -1071,7 +1203,7 @@ export default function CreateDomainForm({
         onOpenChange={() => setIsNewDBAccessConfirmationModalOpen(false)}
         title="Confirmar registro del nuevo acceso"
         description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[700px]"
+        className="sm:max-w-[420px]"
       >
         <NewClientAccessConfirmationModal
           access={newDBAccess}

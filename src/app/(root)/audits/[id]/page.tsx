@@ -1,9 +1,7 @@
-"use client"
 import { getAudit } from "@/actions/audits-actions"
-import { toast } from "sonner"
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { DiffTableRow } from "@/components/diff-highlight"
+import { EntityNotFound } from "@/components/entity-not-found"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -12,179 +10,167 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table"
-interface AuditDetail {
-  id: number
-  auditId: number
-  oldValue: string | null
-  newValue: string | null
-  field: string
-}
+import { formatDate } from "@/lib/utils"
+import {
+  BookOpen,
+  Table as TableIcon,
+  CalendarClock,
+  FileText,
+  User2,
+  Pointer,
+  Logs
+} from "lucide-react"
+import { DomainEntityDetails } from "../_components/entity-details/domain-entity-details"
+import { ProviderEntityDetails } from "../_components/entity-details/provider-entity-details"
+import { ClientEntityDetails } from "../_components/entity-details/client-entity.details"
+import { ContactEntityDetails } from "../_components/entity-details/contact-entity-details"
+import { UserEntityDetails } from "../_components/entity-details/user-entity-details"
+import { AccessEntityDetails } from "../_components/entity-details/access-entity-details"
 
-interface Audit {
-  id: number
-  createdAt: string
-  entityId: string
-  entity: string
-  userId: string | null
-  action: string
-  user: {
-    name: string | null
-  } | null
-  audit_details: AuditDetail[]
-}
-export default function AuditDetailsPage({
+export default async function AuditDetailsPage({
   params
 }: {
   params: { id: number }
 }) {
-  const [audit, setAudit] = useState<Audit | undefined>(undefined)
-  const fetchAudit = async () => {
-    try {
-      const aud = await getAudit(params.id)
-      setAudit(aud)
-    } catch (e) {
-      if (e instanceof Error) {
-        console.log(e)
-        toast.error("Error al obtener proveedor", { description: e.message })
-      }
-    }
+  const auditId = Number(params.id)
+  const entityNotFound =
+    <EntityNotFound
+      icon={<BookOpen className="w-12 h-12 text-gray-400" />}
+      title="Auditoría no encontrada"
+      description="Lo sentimos, no pudimos encontrar la auditoría que estás buscando. Es posible que la URL proporcionada no sea válida o que la auditoría haya sido eliminada."
+      href="/audits"
+      linkText="Volver al listado de auditorías"
+    />
+
+  if (isNaN(auditId)) {
+    return entityNotFound
   }
 
-  useEffect(() => {
-    fetchAudit()
-  }, [])
+  const audit = await getAudit(auditId)
+  if (!audit) {
+    return entityNotFound
+  }
 
   return (
-    <>
-      <div className="md:flex flex-col flex-1 space-y-8 p-8 h-full">
-        <div className="flex justify-between items-center space-y-2">
-          <div>
-            <h2 className="font-bold text-2xl tracking-tight">Auditoría</h2>
-          </div>
-        </div>
-        {audit && (
-          <div className="space-y-4">
-            <div className="gap-4 grid grid-cols-2">
+    <div className="space-y-6 p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-bold text-2xl"><BookOpen />Auditoría</CardTitle>
+        </CardHeader>
+        <CardContent className="gap-4 grid grid-cols-2 lg:grid-cols-4"> 
+            <div className="flex items-start gap-2">
+              {/* TODO: Avatar del usuario ?  */}
+              <User2 className="w-5 h-5 text-muted-foreground" />
               <div>
-                <label
-                  htmlFor="name"
-                  className="block font-medium text-gray-700 text-md"
-                >
-                  Usuario
-                </label>
-                <div>{audit.user?.name ?? "Sin usuario"}</div>
-              </div>
-              <div>
-                <label
-                  htmlFor="url"
-                  className="block font-medium text-gray-700 text-md"
-                >
-                  Entidad
-                </label>
-                <div>{audit.entity}</div>
-              </div>
-              <div>
-                <label
-                  htmlFor="url"
-                  className="block font-medium text-gray-700 text-md"
-                >
-                  ID Entidad
-                </label>
-                <div>{audit.entityId}</div>
-              </div>
-              <div>
-                <label
-                  htmlFor="url"
-                  className="block font-medium text-gray-700 text-md"
-                >
-                  Fecha de movimiento
-                </label>
-                <div>
-                  {new Date(audit.createdAt as string).toLocaleString("es-ES", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    // second: "2-digit",
-                    hour12: false
-                  })}
-                </div>
+                <p className="text-muted-foreground text-sm">Usuario</p>
+                <p className="font-medium">{audit.user?.name ?? "Sin usuario"}</p>
               </div>
             </div>
-            <div>
-              <h3 className="mb-2 font-semibold text-lg">
-                Detalles de la auditoría
-              </h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Campo</TableHead>
-                    <TableHead className="text-center">
-                      Valor anterior
-                    </TableHead>
-                    <TableHead className="text-center">Valor nuevo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {audit.audit_details.length === 0 ? (
-                    <TableRow>
-                      <TableCell>No hay detalles de la auditoría</TableCell>
+            <div className="flex items-start gap-2">
+              <TableIcon className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="text-muted-foreground text-sm">Tabla</p>
+                <p className="font-medium">{audit.entity}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <CalendarClock className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="text-muted-foreground text-sm">Fecha de movimiento</p>
+                <p className="font-medium">{formatDate(audit.createdAt)}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Pointer className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="text-muted-foreground text-sm">Acción</p>
+                <p className="font-medium">{audit.action}</p>
+              </div>
+            </div>
+            <div className="gap-4 grid col-span-2 lg:col-span-4">
+              <span className="flex items-center gap-2 text-muted-foreground text-sm"><FileText className="w-5 h-5 text-muted-foreground" />Registro</span>
+              {
+                audit.entityDetails ? (() => {
+                  switch (audit.entity) {
+                    case 'Dominios':
+                      return <DomainEntityDetails {...audit} />;
+                    case 'Proveedores':
+                      return <ProviderEntityDetails {...audit} />
+                    case 'Contactos':
+                      return <ContactEntityDetails {...audit} />
+                    case 'Clientes':
+                      return <ClientEntityDetails {...audit} />
+                    case 'Usuarios':
+                      return <UserEntityDetails {...audit} />
+                    case 'Accesos':
+                      return <AccessEntityDetails {...audit} />
+                    default:
+                      return <span>Entidad no reconocida</span>;
+                  }
+                })() : <span className="text-gray-400">No encontrado</span>
+              }
+            </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-bold text-2xl"><Logs />Detalles del movimiento</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Campo</TableHead>
+                <TableHead>Valor anterior</TableHead>
+                <TableHead>Valor nuevo</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {
+                audit.audit_details.map((detail) =>
+                  detail.field === "Fecha de vencimiento" || detail.field === "Última modificación" || detail.field === "Fecha de creación" ? (
+                    <TableRow key={detail.id}>
+                      <TableCell>{detail.field}</TableCell>
+                      <TableCell>
+                        {detail.oldValue
+                          ? formatDate(detail.oldValue)
+                          : <span className="text-gray-400 italic">(Vacío)</span>}
+                      </TableCell>
+                      <TableCell>
+                        {formatDate(detail.newValue ? detail.newValue : '--')}
+                      </TableCell>
                     </TableRow>
                   ) : (
-                    audit.audit_details.map((detail) =>
-                      detail.field === "Fecha de actualización" ||
-                      detail.field === "Fecha de creación" ||
-                      detail.field === "Fecha de expiración" ? (
-                        <TableRow key={detail.id}>
-                          <TableCell>{detail.field}</TableCell>
-                          <TableCell className="text-center">
-                            {detail.oldValue
-                              ? new Date(
-                                  detail.oldValue as string
-                                ).toLocaleString("es-ES", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false
-                                })
-                              : "--"}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {new Date(detail.newValue as string).toLocaleString(
-                              "es-ES",
-                              {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false
-                              }
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        <TableRow key={detail.id}>
-                          <TableCell>{detail.field}</TableCell>
-                          <TableCell className="text-center">
-                            {detail.oldValue}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {detail.newValue}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    )
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        )}
-      </div>
-    </>
+                    <DiffTableRow key={detail.id} detail={detail} />
+                  )
+                )
+              }
+              {/* {
+                (() => {
+                  switch (audit.entity) {
+                    case 'Dominios':
+                      return <DomainAuditDetails audit={audit} />;
+                    case 'Proveedores':
+                      return <ProviderEntityDetails {...audit} />
+                    case 'Contactos':
+                      return <DomainEntityDetails {...audit} />
+
+                    case 'Clientes':
+                      return <ClientEntityDetails {...audit} />
+                    case 'Usuarios':
+                      return <DomainEntityDetails {...audit} />
+                    case 'Accesos':
+                      return <DomainEntityDetails {...audit} />
+                    default:
+                      return <span>Entidad no reconocida</span>;
+                  }
+                })()
+              } */}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

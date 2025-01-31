@@ -7,10 +7,10 @@ type LocalityInsert = InferInsertModel<typeof localities>;
 const mock = async () => {
   const data: LocalityInsert[] = []
   data.push(
-    { id: 4, name: 'Neuquén' },
-    { id: 3, name: 'Puerto Madryn' },
-    { id: 2, name: 'Buenos Aires' },
-    { id: 1, name: 'Comodoro Rivadavia' }
+    { name: 'Comodoro Rivadavia' },
+    { name: 'Neuquén' },
+    { name: 'Puerto Madryn' },
+    { name: 'Buenos Aires' },
   );
   return data;
 };

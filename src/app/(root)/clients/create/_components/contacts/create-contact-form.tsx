@@ -11,9 +11,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/high-res.css';
 import { ContactType } from '@/validators/client-validator'
 import { Badge } from '@/components/ui/badge'
-import { contactSchema as originalContactSchema } from '@/validators/client-validator'
-
-const typeOptions = originalContactSchema.shape.type.options;
+import { contactStatus, contactTypes, statusConfig } from '@/constants'
 
 export function CreateContactForm({
   onSave,
@@ -47,7 +45,7 @@ export function CreateContactForm({
     if (isValid) {
       const data = form.getValues()
       onSave(data)
-      if(onClose){
+      if (onClose) {
         onClose()
       }
     }
@@ -163,7 +161,7 @@ export function CreateContactForm({
                 </FormControl>
                 <SelectContent>
                   {
-                    typeOptions.map((type) => (
+                    contactTypes.map((type) => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))
                   }
@@ -186,12 +184,15 @@ export function CreateContactForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Activo">
-                    <Badge variant="outline" className="bg-green-500">Activo</Badge>
-                  </SelectItem>
-                  <SelectItem value="Inactivo">
-                    <Badge variant="outline">Inactivo</Badge>
-                  </SelectItem>
+                  {contactStatus.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className={statusConfig[status].color}>
+                          {status}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />

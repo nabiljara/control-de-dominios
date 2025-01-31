@@ -49,6 +49,7 @@ import { validateEmail, validatePhone } from "@/actions/contacts-actions"
 import { validateUsername } from "@/actions/accesses-actions"
 import { CreateAccessModal } from "@/components/access/create-access-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
+import { clientSize, clientStatus, sizeConfig, statusConfig } from "@/constants"
 
 export function CreateClientForm({
   providers,
@@ -125,7 +126,6 @@ export function CreateClientForm({
           username,
           parseInt(provider.id, 10)
         )
-        console.log(alreadyRegistered)
 
         if (!alreadyRegistered) {
           ctx.addIssue({
@@ -261,10 +261,15 @@ export function CreateClientForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {/* TODO: HACER DINÁMICO */}
-                        <SelectItem value="Chico">Chico</SelectItem>
-                        <SelectItem value="Medio">Medio</SelectItem>
-                        <SelectItem value="Grande">Grande</SelectItem>
+                        {clientSize.map((size) => (
+                          <SelectItem key={size} value={size}>
+                            <div className="flex items-center gap-2">
+                              <Badge className={sizeConfig[size].color}>
+                                {size}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -370,7 +375,7 @@ export function CreateClientForm({
                         accessSchema={getAccessSchema(null)}
                         providers={providers}
                         from="clients-create"
-                        // onClose={() => setIsCreateAccessModalOpen(false)}
+                      // onClose={() => setIsCreateAccessModalOpen(false)}
                       />
                       {/* <span className="peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
                     Accesos
@@ -424,19 +429,15 @@ export function CreateClientForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Activo">
-                          <Badge variant="outline" className="bg-green-500">
-                            Activo
-                          </Badge>
-                        </SelectItem>
-                        <SelectItem value="Inactivo">
-                          <Badge variant="outline">Inactivo</Badge>
-                        </SelectItem>
-                        <SelectItem value="Suspendido">
-                          <Badge variant="outline" className="bg-red-500">
-                            Suspendido
-                          </Badge>
-                        </SelectItem>
+                        {clientStatus.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className={statusConfig[status].color}>
+                                {status}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -472,7 +473,7 @@ export function CreateClientForm({
         onOpenChange={setIsConfirmationModalOpen}
         title="Confirmar registro"
         description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[700px]"
+        className="md:max-w-[700px]"
       >
         <CreateConfirmationModal
           handleSubmit={handleFinalSubmit}

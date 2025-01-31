@@ -27,7 +27,7 @@ export default async function ClientsPage() {
             </p>
           </div>
         </div>
-        <DataTable data={clients} columns={columns} ToolbarComponent={DataTableToolbar} />
+        <DataTable data={clients} columns={columns} ToolbarComponent={DataTableToolbar} from="clients" />
       </div>
     </>
   )

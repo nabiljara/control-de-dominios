@@ -33,25 +33,25 @@ export function ResponsiveDialog({
 
   if (isDesktop) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className={cn("sm:max-w-[425px]", className)}
-          onEscapeKeyDown={(e) => {
-            e.preventDefault()
-          }}
-          onPointerDownOutside={(e) => {
-            e.preventDefault()
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            {description && (
-              <DialogDescription>{description}</DialogDescription>
-            )}
-          </DialogHeader>
-          {children}
-        </DialogContent>
-      </Dialog>
+          <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+              className={cn("sm:max-w-[425px]", className)}
+              onEscapeKeyDown={(e) => {
+                e.preventDefault()
+              }}
+              onPointerDownOutside={(e) => {
+                e.preventDefault()
+              }}
+            >
+              <DialogHeader>
+                <DialogTitle>{title}</DialogTitle>
+                {description && (
+                  <DialogDescription>{description}</DialogDescription>
+                )}
+              </DialogHeader>
+              {children}
+            </DialogContent>
+          </Dialog>
     );
   }
 

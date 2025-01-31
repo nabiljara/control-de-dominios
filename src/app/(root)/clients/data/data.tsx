@@ -119,15 +119,15 @@ export const auditEntities = [
 ]
 export const auditActions = [
   {
-    value: "INSERT",
-    label: "INSERT"
+    value: "Agregar",
+    label: "Agregar"
   },
   {
-    value: "UPDATE",
-    label: "UPDATE"
+    value: "Actualizar",
+    label: "Actualizar"
   },
   {
-    value: "DELETE",
-    label: "DELETE"
+    value: "Eliminar",
+    label: "Eliminar"
   }
 ]

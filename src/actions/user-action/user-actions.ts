@@ -23,6 +23,25 @@ export async function getUsers() {
     }
 };
 
+export async function getUser(id: string) {
+    try {
+        if (!id) {
+            throw new Error(`El id no está definido`);
+        }
+        const user = await db.query.users.findFirst({
+            where: eq(users.id, id),
+        });
+        if (!user) {
+            throw new Error(`No se encontró el usuario`);
+        }
+        return user;
+    }
+    catch (error) {
+        console.error("Error al obtener el usuario:", error);
+        throw error;
+    }
+};
+
 export async function setUserId() {
     try {
         const session = await auth()

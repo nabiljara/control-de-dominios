@@ -22,7 +22,7 @@ export default async function ProvidersPage() {
             </p>
           </div>
         </div>
-        <DataTable data={providers} columns={columns} ToolbarComponent={DataTableToolbar} />
+        <DataTable data={providers} columns={columns} ToolbarComponent={DataTableToolbar} from="providers" />
       </div>
   )
 }

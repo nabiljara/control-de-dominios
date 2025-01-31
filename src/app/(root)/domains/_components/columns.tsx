@@ -1,12 +1,11 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { domainStatus } from "@/app/(root)/clients/data/data"
 import { Domain } from "@/db/schema"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
-import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { formatDate } from "@/lib/utils"
-import Link from "next/link"
+import { domainStatus, statusConfig } from "@/constants"
+import { Badge } from "@/components/ui/badge"
 
 export const columns: ColumnDef<Domain>[] = [
   {
@@ -24,13 +23,9 @@ export const columns: ColumnDef<Domain>[] = [
       <DataTableColumnHeader column={column} title="Nombre" />
     ),
     cell: ({ row }) =>
-      <Link
-        href={row.getValue("name")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center text-blue-500 hover:underline"
-      >
-        {row.getValue("name")}</Link>,
+      <span>
+        {row.getValue("name")}
+      </span>,
     enableSorting: false,
     enableHiding: true,
   },
@@ -63,9 +58,9 @@ export const columns: ColumnDef<Domain>[] = [
     cell: ({ row }) => {
       const client: { id: number; name: string } = row.getValue("client")
       return (
-          <span className="max-w-[500px] font-medium truncate">
-            {client.name || "Sin cliente"}
-          </span>
+        <span className="max-w-[500px] font-medium truncate">
+          {client.name || "Sin cliente"}
+        </span>
       )
     },
     filterFn: (row, id, value) => {
@@ -81,7 +76,7 @@ export const columns: ColumnDef<Domain>[] = [
     ),
     cell: ({ row }) => {
       const status = domainStatus.find(
-        (status) => status.value === row.getValue("status")
+        (status) => status === row.getValue("status")
       )
 
       if (!status) {
@@ -89,18 +84,28 @@ export const columns: ColumnDef<Domain>[] = [
       }
 
       return (
-        <div className="flex items-center w-[140px]">
-          {status.icon && (
-            <status.icon className="mr-2 w-4 h-4 text-muted-foreground" />
-          )}
-          <span>{status.label}</span>
-        </div>
+        <Badge
+        className={statusConfig[row.getValue("status") as keyof typeof statusConfig].color}
+      >
+        {status}
+      </Badge>
+
+      
       )
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
     enableSorting: false,
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Fecha de registro" />
+    ),
+    cell: ({ row }) => <span>{formatDate(row.getValue("expirationDate"))}</span>,
+    enableSorting: true,
+    enableHiding: true,
   },
   {
     accessorKey: "expirationDate",
@@ -110,15 +115,5 @@ export const columns: ColumnDef<Domain>[] = [
     cell: ({ row }) => <span>{formatDate(row.getValue("expirationDate"))}</span>,
     enableSorting: true,
     enableHiding: true,
-  },
-  {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Detalle" />
-    ),
-    id: "actions",
-    cell: ({ row }) =>
-      <DataTableRowActions
-        href={"domains/" + row.getValue("id")}
-      />,
-  },
+  }
 ]

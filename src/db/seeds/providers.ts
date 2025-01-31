@@ -1,6 +1,5 @@
 import { DB } from "@/db";
 import { providers } from "@/db/schema";
-import { faker } from "@faker-js/faker";
 import type { InferInsertModel } from "drizzle-orm";
 
 type ProviderInsert = InferInsertModel<typeof providers>;
@@ -8,9 +7,9 @@ type ProviderInsert = InferInsertModel<typeof providers>;
 const mock = async () => {
   const data: ProviderInsert[] = []
   data.push(
-    { id: 3, name: 'DonWeb', url: 'https://donweb.com' },
-    { id: 2, name: 'GoDaddy', url: 'https://godaddy.com' },
-    { id: 1, name: 'Hostinger', url: 'https://hostinger.com.ar' }
+    { name: 'DonWeb', url: 'https://donweb.com' },
+    { name: 'GoDaddy', url: 'https://godaddy.com' },
+    { name: 'Hostinger', url: 'https://hostinger.com.ar' }
   );
   return data;
 };

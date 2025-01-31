@@ -24,15 +24,16 @@ async function main() {
     // schema.contacts,
     schema.providers,
     schema.localities,
+    schema.clients,
     // schema.domains,
     // schema.access,
   ]) {
     await resetTable(db, table);
   }
-  // await seeds.clients(db);
   // await seeds.contacts(db);
   await seeds.providers(db);
   await seeds.localities(db);
+  await seeds.clients(db);
   // await seeds.domains(db);
   // await seeds.access(db);
 }

@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
-import { DataTableRowActions } from "@/components/data-table-row-actions"
 import { z } from "zod"
 
 export const providerSchema = z.object({
@@ -27,7 +26,7 @@ export const columns: ColumnDef<Provider>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Nombre" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
+    cell: ({ row }) => <div className="w-[500px]">{row.getValue("name")}</div>,
     enableSorting: true,
     enableHiding: true
   },
@@ -37,34 +36,11 @@ export const columns: ColumnDef<Provider>[] = [
       <DataTableColumnHeader column={column} title="URL" />
     ),
     cell: ({ row }) => (
-      <div className="w-[80px]">
-        <a
-          className="hover:underline"
-          href={
-            (row.getValue("url") as string).startsWith("http://") ||
-            (row.getValue("url") as string).startsWith("https://")
-              ? row.getValue("url")
-              : `https://${row.getValue("url")}`
-          }
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {row.getValue("url")}
-        </a>
+      <div className="w-[500px]">
+        {row.getValue("url")}
       </div>
     ),
     enableSorting: true,
     enableHiding: true
-  },
-  {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Detalle" />
-    ),
-    id: "actions",
-    cell: ({ row }) => (
-      <DataTableRowActions
-        href={"providers/" + row.getValue("id")}
-      />
-    )
   }
 ]

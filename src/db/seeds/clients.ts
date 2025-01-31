@@ -1,26 +1,15 @@
 import { DB } from "@/db";
-import { clients  } from "@/db/schema";
-import { faker } from "@faker-js/faker";
-import type { InferInsertModel } from "drizzle-orm";
+import { ClientInsert, clients } from "@/db/schema";
 
-
-type ClientInsert = InferInsertModel<typeof clients>;
-
-const mock = () => {
-	const data: ClientInsert[] = [];
-
-	for (let i = 0; i < 20; i++) {
-		data.push({
-      size: faker.helpers.arrayElement(["small", "medium", "large"]),
-      name: faker.person.lastName(),
-      createdAt: faker.date.past().toDateString(),
-      updatedAt: faker.date.past().toDateString(),
-      status: faker.helpers.arrayElement(["active", "inactive", "suspended"]),
-		});
-	}
-	return data;
+const mock = async () => {
+  const data: ClientInsert[] = []
+  data.push(
+    { name: 'Kernel SAS', size:'Chico', status:'Activo', localityId:1 },
+  );
+  return data;
 };
 
 export async function seed(db: DB) {
-	await db.insert(clients).values(mock());
+  const insertData = await mock();
+  await db.insert(clients).values(insertData);
 }

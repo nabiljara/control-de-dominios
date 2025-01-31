@@ -41,6 +41,7 @@ import { EditConfirmationModal } from "./edit-confirmation-modal"
 import { toast } from "sonner"
 import { updateClient } from "@/actions/client-actions"
 import { updateDomain } from "@/actions/domains-actions"
+import { clientStatus, statusConfig } from "@/constants"
 
 interface EditableClientCardProps {
   client: Omit<ClientWithRelations, "access" | "contacts">
@@ -87,10 +88,10 @@ export default function EditableClientCard({
           status: domain.status,
           contact: contact
             ? {
-                id: contact.id.toString(),
-                name: contact.name,
-                clientId: contact.clientId ? contact.clientId : undefined
-              }
+              id: contact.id.toString(),
+              name: contact.name,
+              clientId: contact.clientId ? contact.clientId : undefined
+            }
             : { id: "", name: "", clientId: undefined },
           isClientContact: false
         }
@@ -173,7 +174,6 @@ export default function EditableClientCard({
                 status: domain.status,
                 expirationDate: domain.expirationDate.toISOString(),
                 providerId: parseInt(domain.provider.id)
-                // providerRegistrationDate: new Date().toISOString()
               }
               await updateDomain(modifiedDomain, undefined)
             } catch (error) {
@@ -259,17 +259,20 @@ export default function EditableClientCard({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Activo">Activo</SelectItem>
-                            <SelectItem value="Inactivo">Inactivo</SelectItem>
+                            {clientStatus.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={statusConfig[status].color}>
+                                    {status}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       ) : (
                         <Badge
-                          variant={
-                            client.status === "Activo"
-                              ? "default"
-                              : "destructive"
-                          }
+                          className={statusConfig[client.status].color}
                         >
                           {client.status}
                         </Badge>
