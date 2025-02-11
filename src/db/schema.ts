@@ -452,4 +452,13 @@ export type AuditWithRelations = Audit & {
 
 export type AuditDetails = InferSelectModel<typeof auditDetails>
 
+//NOTIFICATIONS
+export type Notifications = InferSelectModel<typeof notifications>
+export type NotificationInsert = InferInsertModel<typeof notifications>;
+export type UserNotification = InferSelectModel<typeof usersNotifications>
+export type UserNotificationWithRelations = UserNotification & {
+  notification: Notifications
+}
+
+
 

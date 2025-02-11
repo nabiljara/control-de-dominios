@@ -1,7 +1,7 @@
 "use server"
 import db from "@/db";
 import { clients, contacts, domainAccess, DomainHistory, DomainInsert, domains, DomainWithRelations, providers } from "@/db/schema";
-import { asc, desc, eq, or, sql } from "drizzle-orm";
+import { asc, desc, eq, or, sql, count, lt } from "drizzle-orm";
 import { ContactPerDomain } from "../../types/contact-types";
 import { setUserId } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
@@ -279,5 +279,72 @@ export async function getHistory(history: DomainHistory[]) {
   }
 }
 
+export async function getExpiringDomains(){
+  const today = Date.now();
+  try{
+    const data = await db.query.domains.findMany({
+      where: 
+        eq(domains.status, 'Activo'),
+        with: {
+          provider: true,
+          client: true,
+        }
+    });
 
+    const expiringDomains = data.filter((domain) => {
+      const expirationDate = new Date(domain.expirationDate);
+      expirationDate.setHours(0, 0, 0, 0);      
+      const diffInMs = expirationDate.getTime() - today.valueOf();
+      const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+      // console.log("Expira en ", daysRemaining, " días");
+      return daysRemaining >= 0 ;
+    }).sort((a, b)=> new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+    
+    return expiringDomains;
+  }
+  catch (error) {
+    console.error("Error al obtener los dominios:", error);
+    throw error;
+  }
+}
+
+export async function getDashboardData(){
+  try{
+    const result = await Promise.all([
+      db.select({ count: count() }).from(domains),
+      db.select({ count: count() }).from(domains).where(eq(domains.status, "Activo")),
+      db.select({ count: count() }).from(domains).where(lt(domains.expirationDate, new Date().toISOString())),
+      db.select({
+        month: sql`DATE_TRUNC('month', CAST(${domains.createdAt} AS TIMESTAMP))`.as("month"),
+        count: count(),
+      })
+        .from(domains)
+        .groupBy(sql`DATE_TRUNC('month', CAST(${domains.createdAt} AS TIMESTAMP))`)
+        .orderBy(sql`DATE_TRUNC('month', CAST(${domains.createdAt} AS TIMESTAMP)) DESC`)
+    ]);
+    const totalDomains = result[0][0]?.count ?? 0;
+    const totalActive = result[1][0]?.count ?? 0;
+    const totalExpired = result[2][0]?.count ?? 0;
+    const registeredPerMonth = result[3] ?? [];
+
+    //crecimiento
+    let growthPercentage = 0;
+    if (registeredPerMonth.length > 1) {
+      const lastMonth = registeredPerMonth[0]?.count ?? 0;
+      const previousMonth = registeredPerMonth[1]?.count ?? 1; 
+      growthPercentage = ((lastMonth - previousMonth) / previousMonth) * 100;
+    }
+    return {
+      total: totalDomains,
+      active: totalActive,
+      expired: totalExpired,
+      registeredPerMonth,
+      growthPercentage: Math.round(growthPercentage * 100) / 100, 
+    };
+  }
+  catch (error) {
+    console.error("Error al obtener información de los dominios:", error);
+    throw error;
+  }
+}
 

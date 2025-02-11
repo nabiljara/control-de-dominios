@@ -2,8 +2,8 @@
 
 import db from "@/db";
 import { clientFormSchema, ClientFormValues } from "@/validators/client-validator";
-import { ClientInsert, clients, Contact, contacts, localities } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { ClientInsert, clients, Contact, contacts, localities, domainHistory } from "@/db/schema";
+import { desc, eq, count, gte, and, lte, lt, asc} from "drizzle-orm";
 import { revalidatePath } from 'next/cache';
 import { redirect } from "next/navigation";
 import { setUserId } from "./user-action/user-actions";
@@ -161,3 +161,80 @@ export async function insertClient(client: ClientFormValues) {
     redirect('/clients');
   }
 }
+export async function getDashboardData(){
+  try{
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+    const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString();
+    const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).toISOString();
+
+    // TODO: VER BIEN COMO TOMAR EL PORCENTAJE DE RETENCIÓN(SI ES QUE QUEDA)
+    //  
+    const result = await Promise.all([
+      // [0]
+      db.select({ count: count() }).from(clients),
+      // [1]
+      db.select({ count: count() }).from(clients).where(eq(clients.status, "Activo")),
+      // [2]
+      db.select({ count: count() }).from(clients)
+        .where( gte(clients.createdAt, firstDayOfMonth)),
+      // [3]
+      db.select({ count: count() }).from(clients)
+      .where(and(eq(clients.status, "Activo"), lt(clients.createdAt, firstDayOfMonth))),
+      // [4]
+      db.select({
+          month: sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`.as("month"),
+          count: count(),
+        })
+          .from(clients)
+          .groupBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`)
+          .orderBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP)) DESC`),
+      ]);
+      const totalClients = result[0][0]?.count ?? 0;
+      const totalActive = result[1][0]?.count ?? 0;
+      const newClientsThisMonth = result[2][0]?.count ?? 0;
+      const activeClientsLastMonth = result[3][0]?.count ?? 0;
+      const registeredPerMonth = result[4] ?? [];
+    
+    //variación
+    let variationPercentage = 0;
+    if (activeClientsLastMonth > 0) {
+      variationPercentage = ((totalActive - activeClientsLastMonth) / activeClientsLastMonth) * 100;
+    }
+    variationPercentage = Math.round(variationPercentage * 100) / 100;
+    
+    return {
+      total: totalClients,
+      active: totalActive,
+      newClientsThisMonth,
+      registeredPerMonth,
+      variationPercentage,
+    };
+  }
+  catch (error) {
+    console.error("Error al obtener información de los clientes:", error);
+    throw error;
+  }
+}
+
+
+export async function getLatestClients() {
+  try {
+    const data = await db.select({
+      id: clients.id,
+      name: clients.name,
+      size: clients.size,
+      domainCount: sql<number>`COUNT(domain_history.id)`.as("domainCount"),
+      createdAt: clients.createdAt
+      }).from(clients).
+      leftJoin(domainHistory, and(eq(domainHistory.entity, "Clientes"),
+      eq(domainHistory.entityId, clients.id),
+      eq(domainHistory.active, true))).
+      groupBy(clients.id).orderBy(asc(clients.createdAt));
+    return data;
+  }
+  catch (error) {
+    console.error("Error al obtener proveedores:", error);
+    throw error;
+  }
+};

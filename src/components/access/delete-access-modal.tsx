@@ -1,60 +1,77 @@
-"use client"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { AccessType } from "@/validators/client-validator"
+"use client";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { AccessType } from "@/validators/client-validator";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
-} from "../ui/dialog"
-import { AtSign, Box, Eye, File, Lock, Router, Trash } from "lucide-react"
-import { Card, CardContent } from "../ui/card"
-import { PasswordCell } from "@/app/(root)/clients/_components/password-cell"
-import { decryptPassword } from "@/lib/utils"
-import { deleteAccess } from "@/actions/accesses-actions"
-import { AccessWithRelations } from "@/db/schema"
-import { toast } from "sonner"
+  DialogTrigger,
+} from "../ui/dialog";
+import { AtSign, Box, Eye, File, Lock, Router, Trash } from "lucide-react";
+import { Card, CardContent } from "../ui/card";
+import { PasswordCell } from "@/app/(root)/clients/_components/password-cell";
+import { decryptPassword } from "@/lib/pass";
+import { deleteAccess } from "@/actions/accesses-actions";
+import { AccessWithRelations } from "@/db/schema";
+import { toast } from "sonner";
 
 interface DeleteAccessModalProps {
-  access: Omit<AccessWithRelations, "client" | "domainAccess">
+  access: Omit<AccessWithRelations, "client" | "domainAccess">;
 }
 
 export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
-  const [isPending, setIsPending] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const [isPending, setIsPending] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [decryptedPassword, setDecryptedPassword] = useState<string>("");
+
+  //Problema de decriptación (lenght 0) era por componente cliente/servidor
+  //Se paso función decryptPassword a lib/pass.ts con "use server" y funciona haciendo una llama asincronica
+  useEffect(() => {
+    async function fetchDecryption() {
+      if (!access?.password) return;
+      try {
+        const decrypted = await decryptPassword(access.password);
+        setDecryptedPassword(decrypted as unknown as string);
+      } catch (error) {
+        console.error("Error al desencriptar la contraseña", error);
+      }
+    }
+
+    fetchDecryption();
+  }, [access?.password]);
 
   async function handleDelete() {
-    setIsPending(true)
+    setIsPending(true);
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          await deleteAccess(access)
-          resolve()
-          setIsPending(false)
-          setIsModalOpen(false)
-          setIsConfirmationModalOpen(false)
+          await deleteAccess(access);
+          resolve();
+          setIsPending(false);
+          setIsModalOpen(false);
+          setIsConfirmationModalOpen(false);
         } catch (error) {
           if (error instanceof Error) {
             toast.error("Hubo un error al eliminar el acceso.", {
-              description: error.message
-            })
+              description: error.message,
+            });
           }
-          reject()
-          setIsPending(false)
-          setIsConfirmationModalOpen(false)
-          setIsModalOpen(false)
+          reject();
+          setIsPending(false);
+          setIsConfirmationModalOpen(false);
+          setIsModalOpen(false);
         }
       }),
       {
         loading: "Eliminando acceso",
         success: "Acceso eliminado correctamente.",
-        error: "Hubo un error al eliminar el acceso."
-      }
-    )
+        error: "Hubo un error al eliminar el acceso.",
+      },
+    );
   }
   return (
     <>
@@ -82,12 +99,7 @@ export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
                     <span className="font-medium">Contraseña:</span>{" "}
                     <div className="items-center pt-1 text-sm">
                       {access?.password && (
-                        <>
-                          {(() => {
-                            // const password = decryptPassword(access.password)
-                            return <PasswordCell password={access.password} />
-                          })()}
-                        </>
+                        <PasswordCell password={decryptedPassword} />
                       )}
                     </div>
                   </div>
@@ -150,5 +162,5 @@ export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

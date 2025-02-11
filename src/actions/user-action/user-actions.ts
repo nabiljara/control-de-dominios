@@ -58,7 +58,6 @@ export async function setUserId() {
             const result = await sql`
                 SELECT set_user_id(${userId})
             `;
-            console.log("Resultado de set_user_id:", result);
 
         });
     } catch (error) {

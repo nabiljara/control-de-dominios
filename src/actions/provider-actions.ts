@@ -1,7 +1,7 @@
 "use server"
 import db from "@/db";
-import { providers } from "@/db/schema";
-import { desc, eq, ilike } from "drizzle-orm";
+import { domainHistory, domains, providers } from "@/db/schema";
+import { and, count, desc, eq, ilike, sql } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { ProviderFormValues, providerSchema } from "@/validators/client-validator";
@@ -112,5 +112,99 @@ export async function validateProviderName(name: string) {
   } catch (error) {
     console.error("Error al validar el nombre del proveedor")
     throw error
+  }
+}
+
+export async function getDashboardData(){
+  try{
+    const result = await Promise.all([
+      //total prov
+      db.select({ count: count() }).from(providers),
+
+      // total x prov
+      db.select({
+        providerId: providers.id,
+        providerName: providers.name,
+        domainCount: sql<number>`COUNT(domain_history.id)`.as("domainCount"),
+      })
+        .from(providers)
+        .leftJoin(domainHistory, and(
+          eq(domainHistory.entity, "Proveedores"),
+          eq(domainHistory.entityId, providers.id),
+          eq(domainHistory.active, true)
+        ))
+        .groupBy(providers.id)
+    ]);
+    const total = result[0][0]?.count ?? 0;
+    const domainsPerProvider = result[1] ?? [];
+
+    const formattedChartData = domainsPerProvider.map((provider, index) => ({
+      proveedor: provider.providerName,
+      dominios: provider.domainCount,
+      fill: `hsl(var(--chart-${index + 1}))`, 
+    }));
+
+    return {
+      total,
+      domainsPerProvider: formattedChartData,
+    };
+  }catch (error) {
+    console.error("Error al obtener los datos de proveedores:", error);
+    throw error;
+  }
+}
+
+export async function getDomainsByProviderAndMonth(){
+  try{
+    const result = await db
+      .select({
+        month: sql`DATE_TRUNC('month', ${domains.createdAt})`.as("month"),
+        providerName: providers.name,
+        domainCount: count(),
+      })
+      .from(domainHistory)
+      .innerJoin(domains, sql`${domainHistory.domainId} = ${domains.id}`)
+      .innerJoin(providers, sql`${domainHistory.entityId} = ${providers.id}`)
+      .where(and(
+        eq(domainHistory.entity, "Proveedores"),
+        eq(domainHistory.active, true)
+      ))
+      .groupBy(sql`DATE_TRUNC('month', ${domains.createdAt})`, providers.name)
+      .orderBy(sql`DATE_TRUNC('month', ${domains.createdAt}) DESC`);
+
+    const formattedData = result.map((row) => ({
+      month: new Date(row.month as string),
+      providerName: row.providerName,
+      domainCount: row.domainCount,
+    })).sort((a, b) => a.month.getTime() - b.month.getTime());
+
+    const sortedFormattedData = formattedData.map((item) =>({
+      month: item.month.toLocaleDateString("es-ES", {
+        month: "2-digit",
+        year: "2-digit",
+      }),
+      providerName: item.providerName,
+      domainCount: item.domainCount,
+      }))
+    
+    
+    const transformedData = sortedFormattedData.reduce((acc, item) => {
+        const existingEntry = acc.find((entry) => entry.month === item.month);
+      
+        if (existingEntry) {
+          existingEntry[item.providerName.toLowerCase()] = item.domainCount;
+        } else {
+          acc.push({
+            month: item.month,
+            [item.providerName.toLowerCase()]: item.domainCount,
+          });
+        }
+      
+        return acc;
+      }, [] as Record<string, string|number>[]);
+
+    return Object.values(transformedData);
+  }catch(error){
+    console.log("Error al obtener los dominios por proveedor y mes: ",error)
   }
 }

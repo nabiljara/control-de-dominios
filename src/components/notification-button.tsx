@@ -1,37 +1,83 @@
-'use client'
-import { useState } from 'react'
-import { Bell } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
+"use client";
+import { useEffect, useState } from "react";
+import { Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserNotificationWithRelations } from "@/db/schema";
+import { formatDate } from "@/lib/utils";
+import {
+  getUserNotifications,
+  markReaded,
+} from "@/actions/notifications-actions";
 type Notification = {
   id: number;
-  title: string;
-  date: string;
-  description: string;
+  status: "delivered" | "bounced";
+  createdAt: string;
+  message: string;
+};
+interface NotificationButtonProps {
+  userNotifications: UserNotificationWithRelations[];
+  userId: string;
 }
 
-export default function NotificationButton() {
+export default function NotificationButton({
+  userNotifications,
+  userId,
+}: NotificationButtonProps) {
+  const [userNotifs, setUserNotifs] = useState(userNotifications);
   const [notifications, setNotifications] = useState<{
     unread: Notification[];
     read: Notification[];
   }>({
-    unread: [
-      { id: 1, title: "Email enviado", date: "Hace 1 hs", description: "Se ha enviado un email a John Doe ya que quedan 30 días para el vencimiento del dominio 'domain.com'." },
-      { id: 2, title: "Email no entregado", date: "Hace 2 hs", description: "No se ha entregado correctamente el email a John Doe." },
-    ],
-    read: [
-      { id: 3, title: "Bienvenido", date: "Hace 3 hs", description: "Bienvenido a nuestra plataforma!" },
-      { id: 4, title: "Recordatorio", date: "Hace 6 hs", description: "No olvide configurar correctamente el envío de emails." },
-    ],
+    unread: [],
+    read: [],
   });
 
-  const markAllAsRead = () => {
-    setNotifications(prev => ({
-      unread: [],
-      read: [...prev.read, ...prev.unread],
-    }));
+  const filterNotifications = (
+    newNotifications: UserNotificationWithRelations[],
+  ) => {
+    const unread = newNotifications
+      .filter((n) => !n.readed)
+      .map((n) => ({
+        id: n.notification.id,
+        status: n.notification.status,
+        createdAt: n.notification.createdAt,
+        message: n.notification.message,
+      }));
+
+    const read = newNotifications
+      .filter((n) => n.readed)
+      .map((n) => ({
+        id: n.notification.id,
+        status: n.notification.status,
+        createdAt: n.notification.createdAt,
+        message: n.notification.message,
+      }));
+
+    setNotifications({ unread, read });
+  };
+
+  useEffect(() => {
+    if (!userNotifs || userNotifs.length === 0) return;
+    filterNotifications(userNotifs);
+  }, [userNotifs]);
+
+  const markAllAsRead = async () => {
+    try {
+      await markReaded(userNotifs);
+      const updatedNotifications = await getUserNotifications(userId as string);
+      setUserNotifs(updatedNotifications);
+    } catch (error) {
+      console.log("Error al marcar las notificaciones como leídas ", error);
+    }
   };
 
   const unreadCount = notifications.unread.length;
@@ -43,12 +89,12 @@ export default function NotificationButton() {
           variant="ghost"
           size="icon"
           className="relative"
-          aria-label={`Notificaciones: ${unreadCount} nueva${unreadCount !== 1 ? 's' : ''}`}
+          aria-label={`Notificaciones: ${unreadCount} nueva${unreadCount !== 1 ? "s" : ""}`}
         >
           <Bell className="h-[1.2rem] w-[1.2rem]" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
-              {unreadCount > 99 ? '99+' : unreadCount}
+            <span className="absolute -right-1 -top-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+              {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
         </Button>
@@ -63,16 +109,25 @@ export default function NotificationButton() {
           </TabsList>
           <TabsContent value="unread">
             {notifications.unread.map((notification) => (
-              <DropdownMenuItem key={notification.id} className="flex flex-col items-start">
+              <DropdownMenuItem
+                key={notification.id}
+                className="flex flex-col items-start"
+              >
                 <div className="flex flex-col">
-                  <span className="font-medium">{notification.title}</span>
-                  <span className="text-sm text-muted-foreground">{notification.description}</span>
-                  <span className="text-sm text-muted-foreground">{notification.date}</span>
+                  <span className="font-medium">{notification.id}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {notification.message}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(notification.createdAt)}
+                  </span>
                 </div>
               </DropdownMenuItem>
             ))}
             {notifications.unread.length === 0 ? (
-              <div className="p-2 text-center text-muted-foreground">No hay notificaciones sin leer</div>
+              <div className="p-2 text-center text-muted-foreground">
+                No hay notificaciones sin leer
+              </div>
             ) : (
               <Button
                 variant="outline"
@@ -88,18 +143,24 @@ export default function NotificationButton() {
             {notifications.read.map((notification) => (
               <DropdownMenuItem key={notification.id}>
                 <div className="flex flex-col">
-                  <span className="font-medium">{notification.title}</span>
-                  <span className="text-sm text-muted-foreground">{notification.description}</span>
-                  <span className="text-sm text-muted-foreground">{notification.date}</span>
+                  <span className="font-medium">{notification.id}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {notification.message}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(notification.createdAt)}
+                  </span>
                 </div>
               </DropdownMenuItem>
             ))}
             {notifications.read.length === 0 && (
-              <div className="p-2 text-center text-muted-foreground">No hay notificaciones leídas</div>
+              <div className="p-2 text-center text-muted-foreground">
+                No hay notificaciones leídas
+              </div>
             )}
           </TabsContent>
         </Tabs>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
