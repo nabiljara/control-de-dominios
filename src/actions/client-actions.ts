@@ -135,7 +135,7 @@ export async function insertClient(client: ClientFormValues) {
         client.contacts.map((contact) => {
           contact.clientId = response[0].insertedId
         })
-        await tx.insert(contacts).values(client.contacts);
+        await tx.insert(contacts).values(client.contacts.map(({ id, ...rest }) => rest));
         console.log("Contactos agregados correctamente.");
       }
 
