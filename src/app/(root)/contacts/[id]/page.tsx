@@ -1,115 +1,125 @@
-"use client"
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+"use client";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter
-} from "@/components/ui/card"
-import { ConfirmationModal } from "../_components/confirmation-modal"
-import { DomainTable } from "../_components/domains-table"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Switch } from "@/components/ui/switch"
+  CardFooter,
+} from "@/components/ui/card";
+import { ConfirmationModal } from "../_components/confirmation-modal";
+import { DomainTable } from "../_components/domains-table";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Switch } from "@/components/ui/switch";
 import {
   getDomainsByContact,
-  updateDomainContact
-} from "@/actions/domains-actions"
-import { getContact, updateContact } from "@/actions/contacts-actions"
-import { toast } from "sonner"
-import { getClients } from "@/actions/client-actions"
-import { Client, DomainWithRelations, ContactWithRelations } from "@/db/schema"
-import { contactSchema } from "@/validators/contacts-validator"
-import { ContactPerDomain } from "../../../../../types/contact-types"
+  updateDomainContact,
+} from "@/actions/domains-actions";
+import { getContact, updateContact } from "@/actions/contacts-actions";
+import { toast } from "sonner";
+import { getClients } from "@/actions/client-actions";
+import { Client, DomainWithRelations, ContactWithRelations } from "@/db/schema";
+import { contactSchema } from "@/validators/contacts-validator";
+import { ContactPerDomain } from "../../../../../types/contact-types";
 
 export default function ContactDetailsPage({
-  params
+  params,
 }: {
-  params: { id: number }
+  params: { id: number };
 }) {
   const [contact, setContact] = useState<
     Omit<ContactWithRelations, "domains"> | undefined
-  >(undefined)
+  >(undefined);
   const [editedContact, setEditedContact] = useState<
     Omit<ContactWithRelations, "domains"> | undefined
-  >(undefined)
-  const [isEditing, setIsEditing] = useState(false)
+  >(undefined);
+  const [isEditing, setIsEditing] = useState(false);
   const [domains, setDomains] = useState<
-    Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
-  >([])
-  const [clients, setClients] = useState<Client[]>([])
-  const [hasChanges, setHasChanges] = useState(false)
+    Omit<
+      DomainWithRelations,
+      "history" | "domainAccess" | "contact" | "accessData"
+    >[]
+  >([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
   const [activeDomains, setActiveDomains] = useState<
-    Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
-  >([])
+    Omit<
+      DomainWithRelations,
+      "history" | "domainAccess" | "contact" | "accessData"
+    >[]
+  >([]);
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
     reset,
-    setError
+    setError,
   } = useForm<Omit<ContactWithRelations, "domains">>({
     resolver: zodResolver(contactSchema),
-    defaultValues: contact
-  })
-  const [isModalOpen, setIsModalOpen] = useState(false)
+    defaultValues: contact,
+  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fecthDomains = async () => {
     try {
-      const data = await getDomainsByContact(params.id)
-      setDomains(data)
-      setActiveDomains(data.filter((domain) => domain.status === "Activo"))
+      const data = await getDomainsByContact(params.id);
+      setDomains(data);
+      setActiveDomains(data.filter((domain) => domain.status === "Activo"));
     } catch (e) {
       if (e instanceof Error) {
-        toast.error("Error al obtener los dominios", { description: e.message })
+        toast.error("Error al obtener los dominios", {
+          description: e.message,
+        });
       }
     }
-  }
+  };
   const fetchContact = async () => {
     try {
-      const con = await getContact(params.id)
-      setContact(con)
-      setEditedContact(con)
+      const con = await getContact(params.id);
+      setContact(con);
+      setEditedContact(con);
       //Por el useEffect se carga primero el select que el contacto, con esto seteo los select que no se alcanzan a setear
       //TODO: Mejorar esto
       if (con) {
-        setValue("type", con.type)
-        setValue("status", con.status)
+        setValue("type", con.type);
+        setValue("status", con.status);
       }
     } catch (e) {
       if (e instanceof Error) {
-        toast.error("Error al obtener el contacto", { description: e.message })
+        toast.error("Error al obtener el contacto", { description: e.message });
       }
     }
-  }
+  };
   const fetchClients = async () => {
     try {
-      const cli = await getClients()
-      setClients(cli)
+      const cli = await getClients();
+      setClients(cli);
     } catch (e) {
       if (e instanceof Error) {
-        toast.error("Error al obtener los clientes", { description: e.message })
+        toast.error("Error al obtener los clientes", {
+          description: e.message,
+        });
       }
     }
-  }
+  };
   useEffect(() => {
     //TODO: mejorar POST's y evitar useEffect
-    fetchContact()
-    fecthDomains()
-    fetchClients()
-  }, [])
+    fetchContact();
+    fecthDomains();
+    fetchClients();
+  }, []);
 
   // useEffect(() => {
   //   if (contact && !editedContact) {
@@ -124,76 +134,76 @@ export default function ContactDetailsPage({
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    field: keyof Omit<ContactWithRelations, "domains">
+    field: keyof Omit<ContactWithRelations, "domains">,
   ) => {
     if (editedContact) {
-      setValue(field, e.target.value)
-      setEditedContact({ ...editedContact, [e.target.name]: e.target.value })
-      setHasChanges(true)
+      setValue(field, e.target.value);
+      setEditedContact({ ...editedContact, [e.target.name]: e.target.value });
+      setHasChanges(true);
     }
-  }
+  };
   const handleChangeSelect = (
     value: string,
-    field: keyof Omit<ContactWithRelations, "domains">
+    field: keyof Omit<ContactWithRelations, "domains">,
   ) => {
     if (editedContact) {
       if (field === "clientId") {
         const selectedClient = clients.find(
-          (client) => client.id === parseInt(value, 10)
-        )
+          (client) => client.id === parseInt(value, 10),
+        );
         setEditedContact({
           ...editedContact,
           clientId:
             selectedClient && selectedClient.id ? selectedClient.id : null,
-          client: selectedClient ?? null
-        })
-        setValue(field, parseInt(value))
+          client: selectedClient ?? null,
+        });
+        setValue(field, parseInt(value));
       } else {
-        setEditedContact({ ...editedContact, [field]: value })
-        setValue(field, value)
+        setEditedContact({ ...editedContact, [field]: value });
+        setValue(field, value);
       }
-      setHasChanges(true)
+      setHasChanges(true);
     }
-  }
+  };
   const handleApply = async (data: Omit<ContactWithRelations, "domains">) => {
     if (Object.keys(errors).length === 0) {
-      setIsModalOpen(true)
+      setIsModalOpen(true);
     } else {
-      console.log("Errores en el formulario:", errors)
+      console.log("Errores en el formulario:", errors);
     }
-  }
+  };
 
   const applyChanges = async (contactSelections: ContactPerDomain[]) => {
     if (editedContact) {
-      const toastId = toast.loading("Guardando cambios...")
+      const toastId = toast.loading("Guardando cambios...");
       try {
-        await updateDomainContact(contactSelections)
-        const response = await updateContact(editedContact)
-        const updatedContact = await getContact(response.id)
-        setContact(updatedContact)
-        setEditedContact(updatedContact)
-        setIsEditing(false)
-        setHasChanges(false)
-        toast.success("Cambios guardados exitosamente", { id: toastId })
+        await updateDomainContact(contactSelections);
+        const response = await updateContact(editedContact);
+        const updatedContact = await getContact(response.id);
+        setContact(updatedContact);
+        setEditedContact(updatedContact);
+        setIsEditing(false);
+        setHasChanges(false);
+        toast.success("Cambios guardados exitosamente", { id: toastId });
       } catch (e) {
         if (e instanceof Error) {
           if (e.message.includes("email")) {
-            setError("email", { type: "server", message: e.message })
+            setError("email", { type: "server", message: e.message });
           }
           if (e.message.includes("teléfono")) {
-            setError("phone", { type: "server", message: e.message })
+            setError("phone", { type: "server", message: e.message });
           }
           toast.error("Error al guardar los datos", {
             description: e.message,
-            id: toastId
-          })
+            id: toastId,
+          });
         }
       }
     }
-    setIsModalOpen(false)
-  }
+    setIsModalOpen(false);
+  };
   if (!contact) {
-    return <div>Cargando...</div>
+    return <div>Cargando...</div>;
   } else {
     return (
       <>
@@ -395,7 +405,7 @@ export default function ContactDetailsPage({
                       type="button"
                       variant="outline"
                       onClick={() => {
-                        setIsEditing(!isEditing)
+                        setIsEditing(!isEditing);
                       }}
                     >
                       Cancelar
@@ -422,6 +432,6 @@ export default function ContactDetailsPage({
           updatedContact={editedContact}
         />
       </>
-    )
+    );
   }
 }

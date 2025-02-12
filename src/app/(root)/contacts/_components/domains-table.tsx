@@ -4,13 +4,16 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
-} from "@/components/ui/table"
-import { DomainWithRelations } from "@/db/schema"
+  TableRow,
+} from "@/components/ui/table";
+import { DomainWithRelations } from "@/db/schema";
 
 type DomainTableProps = {
-  domains: Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
-}
+  domains: Omit<
+    DomainWithRelations,
+    "history" | "domainAccess" | "contact" | "accessData"
+  >[];
+};
 
 export function DomainTable({ domains }: DomainTableProps) {
   return (
@@ -42,5 +45,5 @@ export function DomainTable({ domains }: DomainTableProps) {
         )}
       </TableBody>
     </Table>
-  )
+  );
 }

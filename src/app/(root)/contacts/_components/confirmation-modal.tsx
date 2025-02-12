@@ -1,107 +1,113 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog"
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardTitle
-} from "@/components/ui/card"
-import { Mail, Phone, User, Activity, CheckCircle } from "lucide-react"
-import { ContactType } from "@/validators/contacts-validator"
-import { DomainWithRelations } from "@/db/schema"
-import { useEffect, useState } from "react"
+  CardTitle,
+} from "@/components/ui/card";
+import { Mail, Phone, User, Activity, CheckCircle } from "lucide-react";
+import { ContactType } from "@/validators/contacts-validator";
+import { DomainWithRelations } from "@/db/schema";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import { ContactWithRelations } from "@/db/schema"
+  SelectValue,
+} from "@/components/ui/select";
+import { ContactWithRelations } from "@/db/schema";
 import {
   getContact,
   getContactsByClient,
-  getContactsWithoutClient
-} from "@/actions/contacts-actions"
-import { toast } from "sonner"
-import { ContactPerDomain } from "../../../../../types/contact-types"
-import { CreateContactModal } from "./create-contact-modal"
+  getContactsWithoutClient,
+} from "@/actions/contacts-actions";
+import { toast } from "sonner";
+import { ContactPerDomain } from "../../../../../types/contact-types";
+import { CreateContactModal } from "./create-contact-modal";
 
 type ConfirmationModalProps = {
-  isOpen: boolean
-  onClose: () => void
-  domains: Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
-  onConfirm: (contactSelections: ContactPerDomain[]) => void //Pruebas con contactId en nulo, acomodar cuando definamos el contacto default(propio de kernel)
-  updatedContact: Omit<ContactWithRelations, "domains"> | undefined
-}
+  isOpen: boolean;
+  onClose: () => void;
+  domains: Omit<
+    DomainWithRelations,
+    "history" | "domainAccess" | "contact" | "accessData"
+  >[];
+  onConfirm: (contactSelections: ContactPerDomain[]) => void; //Pruebas con contactId en nulo, acomodar cuando definamos el contacto default(propio de kernel)
+  updatedContact: Omit<ContactWithRelations, "domains"> | undefined;
+};
 
 export function ConfirmationModal({
   isOpen,
   onClose,
   domains,
   onConfirm,
-  updatedContact
+  updatedContact,
 }: ConfirmationModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [oldContacts, setOldContacts] = useState<
     Omit<ContactWithRelations, "domains"> | undefined
-  >(undefined)
+  >(undefined);
   const [selectedContacts, setSelectedContacts] = useState<
     Record<number, number | null>
-  >({})
+  >({});
 
   const [contactsByDomain, setContactsByDomain] = useState<
     Record<number, Omit<ContactWithRelations, "domains">[]>
-  >({})
+  >({});
   const [isCreateContactModalOpen, setIsCreateContactModalOpen] =
-    useState(false)
+    useState(false);
 
   const fetchContacts = async () => {
-    const result = await fetchContactsByDomain(domains)
-    setContactsByDomain(result)
-    const old = await getContact(updatedContact?.id as number)
-    setOldContacts(old)
-  }
+    const result = await fetchContactsByDomain(domains);
+    setContactsByDomain(result);
+    const old = await getContact(updatedContact?.id as number);
+    setOldContacts(old);
+  };
 
   useEffect(() => {
-    fetchContacts()
-  }, [updatedContact, domains])
+    fetchContacts();
+  }, [updatedContact, domains]);
 
   const handleNewContact = () => {
-    setIsCreateContactModalOpen(false)
-    fetchContacts()
-  }
+    setIsCreateContactModalOpen(false);
+    fetchContacts();
+  };
 
   const fetchContactsByDomain = async (
-    domains: Omit<DomainWithRelations, "history" | "domainAccess" | "contact">[]
+    domains: Omit<
+      DomainWithRelations,
+      "history" | "domainAccess" | "contact" | "accessData"
+    >[],
   ) => {
     try {
       const contactsByDomain = await Promise.all(
         domains.map(async (domain) => {
           const contacts = domain.clientId
             ? await getContactsByClient(domain.clientId)
-            : await getContactsWithoutClient()
-          return { domainId: domain.id, contacts }
-        })
-      )
+            : await getContactsWithoutClient();
+          return { domainId: domain.id, contacts };
+        }),
+      );
       return contactsByDomain.reduce<
         Record<number, Omit<ContactWithRelations, "domains">[]>
       >((acc, curr) => {
-        acc[curr.domainId] = curr.contacts
-        return acc
-      }, {})
+        acc[curr.domainId] = curr.contacts;
+        return acc;
+      }, {});
     } catch (error) {
-      console.error("Error al obtener contactos por dominio:", error)
-      throw error
+      console.error("Error al obtener contactos por dominio:", error);
+      throw error;
     }
-  }
+  };
 
   const handleConfirm = async () => {
     if (
@@ -109,30 +115,30 @@ export function ConfirmationModal({
       oldContacts?.status !== "Inactivo"
     ) {
       const missingContacts = domains.some(
-        (domain) => !selectedContacts[domain.id]
-      )
+        (domain) => !selectedContacts[domain.id],
+      );
       if (missingContacts) {
-        toast.error("No se selecciono un nuevo contacto para cada dominio")
-        return
+        toast.error("No se selecciono un nuevo contacto para cada dominio");
+        return;
       }
     }
     //Error cuando no selecciona un nuevo contacto para c/u de los dominios
     //TODO: Mejorarlo para que cuando no se tenga tenga dominios asociados -- DONE
     const contactSelections: ContactPerDomain[] = Object.entries(
-      selectedContacts
+      selectedContacts,
     ).map(([domainId, contactId]) => ({
       domainId: Number(domainId),
-      contactId: contactId as number
-    }))
-    setIsSubmitting(true)
+      contactId: contactId as number,
+    }));
+    setIsSubmitting(true);
     try {
-      await onConfirm(contactSelections)
+      await onConfirm(contactSelections);
     } catch (error) {
-      console.error(error)
+      console.error(error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <>
@@ -204,7 +210,7 @@ export function ConfirmationModal({
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Tipo</p>
                       <p className="text-sm font-medium leading-none">
-                        {updatedContact?.type === "Tecnico"
+                        {updatedContact?.type === "Técnico"
                           ? "Técnico"
                           : updatedContact?.type}
                       </p>
@@ -249,7 +255,7 @@ export function ConfirmationModal({
                               onValueChange={(value) =>
                                 setSelectedContacts((prev) => ({
                                   ...prev,
-                                  [domain.id]: parseInt(value, 10)
+                                  [domain.id]: parseInt(value, 10),
                                 }))
                               }
                             >
@@ -263,7 +269,7 @@ export function ConfirmationModal({
                                   </div>
                                   {contactsByDomain[domain.id]
                                     ?.filter(
-                                      (contact) => contact.clientId !== null
+                                      (contact) => contact.clientId !== null,
                                     )
                                     .map((contact) => (
                                       <SelectItem
@@ -281,7 +287,7 @@ export function ConfirmationModal({
                                   </div>
                                   {contactsByDomain[domain.id]
                                     ?.filter(
-                                      (contact) => contact.clientId === null
+                                      (contact) => contact.clientId === null,
                                     )
                                     .map((contact) => (
                                       <SelectItem
@@ -370,10 +376,10 @@ export function ConfirmationModal({
               <DialogTitle>Crear Nuevo Contacto</DialogTitle>
             </DialogHeader>
 
-            <CreateContactModal from="contacts" onSuccess={handleNewContact} />
+            <CreateContactModal from="contacts" />
           </DialogContent>
         </Dialog>
       )}
     </>
-  )
+  );
 }
