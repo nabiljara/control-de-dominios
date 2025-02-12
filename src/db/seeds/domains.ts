@@ -22,40 +22,40 @@ const mock = async (db: DB) => {
     // Determinar si el cliente tendrá 1 o 2 dominios
     const numberOfDomains = faker.helpers.arrayElement([1, 2]);
 
-    for (let i = 0; i < numberOfDomains; i++) {
-      data.push({
-        clientId: client.id,
-        // Asignar un proveedor al azar de la lista de proveedores
-        providerId: faker.helpers.arrayElement(providersData).id,
-        // Asignar un contacto al azar del cliente actual
-        contactId: faker.helpers.arrayElement(clientContacts).id,
-        name: faker.internet.domainName(),
-        status: faker.helpers.arrayElement(["active", "inactive", "suspended"]),
-        createdAt: faker.date.past().toDateString(),
-        expirationDate: faker.date.future().toDateString(),
-      });
-    }
+    // for (let i = 0; i < numberOfDomains; i++) {
+    //   data.push({
+    //     clientId: client.id,
+    //     // Asignar un proveedor al azar de la lista de proveedores
+    //     providerId: faker.helpers.arrayElement(providersData).id,
+    //     // Asignar un contacto al azar del cliente actual
+    //     contactId: faker.helpers.arrayElement(clientContacts).id,
+    //     name: faker.internet.domainName(),
+    //     status: faker.helpers.arrayElement(["active", "inactive", "suspended"]),
+    //     createdAt: faker.date.past().toDateString(),
+    //     expirationDate: faker.date.future().toDateString(),
+    //   });
+    // }
   });
   // Generar 6 dominios adicionales con contactos sin clientId
   const domainContacts = contactsData.filter(contact => contact.clientId === null);
-  for (let i = 0; i < 6; i++) {
-    if (domainContacts.length > 0) {
-      data.push({
-        clientId: faker.helpers.arrayElement(clientsData).id, // Sin cliente asignado
-        providerId: faker.helpers.arrayElement(providersData).id,
-        contactId: faker.helpers.arrayElement(domainContacts).id,
-        name: faker.internet.domainName(),
-        status: faker.helpers.arrayElement(["active", "inactive", "suspended"]),
-        createdAt: faker.date.past().toDateString(),
-        expirationDate: faker.date.future().toDateString(),
-      });
-    }
-  }
+  // for (let i = 0; i < 6; i++) {
+  //   if (domainContacts.length > 0) {
+  //     data.push({
+  //       clientId: faker.helpers.arrayElement(clientsData).id, // Sin cliente asignado
+  //       providerId: faker.helpers.arrayElement(providersData).id,
+  //       contactId: faker.helpers.arrayElement(domainContacts).id,
+  //       name: faker.internet.domainName(),
+  //       status: faker.helpers.arrayElement(["active", "inactive", "suspended"]),
+  //       createdAt: faker.date.past().toDateString(),
+  //       expirationDate: faker.date.future().toDateString(),
+  //     });
+  //   }
+  // }
 
   return data;
 };
 
 export async function seed(db: DB) {
   const insertData = await mock(db);
-  await db.insert(domains).values(insertData);
+  // await db.insert(domains).values(insertData);
 }
