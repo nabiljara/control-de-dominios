@@ -6,6 +6,13 @@ import { getClient } from '@/actions/client-actions';
 import { sendMail } from '@/actions/mail-actions';
 
 export async function GET(request: NextRequest){
+    const authHeader = request.headers.get('authorization');
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return new Response('Unauthorized', {
+        status: 401,
+      });
+    }
+
     const today = Date.now();
     console.log("Cron Job ejecutado " + new Date().toLocaleString());
     const domains = await getExpiringDomains();
@@ -64,7 +71,7 @@ export async function GET(request: NextRequest){
     }
     
     return NextResponse.json({
-        message: "Cron ok",
+        success: true,
         expiringDomains: domains,
         expiringToday: domainsByExpiration.expiringToday,
         expiring7days: domainsByExpiration.expiring7days,
