@@ -47,7 +47,7 @@ export async function signupUserAction(params: unknown): Promise<Res> {
 
     const newUser = await db.insert(users)
       .values({
-        name,
+        name : name as string,
         email,
         password: hashedPassword,
       })
@@ -56,7 +56,7 @@ export async function signupUserAction(params: unknown): Promise<Res> {
         return res[0] ?? null
       })
 
-    console.log({ insertedId: newUser.id });
+    // console.log({ insertedId: newUser.id });
 
 
     return { success: true }
