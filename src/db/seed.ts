@@ -27,6 +27,7 @@ async function main() {
     schema.clients,
     // schema.domains,
     // schema.access,
+    schema.users,
   ]) {
     await resetTable(db, table);
   }
@@ -34,6 +35,7 @@ async function main() {
   await seeds.providers(db);
   await seeds.localities(db);
   await seeds.clients(db);
+  await seeds.users(db);
   // await seeds.domains(db);
   // await seeds.access(db);
 }

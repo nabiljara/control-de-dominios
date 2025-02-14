@@ -13,7 +13,7 @@ export async function insertNotification(notification: NotificationInsert, userI
         status: notification.status,
         createdAt: notification.createdAt})
         .returning({ insertedId: notifications.id });
-      console.log("Notificacion insertada con id:", response[0].insertedId);
+        
       const responseUserNotification = await tx.insert(usersNotifications).values({
       userId : userId,
       notificationId: response[0].insertedId,

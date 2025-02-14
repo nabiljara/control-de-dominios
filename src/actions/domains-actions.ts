@@ -3,7 +3,7 @@ import db from "@/db";
 import { clients, contacts, domainAccess, DomainHistory, DomainInsert, domains, DomainWithRelations, providers } from "@/db/schema";
 import { asc, desc, eq, or, sql, count, lt } from "drizzle-orm";
 import { ContactPerDomain } from "../../types/contact-types";
-import { setUserId } from "./user-action/user-actions";
+import { setUserId, setUserSystem } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/lib/utils";
@@ -158,7 +158,7 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
           .where(eq(domainAccess.domainId, domain.id));
       }
       //Si no tiene acceso asociado y se seleccionó un acceso, creo la asociación
-      else if (accessId) {
+      else if (accessId) { 
         if (!response) {
           await tx.insert(domainAccess)
             .values({
@@ -187,7 +187,40 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
     revalidatePath(`/domains/${domain.id}`);
   }
 };
+export async function updateDomainCron(domain: DomainInsert) {
+  let success = false;
+  try {
+    //Para el cron job, se setea el userId del usuario SISTEMA (desde seed)
+    await setUserSystem()
+    await db.transaction(async (tx) => {
 
+      if (!domain.id) {
+        throw new Error("El ID del dominio no está definido.");
+      }
+      //Solo módifico el dominio, no toca ni modifica nada de las relaciones 
+      await tx.update(domains)
+        .set(domain)
+        .where(eq(domains.id, domain.id))
+    });
+    success = true;
+  }
+  catch (error) {
+    console.error("Error al modificar el dominio:", error);
+    throw error;
+  }
+  return success;
+};
+
+export async function getAccessDomain(domainId: number){
+  try{
+    const response = await db.query.domainAccess.findFirst({ where: eq(domainAccess.domainId, domainId) })
+    return response
+  }
+  catch(error){
+    console.log("Hubo un error al obtener el acceso del dominio: ", error)
+
+  }
+}
 export async function insertDomain(domain: DomainInsert, accessId: number | undefined) {
   let success = false;
   try {
@@ -234,7 +267,7 @@ export async function validateDomainName(name: string) {
   }
 }
 
-export async function getHistory(history: DomainHistory[]) {
+export async function getDomainHistory(history: DomainHistory[]) {
   try {
     const providersHistory = [];
     const contactsHistory = [];
@@ -299,8 +332,15 @@ export async function getExpiringDomains(){
       // console.log("Expira en ", daysRemaining, " días");
       return daysRemaining >= 0 ;
     }).sort((a, b)=> new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+    const expiredDomains = data.filter((domain) => {
+      const expirationDate = new Date(domain.expirationDate);
+      expirationDate.setHours(0, 0, 0, 0);      
+      const diffInMs = expirationDate.getTime() - today.valueOf();
+      const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+      return daysRemaining <= 0 ;
+    });
     
-    return expiringDomains;
+    return {expiringDomains, expiredDomains};
   }
   catch (error) {
     console.error("Error al obtener los dominios:", error);

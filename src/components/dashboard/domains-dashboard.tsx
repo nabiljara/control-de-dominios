@@ -31,7 +31,7 @@ export function DomainsDashboard() {
     async function getDomainData() {
       try {
         const dashboardData: DashboardData = await getDashboardData();
-        const expDomains = await getExpiringDomains();
+        const { expiredDomains } = await getExpiringDomains();
         const formattedData = dashboardData.registeredPerMonth
           .map((item) => ({
             month: new Date(item.month as string),
@@ -45,7 +45,7 @@ export function DomainsDashboard() {
           }),
           count: item.count,
         }));
-        setExpiringDomains(expDomains);
+        setExpiringDomains(expiredDomains);
         setRegisteredByMonth(sortedDomainsPerMonth);
         setDashData(dashboardData);
       } catch (error) {

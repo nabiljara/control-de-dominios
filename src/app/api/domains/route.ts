@@ -1,9 +1,11 @@
-import { getExpiringDomains } from '@/actions/domains-actions';
+import { domainStatus } from './../../../constants/index';
+import { getAccessDomain, getExpiringDomains, updateDomain, updateDomainCron } from '@/actions/domains-actions';
 import {  NotificationInsert } from '@/db/schema';
 import { NextRequest, NextResponse } from "next/server";
 import { insertNotification } from '@/actions/notifications-actions';
 import { getClient } from '@/actions/client-actions';
 import { sendMail } from '@/actions/mail-actions';
+import { getUsers } from '@/actions/user-action/user-actions';
 
 export async function GET(request: NextRequest){
     const authHeader = request.headers.get('authorization');
@@ -15,13 +17,15 @@ export async function GET(request: NextRequest){
 
     const today = Date.now();
     console.log("Cron Job ejecutado " + new Date().toLocaleString());
-    const domains = await getExpiringDomains();
+    const { expiringDomains, expiredDomains } = await getExpiringDomains();
+    
     const domainsByExpiration = {
-        expiringToday:[] as typeof domains,
-        expiring7days:[] as typeof domains,
-        expiring30days:[] as typeof domains
+        expiringToday:[] as typeof expiringDomains,
+        expiring7days:[] as typeof expiringDomains,
+        expiring30days:[] as typeof expiringDomains
     }
-    domains.forEach((domain) => {
+    //Separo dominios por proximidad a vencer
+    expiringDomains.forEach((domain) => {
         const expirationDate = new Date(domain.expirationDate);
         expirationDate.setHours(0, 0, 0, 0);
 
@@ -35,7 +39,25 @@ export async function GET(request: NextRequest){
             domainsByExpiration.expiring30days.push(domain);
           }
     })
-    async function createNotificationForDomain(doms: typeof domains, message:string){
+    
+
+    async function updateDomainsState(doms: typeof expiredDomains){
+        for (const dom of doms) {
+            try{
+                //Modifica el estado del dominio vencido
+                const updatedDomain = { ...dom, status: "Vencido" as (typeof domainStatus)[number] };
+
+                await updateDomainCron(updatedDomain)
+                
+            }
+            catch(error){
+                console.log("Error al modificar el estado del dominio: ", error)
+            }
+        }
+        //Crea notificaciones para todos los dominios vencidos
+        await createNotificationForDomain(doms, " venció")
+    }
+    async function createNotificationForDomain(doms: typeof expiringDomains, message:string){
         for (const dom of doms) {
             const messageComplete = "El dominio "+ dom.name+ message
             const notification: NotificationInsert = {
@@ -45,36 +67,38 @@ export async function GET(request: NextRequest){
             };
     
             try {
-                const userId = "21797f94-76ef-48e8-9d75-fed3c00080eb"
+                const users = await getUsers()
                 const client = await getClient(dom.clientId)
+                for (const user of users){
+                    await insertNotification(notification, user.id);
+                }
                 const expDate = new Date(dom.expirationDate).toLocaleDateString("es-ES", {
                     day: "2-digit",
                     month: "2-digit",
                     year: "numeric",
                   });
-                await insertNotification(notification, userId);
                 await sendMail(dom.name, client?.name as string, message, expDate)
-                console.log(`Notificación creada para el dominio: ${dom.name}`);
             } catch (error) {
                 console.error(`Error al insertar notificación para ${dom.name}:`, error);
             }
         }
     }
-    if(domainsByExpiration.expiringToday.length > 0){
-        await createNotificationForDomain(domainsByExpiration.expiringToday, " expira hoy")
-    }
+    
     if(domainsByExpiration.expiring7days.length > 0){
         await createNotificationForDomain(domainsByExpiration.expiring7days, " expira en 7 días")
     }
     if(domainsByExpiration.expiring30days.length > 0){
         await createNotificationForDomain(domainsByExpiration.expiring30days, " expira en 30 días")
     }
+    //Cambio los estados de los dominios ya vencidos
+    await updateDomainsState(expiredDomains);
     
     return NextResponse.json({
         success: true,
-        expiringDomains: domains,
-        expiringToday: domainsByExpiration.expiringToday,
-        expiring7days: domainsByExpiration.expiring7days,
-        expiring30days: domainsByExpiration.expiring30days,
+        // expiringDomains: domains,
+        // expiredDomains: expiredDomains,
+        // expiringToday: domainsByExpiration.expiringToday,
+        // expiring7days: domainsByExpiration.expiring7days,
+        // expiring30days: domainsByExpiration.expiring30days,
     });
 }

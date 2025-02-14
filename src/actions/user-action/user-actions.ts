@@ -58,3 +58,15 @@ export async function setUserId() {
         throw error
     }
 }
+export async function setUserSystem() {
+    try {
+        const userSystem = await db.query.users.findFirst({
+            where: eq(users.email, "desarrollo@kerneltech.dev"),
+        });
+        const userId = userSystem?.id;
+        await db.execute(sql`SELECT set_user_id(${userId})`);
+        
+    } catch (error) {
+        throw error
+    }
+}

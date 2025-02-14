@@ -30,7 +30,11 @@ interface ExpiringDomainsProps {
   loading: boolean;
 }
 
-export function ExpiringDomains({ domains, loading }: ExpiringDomainsProps) {
+export function ExpiringDomains({
+  domains = [],
+  loading,
+}: ExpiringDomainsProps) {
+  // const safeDomains = Array.isArray(domains) ? domains : [];
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const totalPages = Math.ceil(domains.length / itemsPerPage);
