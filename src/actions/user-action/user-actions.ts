@@ -1,8 +1,8 @@
 "use server"
-import db, { sql } from "@/db";
+import db from "@/db";
 import { auth } from "@/auth"
 import { users } from "@/db/schema";
-import { desc, eq, or } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export async function getUsers() {
     try {
@@ -45,21 +45,15 @@ export async function getUser(id: string) {
 export async function setUserId() {
     try {
         const session = await auth()
-        if (!session || !session.user) {
-            throw new Error("Usuario no autenticado");
+        
+        if (!session?.user?.id) {
+            throw new Error("Usuario no autenticado o ID de usuario no disponible");
         }
 
         const userId = session.user.id;
-        if (!userId) {
-            throw new Error("ID de usuario no disponible");
-        }
-        await db.transaction(async () => {
+        
+        await db.execute(sql`SELECT set_user_id(${userId})`);
 
-            const result = await sql`
-                SELECT set_user_id(${userId})
-            `;
-
-        });
     } catch (error) {
         throw error
     }
