@@ -4,17 +4,15 @@ export const clientStatus = [
   {
     value: "Activo",
     label: "Activo",
-    icon: Check,
   },
   {
     value: "Inactivo",
     label: "Inactivo",
-    icon: Pause,
+
   },
   {
     value: "Suspendido",
     label: "Suspendido",
-    icon: Ban,
   }
 ]
 
@@ -69,21 +67,18 @@ export const domainStatus = [
   }
 ]
 
-export const sizes = [
+export const clientSizes = [
   {
     label: "Chico",
     value: "Chico",
-    icon: User,
   },
   {
-    label: "Medio",
-    value: "Medio",
-    icon: Users,
+    label: "Mediano",
+    value: "Mediano",
   },
   {
     label: "Grande",
     value: "Grande",
-    icon: Building,
   },
 ]
 

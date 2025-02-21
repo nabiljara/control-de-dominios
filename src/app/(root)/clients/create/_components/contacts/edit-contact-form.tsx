@@ -7,16 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/high-res.css';
-import { contactSchema as originalContactSchema } from '@/validators/client-validator'
 
-
-import { ContactType } from '@/validators/client-validator'
+import { ContactFormValues } from '@/validators/client-validator'
 import { Badge } from '@/components/ui/badge'
-
-const typeOptions = originalContactSchema.shape.type.options;
+import { contactStatus, contactTypes, statusConfig } from '@/constants'
 
 export function EditContactForm({
   contactSchema,
@@ -26,14 +23,14 @@ export function EditContactForm({
   onClose
 }: {
   contactSchema: z.Schema;
-  editContact: (index: number, updatedContact: ContactType) => void;
+  editContact: (index: number, updatedContact: ContactFormValues) => void;
   index: number;
-  contact: ContactType;
+  contact: ContactFormValues;
   onClose: () => void;
 }) {
-  const [isPending, setIsPending] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const form = useForm<ContactType>({
+  const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
       name: contact?.name,
@@ -47,14 +44,14 @@ export function EditContactForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsPending(true)
+    setIsSubmitting(true)
     const isValid = await form.trigger()
     if (isValid) {
       const data = form.getValues()
       editContact(index, data)
       onClose()
     }
-    setIsPending(false)
+    setIsSubmitting(false)
   }
 
 
@@ -68,7 +65,7 @@ export function EditContactForm({
             <FormItem>
               <FormLabel>Nombre <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Ingrese el nombre del contacto" autoComplete="name"/>
+                <Input {...field} placeholder="Ingrese el nombre del contacto" autoComplete="name" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -163,8 +160,8 @@ export function EditContactForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                {
-                    typeOptions.map((type) =>(
+                  {
+                    contactTypes.map((type) => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))
                   }
@@ -174,7 +171,7 @@ export function EditContactForm({
             </FormItem>
           )}
         />
-                <FormField
+        <FormField
           control={form.control}
           name="status"
           render={({ field }) => (
@@ -187,21 +184,35 @@ export function EditContactForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Activo">
-                    <Badge variant="outline" className="bg-green-500">Activo</Badge>
-                  </SelectItem>
-                  <SelectItem value="Inactivo">
-                    <Badge variant="outline">Inactivo</Badge>
-                  </SelectItem>
+                  {contactStatus.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      <div className="flex items-center gap-2">
+                        <Badge className={statusConfig[status].color}>
+                          {status}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isPending} className='w-full'>
-          {isPending ? 'Editando...' : 'Editar'}
-        </Button>
+        <div className='flex gap-2'>
+          <Button
+            type="button"
+            variant='destructive'
+            onClick={onClose}
+            disabled={isSubmitting}
+            className='w-full'
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className='w-full'>
+            {isSubmitting ? 'Editando...' : 'Editar'}
+          </Button>
+        </div>
       </form>
     </Form>
   )

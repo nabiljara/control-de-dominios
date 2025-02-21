@@ -1,4 +1,4 @@
-import { clientSize, clientStatus, contactStatus, contactTypes, domainStatus} from "@/constants";
+import { clientSize, clientStatus, contactStatus, contactTypes, domainStatus } from "@/constants";
 import { z } from "zod";
 
 const nameRegex = /^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$/;
@@ -17,7 +17,7 @@ export const providerSchema = z.object({
 
 })
 
-export const contactSchema = z.object({
+export const contactFormSchema = z.object({
   id: z.string().optional(),
   name: z
     .string()
@@ -27,12 +27,12 @@ export const contactSchema = z.object({
 
   email: z
     .string()
-    .email({ message: "El email no es válido." }).max(30, { message: "El email debe contener como máximo 30 caracteres." }),
+    .email({ message: "El email no es válido." }).max(50, { message: "El email debe contener como máximo 50 caracteres." }),
 
   phone: z
     .string()
     .min(11, { message: "El número no es válido." })
-    .max(14, { message: "El número no es válido." })
+    .max(15, { message: "El número no es válido." })
     .optional(),
 
   status: z.enum(contactStatus, { message: "El estado del contacto es requerido." }),
@@ -42,7 +42,8 @@ export const contactSchema = z.object({
   clientId: z.number().optional()
 })
 
-export const accessesSchema = z.object({
+
+export const accessFormSchema = z.object({
   provider: z.object({
     id: z.string({ message: "El proveedor es requerido." }),
     name: z.string({ message: "El proveedor es requerido." }),
@@ -56,8 +57,10 @@ export const accessesSchema = z.object({
   notes: z.string()
     .max(100, { message: "Máximo 100 caracteres" })
     .optional(),
-  clientId: z.number().optional(),
-  providerId: z.number().optional()
+  client: z.object({
+    id: z.string().optional(),
+    name: z.string().optional(),
+  }).optional(),
 })
 
 export const clientFormSchema = z.object({
@@ -66,9 +69,9 @@ export const clientFormSchema = z.object({
     .min(2, { message: "El nombre debe tener al menos 2 caracteres." })
     .refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
 
-  contacts: z.array(contactSchema).optional(),
+  contacts: z.array(contactFormSchema).optional(),
 
-    size: z.enum(clientSize, { message: "El tamaño del cliente es requerido." }),
+  size: z.enum(clientSize, { message: "El tamaño del cliente es requerido." }),
 
   locality: z.object({
     id: z.string({ message: "La localidad es requerida." }),
@@ -77,7 +80,7 @@ export const clientFormSchema = z.object({
 
   status: z.enum(clientStatus, { message: "El estado del cliente es requerido." }),
 
-  accesses: z.array(accessesSchema).optional(),
+  access: z.array(accessFormSchema).optional(),
 
 })
 
@@ -94,7 +97,7 @@ export const domainFormSchema = z.object({
     name: z.string({ message: "El cliente es requerido." }),
   }),
 
-  access: accessesSchema.optional(),
+  access: accessFormSchema.optional(),
   accessId: z.number().optional(),
 
   expirationDate: z.date({ message: 'La fecha de vencimiento es requerida.' }),
@@ -102,8 +105,9 @@ export const domainFormSchema = z.object({
   status: z.enum(domainStatus, { message: "El estado del dominio es requerido." }),
 
   contactId: z.string({ message: 'El contacto es requerido.' }),
-  contact: contactSchema.optional(),
+  contact: contactFormSchema.optional(),
   isClientContact: z.boolean().optional(),
+  isKernelContact: z.boolean().optional(),
   isIndividualContact: z.boolean().optional(),
   isClientAccess: z.boolean().optional(),
   isKernelAccess: z.boolean().optional(),
@@ -115,6 +119,6 @@ export const clientUpdateFormSchema = clientFormSchema.extend({
 export type ClientUpdateValues = z.infer<typeof clientUpdateFormSchema>
 export type ClientFormValues = z.infer<typeof clientFormSchema>
 export type DomainFormValues = z.infer<typeof domainFormSchema>
-export type ContactType = z.infer<typeof contactSchema>
-export type AccessType = z.infer<typeof accessesSchema>
+export type ContactFormValues = z.infer<typeof contactFormSchema>
+export type AccessFormValues = z.infer<typeof accessFormSchema>
 export type ProviderFormValues = z.infer<typeof providerSchema>

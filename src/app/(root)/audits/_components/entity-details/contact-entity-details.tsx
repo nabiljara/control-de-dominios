@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export function ContactEntityDetails(audit: AuditWithRelations) {
   return (
-    <Link href={`/contacts/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="w-1/2">
+    <Link href={`/contacts/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="w-fit">
       <Card className="flex flex-col gap-2 hover:shadow-md transition-all duration-200">
         <CardHeader className="p-3">
           <CardTitle className="flex md:flex-row justify-between items-center gap-4 p-0 text-xl">

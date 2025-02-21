@@ -14,8 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signinUserAction } from "@/actions/user-action/signin-user-action";
-import Image from "next/image";
 import OAuthSigninButtons from "@/app/(auth)/signin/_components/oauth-signin-buttons";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SignInForm() {
   const form = useForm<SigninInput>({
@@ -24,6 +24,7 @@ export default function SignInForm() {
       email: "",
       password: "",
     },
+    mode:'onSubmit'
   });
 
   const { handleSubmit, control, formState, setError } = form;
@@ -45,20 +46,26 @@ export default function SignInForm() {
     }
   };
   return (
-    <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
-      <div className="flex items-center justify-center py-12">
-        <div className="mx-auto grid w-[350px] gap-6">
-          <div className="grid gap-2 text-center">
-            <h1 className="text-3xl font-bold">Iniciar sesión</h1>
-            <p className="text-balance text-muted-foreground">
-              Ingrese sus datos para iniciar sesión
-            </p>
-          </div>
+    <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Bienvenido de nuevo</CardTitle>
+          <CardDescription>
+            Ingrese con su cuenta de google
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OAuthSigninButtons />
           <Form {...form}>
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="max-w-[400px] space-y-8"
+              className="space-y-8 max-w-[400px]"
             >
+              <div className="after:top-1/2 after:z-0 after:absolute relative after:inset-0 after:flex after:items-center mt-6 after:border-t after:border-border text-sm text-center">
+                <span className="z-10 relative bg-background px-2 text-muted-foreground">
+                  O continua con
+                </span>
+              </div>
               <FormField
                 name="email"
                 control={control}
@@ -68,7 +75,7 @@ export default function SignInForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="john.smith@example.com"
+                        placeholder="Ingrese su correo electrónico"
                         className="w-full"
                         type="email"
                       />
@@ -87,7 +94,7 @@ export default function SignInForm() {
                       <Input
                         type="password"
                         {...field}
-                        placeholder="********"
+                        placeholder="Ingrese su contraseña"
                         className="w-full"
                       />
                     </FormControl>
@@ -104,18 +111,8 @@ export default function SignInForm() {
               </Button>
             </form>
           </Form>
-          <OAuthSigninButtons />
-        </div>
-      </div>
-      <div className="hidden bg-muted lg:block">
-        <Image
-          src="/"
-          alt="Image"
-          width="1920"
-          height="1080"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

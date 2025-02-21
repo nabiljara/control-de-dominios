@@ -3,8 +3,12 @@ import { useState } from "react"
 import { Switch } from "@/components/ui/switch"
 import {
   Client,
+  ClientHistory,
+  Contact,
+  ContactHistory,
   DomainWithRelations,
-  Provider
+  Provider,
+  ProviderHistory
 } from "@/db/schema"
 
 import DomainInfoCard from "./domain-info-card"
@@ -15,12 +19,20 @@ interface EditableDomainCardProps {
   domain: DomainWithRelations
   clients: Client[]
   providers: Provider[]
+  kernelContacts: Contact[]
+  domainHistory?: {
+    clientsHistory: ClientHistory[] | null;
+    providersHistory: ProviderHistory[] | null;
+    contactsHistory: ContactHistory[] | null;
+  }
 }
 
 export default function EditableDomainCard({
   domain,
   clients,
-  providers
+  providers,
+  domainHistory,
+  kernelContacts
 }: EditableDomainCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   return (
@@ -34,9 +46,11 @@ export default function EditableDomainCard({
         />
       </div>
       {isEditing ? (
-        <CreateDomainForm clients={clients} providers={providers} domain={domain} setIsEditing={setIsEditing}  />
+        <CreateDomainForm clients={clients} providers={providers} domain={domain} setIsEditing={setIsEditing} kernelContacts={kernelContacts} />
       ) : (
-        <DomainInfoCard domain={domain} />
+        <>
+          <DomainInfoCard domain={domain} domainHistory={domainHistory} />
+        </>
       )}
     </>
   )

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { User } from "lucide-react"
+import { Activity, Handshake, User } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -41,7 +41,7 @@ import { EditConfirmationModal } from "./edit-confirmation-modal"
 import { toast } from "sonner"
 import { updateClient } from "@/actions/client-actions"
 import { updateDomain } from "@/actions/domains-actions"
-import { clientStatus, statusConfig } from "@/constants"
+import { clientSize, clientStatus, sizeConfig, statusConfig } from "@/constants"
 
 interface EditableClientCardProps {
   client: Omit<ClientWithRelations, "access" | "contacts">
@@ -63,7 +63,7 @@ export default function EditableClientCard({
   const form = useForm<Omit<ClientUpdateValues, "accesses" | "contacts">>({
     resolver: zodResolver(
       clientUpdateFormSchema.omit({
-        accesses: true,
+        access: true,
         contacts: true
       })
     ),
@@ -204,7 +204,9 @@ export default function EditableClientCard({
           <Card>
             <CardHeader className="flex flex-row justify-between items-center">
               <div className="flex flex-row items-center gap-2">
-                <User className="w-8 h-8" />
+                <div className="flex justify-center items-center bg-primary/10 rounded-full w-10 h-10">
+                  <Handshake className="w-6 h-6 text-primary" />
+                </div>
                 <FormField
                   control={form.control}
                   name="name"
@@ -238,15 +240,15 @@ export default function EditableClientCard({
                 />
               </div>
             </CardHeader>
-            <CardContent className="p-4">
-              <div className="flex flex-col items-start gap-3">
+            <CardContent className="p-6">
+              <div className="flex flex-row justify-between items-start gap-3">
                 <FormField
                   control={form.control}
                   name="status"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-muted-foreground text-sm">
-                        Estado:
+                    <FormItem className="flex flex-col items-start gap-2">
+                      <FormLabel className="text-muted-foreground text-lg">
+                        Estado
                       </FormLabel>
                       {isEditing ? (
                         <Select
@@ -285,9 +287,9 @@ export default function EditableClientCard({
                   control={form.control}
                   name="size"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-muted-foreground text-sm">
-                        Tamaño:
+                    <FormItem className="flex flex-col items-start gap-2">
+                      <FormLabel className="text-muted-foreground text-lg">
+                        Tamaño
                       </FormLabel>
                       {isEditing ? (
                         <Select
@@ -300,13 +302,19 @@ export default function EditableClientCard({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Chico">Chico</SelectItem>
-                            <SelectItem value="Medio">Medio</SelectItem>
-                            <SelectItem value="Grande">Grande</SelectItem>
+                            {clientSize.map((size) => (
+                              <SelectItem key={size} value={size}>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={sizeConfig[size].color}>
+                                    {size}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       ) : (
-                        <span className="pb-2">{client.size}</span>
+                        <Badge className={sizeConfig[client.size].color}>{client.size}</Badge>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -316,9 +324,9 @@ export default function EditableClientCard({
                   control={form.control}
                   name="locality.id"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormLabel className="text-muted-foreground text-sm">
-                        Localidad:
+                    <FormItem className="flex flex-col items-start gap-2">
+                      <FormLabel className="text-muted-foreground text-lg">
+                        Localidad
                       </FormLabel>
                       {isEditing ? (
                         <>
@@ -339,7 +347,7 @@ export default function EditableClientCard({
                             name="locality"
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Seleccione la localidad" />
                               </SelectTrigger>
                             </FormControl>
@@ -357,38 +365,48 @@ export default function EditableClientCard({
                           <FormMessage />
                         </>
                       ) : (
-                        <span className="pb-2">{client.locality.name}</span>
+                        <span>{client.locality.name}</span>
                       )}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <span className="text-muted-foreground text-sm">
-                  Fecha de registro: {formatDate(client.createdAt)}
-                </span>
-                <span className="text-muted-foreground text-sm">
-                  Última actualización: {formatDate(client.updatedAt)}
-                </span>
-                {isEditing && form.formState.isDirty && (
-                  <div className="flex gap-2 mt-4">
-                    <Button
-                      type="button"
-                      onClick={() => setIsConfirmationModalOpen(true)}
-                    >
-                      Guardar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        form.reset()
-                        setIsEditing(false)
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                )}
+                <div className="flex flex-col justify-between gap-2 text-start">
+                  <span className="font-medium text-muted-foreground text-lg">
+                    Fecha de registro
+                  </span>
+                  <span>
+                    {formatDate(client.createdAt)}
+                  </span>
+                </div>
+                <div className="flex flex-col justify-between gap-2 text-start">
+                  <span className="font-medium text-muted-foreground text-lg">
+                    Última actualización
+                  </span>
+                  <span>
+                    {formatDate(client.updatedAt)}
+                  </span>
+                </div>
               </div>
+              {isEditing && form.formState.isDirty && (
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button
+                    type="button"
+                    onClick={() => setIsConfirmationModalOpen(true)}
+                  >
+                    Editar cliente
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      form.reset()
+                      setIsEditing(false)
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
           <ResponsiveDialog

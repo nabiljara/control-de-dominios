@@ -51,7 +51,7 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
                 /> */}
                 <AvatarFallback className="rounded-lg">{getInitials(name)}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 grid text-left text-sm leading-tight">
+              <div className="flex-1 grid text-sm text-left leading-tight">
                 <span className="font-semibold truncate">
                   {name}
                 </span>
@@ -69,7 +69,7 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
                 <Avatar className="rounded-lg w-8 h-8">
                   {/* <AvatarImage
                     src={data.user.avatar}
@@ -79,7 +79,7 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
                     {getInitials(name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 grid text-left text-sm leading-tight">
+                <div className="flex-1 grid text-sm text-left leading-tight">
                   <span className="font-semibold truncate">
                     {name}
                   </span>
@@ -89,15 +89,15 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {/* <DropdownMenuSeparator /> */}
+            {/* <DropdownMenuGroup>
               <DropdownMenuItem title="Perfil" href="/profile">
                 <User />
               </DropdownMenuItem>
               <DropdownMenuItem title="Configuración" href="/settings">
                 <Settings />
               </DropdownMenuItem>
-            </DropdownMenuGroup>
+            </DropdownMenuGroup> */}
             <DropdownMenuSeparator />
             <SignoutButton />
           </DropdownMenuContent>

@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Copy, Eye, EyeOff, Shield } from 'lucide-react'
+import { Check, Copy, Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { cn } from '@/lib/utils'
 
 interface PasswordCellProps {
   password: string
+  show?: boolean
 }
 
-export function PasswordCell({ password }: PasswordCellProps) {
-  const [showPassword, setShowPassword] = useState(false)
+export function PasswordCell({ password, show }: PasswordCellProps) {
+  const [showPassword, setShowPassword] = useState(show ?? false)
   const [copied, setCopied] = useState(false)
 
   const copyToClipboard = async () => {
@@ -19,9 +21,11 @@ export function PasswordCell({ password }: PasswordCellProps) {
   }
 
   return (
-    <div className="flex justify-center items-center gap-2">
-      <span className="font-mono">
-        {showPassword ? password : '••••••••'}
+    <div className="flex justify-start items-center gap-2">
+      <span className={cn('font-mono', password === 'Contraseña mal generada' ? 'text-red-500' : '')}>
+        {showPassword ? password : "•".repeat(
+          password.length ? 8 : 0,
+        )}
       </span>
       <div className="flex gap-1">
         <Button

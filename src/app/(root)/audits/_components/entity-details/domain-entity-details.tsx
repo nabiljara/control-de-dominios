@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { statusConfig } from "@/constants";
 import { AuditWithRelations } from "@/db/schema";
 import { formatDate } from "@/lib/utils";
-import { Box, CalendarArrowDown, CalendarArrowUp, Contact2, Globe, Handshake, Mail, User } from "lucide-react";
+import { Box, CalendarArrowDown, CalendarArrowUp, Contact2, Globe, Handshake, Mail } from "lucide-react";
 import Link from "next/link";
 
 export function DomainEntityDetails(audit: AuditWithRelations) {
@@ -38,21 +39,12 @@ export function DomainEntityDetails(audit: AuditWithRelations) {
       value: audit.entityDetails && 'provider' in audit.entityDetails ? (audit.entityDetails.provider as { name: string }).name : ""
     }
   ]
-
-  const statusConfig = {
-    Activo: { color: "bg-green-100 text-green-800 hover:bg-green-100/80" },
-    Vencido: { color: "bg-red-100 text-red-800 hover:bg-red-100/80" },
-    "Dejar vencer": { color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80" },
-    "Baja permanente": { color: "bg-gray-100 text-gray-800 hover:bg-gray-100/80" },
-    Inactivo: { color: "bg-blue-100 text-blue-800 hover:bg-blue-100/80" },
-    Suspendido: { color: "bg-purple-100 text-purple-800 hover:bg-purple-100/80" }, 
-  } as const;
   
   return (
-    <Link href={`/domains/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="xl:w-2/3">
+    <Link href={`/domains/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="w-fit">
       <Card className="flex flex-col gap-2 hover:shadow-md transition-all duration-200">
         <CardHeader className="p-3">
-          <CardTitle className="flex md:flex-row justify-between items-center gap-4 p-0 text-xl">
+          <CardTitle className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 p-0 text-xl">
             <span className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-muted-foreground" />
               {audit.entityDetails && 'name' in audit.entityDetails ? audit.entityDetails.name : ""}

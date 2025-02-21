@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { statusConfig } from '@/constants'
 import { Contact } from '@/db/schema'
 import { Mail, Phone, Tag, User } from 'lucide-react'
 import React from 'react'
@@ -22,8 +23,8 @@ export default function ContactInfoCard({
   return (
     <Card
       className={`relative flex shadow-sm hover:shadow-md p-4 w-full transition-all duration-200
-        ${isSelected ? 'bg-green-100 hover:bg-green-200' : ''}
-        ${readOnly ? '' : 'cursor-pointer hover:bg-gray-100'}
+        ${isSelected ? 'border-green-500 border' : ''}
+        ${readOnly ? '' : 'cursor-pointer hover:bg-zinc-100'}
       `}
       onClick={() => {
         if (contact?.id && onSelect && contact.status !== 'Inactivo') {
@@ -33,7 +34,7 @@ export default function ContactInfoCard({
           toast.warning('Solo puede seleccionar contactos activos.')
         }
       }}
-      role={!readOnly ? 'button' : undefined} 
+      role={!readOnly ? 'button' : undefined}
       tabIndex={!readOnly ? 0 : undefined}
       onKeyDown={(e) => {
         if (!readOnly && (e.key === 'Enter' || e.key === ' ')) {
@@ -53,13 +54,15 @@ export default function ContactInfoCard({
           <h2 className="font-bold text-md">
             {contact?.name}
           </h2>
-          <Badge variant='outline' className={contact?.status === 'Activo' ? 'bg-green-500' : ''}>
+          <Badge
+            className={contact ? statusConfig[contact.status].color : ''}
+          >
             {contact?.status}
           </Badge>
         </div>
         <div className='flex items-center gap-2'>
           <Mail className="w-4 h-4" />
-          <span className="text-neutral-500 text-sm overflow-hidden">
+          <span className="overflow-hidden text-neutral-500 text-sm">
             {contact?.email}
           </span>
         </div>
@@ -73,7 +76,7 @@ export default function ContactInfoCard({
         )}
         <div className='flex items-center gap-2'>
           <Tag className="w-4 h-4" />
-          <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors focus:outline-none">
+          <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
             {contact?.type}
           </span>
         </div>

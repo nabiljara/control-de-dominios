@@ -2,14 +2,14 @@
 
 import db from "@/db";
 import { clientFormSchema, ClientFormValues } from "@/validators/client-validator";
-import { ClientInsert, clients, Contact, contacts, localities, domainHistory } from "@/db/schema";
-import { desc, eq, count, gte, and, lte, lt, asc} from "drizzle-orm";
+import { ClientInsert, clients, Contact, contacts, localities, domainHistory, AccessInsert } from "@/db/schema";
+import { desc, eq, count, gte, and, lte, lt, asc } from "drizzle-orm";
 import { revalidatePath } from 'next/cache';
 import { redirect } from "next/navigation";
 import { setUserId } from "./user-action/user-actions";
 import { access } from "@/db/schema";
-import { encrypt } from "@/lib/utils";
 import { sql } from 'drizzle-orm'
+import { encrypt } from "@/lib/utils";
 
 export async function getClients() {
   try {
@@ -37,7 +37,7 @@ export async function getActiveClients() {
     return data;
   }
   catch (error) {
-    console.error("Error al obtener proveedores:", error);
+    console.error("Error al obtener clientes activos:", error);
     throw error;
   }
 };
@@ -51,9 +51,12 @@ export async function getClient(id: number) {
         domains: { with: { provider: true } },
         locality: true,
         access: {
-          with: { provider: true }
+          with: { provider: true, domainAccess: { with: { domain: true } } },
+          orderBy: desc(access.createdAt)
         },
-        contacts: true
+        contacts: {
+          orderBy: desc(contacts.createdAt)
+        }
       }
     });
     return client;
@@ -110,59 +113,64 @@ export async function updateClient(client: ClientInsert) {
   }
 }
 
-// TODO: NO USAR TIPO DE ZOD USAR EL DE LA BASE DE DATOS 
-//! ARREGLAR
-export async function insertClient(client: ClientFormValues) {
+export async function createClient(client: ClientFormValues) {
   let success = false;
+  let clientId: number = 0;
   try {
+
     const parsed = clientFormSchema.safeParse(client);
+
     if (!parsed.success) {
-      throw new Error("Error de validación del formulario");
+      throw new Error("Error de validación del formulario de cliente.");
     }
     await setUserId()
 
     await db.transaction(async (tx) => {
+
       const response = await tx.insert(clients)
-        .values({
-          name: client.name,
-          localityId: parseInt(client.locality.id, 10),
-          size: client.size,
-          status: client.status,
-        })
+        .values({ localityId: parseInt(client.locality.id), ...client })
         .returning({ insertedId: clients.id });
-      console.log("Cliente insertado con id:", response[0].insertedId);
+
+      clientId = response[0].insertedId
+
       if (client.contacts && client.contacts.length > 0) {
+
         client.contacts.map((contact) => {
-          contact.clientId = response[0].insertedId
+          contact.clientId = clientId
         })
+
         await tx.insert(contacts).values(client.contacts.map(({ id, ...rest }) => rest));
-        console.log("Contactos agregados correctamente.");
       }
 
-      if (client.accesses && client.accesses.length > 0) {
-        client.accesses.map((access) => {
-          access.clientId = response[0].insertedId
+      const newAccessArray: AccessInsert[] = [];
+
+      if (client.access && client.access.length > 0) {
+        client.access.map((access) => {
           const { encrypted, iv } = encrypt(access.password);
-          access.password = `${encrypted}:${iv}`
-          access.providerId = parseInt(access.provider.id, 10)
+          const newAccess: AccessInsert = {
+            clientId: clientId,
+            username: access.username,
+            password: `${encrypted}:${iv}`,
+            notes: access.notes,
+            providerId: parseInt(access.provider.id),
+          }
+          newAccessArray.push(newAccess)
         })
-        await tx.insert(access).values(client.accesses);
-        console.log("Contactos agregados correctamente.");
+        await tx.insert(access).values(newAccessArray);
       }
     });
     success = true;
   } catch (error) {
-    console.error("Error al insertar cliente o contactos:", error);
+    console.error("Error al crear el cliente: ", error);
     throw error;
   }
 
   if (success) {
-    revalidatePath('/clients');
-    redirect('/clients');
+    redirect(`/clients/${clientId}`);
   }
 }
-export async function getDashboardData(){
-  try{
+export async function getDashboardData() {
+  try {
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
     const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString();
@@ -177,32 +185,32 @@ export async function getDashboardData(){
       db.select({ count: count() }).from(clients).where(eq(clients.status, "Activo")),
       // [2]
       db.select({ count: count() }).from(clients)
-        .where( gte(clients.createdAt, firstDayOfMonth)),
+        .where(gte(clients.createdAt, firstDayOfMonth)),
       // [3]
       db.select({ count: count() }).from(clients)
-      .where(and(eq(clients.status, "Activo"), lt(clients.createdAt, firstDayOfMonth))),
+        .where(and(eq(clients.status, "Activo"), lt(clients.createdAt, firstDayOfMonth))),
       // [4]
       db.select({
-          month: sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`.as("month"),
-          count: count(),
-        })
-          .from(clients)
-          .groupBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`)
-          .orderBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP)) DESC`),
-      ]);
-      const totalClients = result[0][0]?.count ?? 0;
-      const totalActive = result[1][0]?.count ?? 0;
-      const newClientsThisMonth = result[2][0]?.count ?? 0;
-      const activeClientsLastMonth = result[3][0]?.count ?? 0;
-      const registeredPerMonth = result[4] ?? [];
-    
+        month: sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`.as("month"),
+        count: count(),
+      })
+        .from(clients)
+        .groupBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`)
+        .orderBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP)) DESC`),
+    ]);
+    const totalClients = result[0][0]?.count ?? 0;
+    const totalActive = result[1][0]?.count ?? 0;
+    const newClientsThisMonth = result[2][0]?.count ?? 0;
+    const activeClientsLastMonth = result[3][0]?.count ?? 0;
+    const registeredPerMonth = result[4] ?? [];
+
     //variación
     let variationPercentage = 0;
     if (activeClientsLastMonth > 0) {
       variationPercentage = ((totalActive - activeClientsLastMonth) / activeClientsLastMonth) * 100;
     }
     variationPercentage = Math.round(variationPercentage * 100) / 100;
-    
+
     return {
       total: totalClients,
       active: totalActive,
@@ -226,10 +234,10 @@ export async function getLatestClients() {
       size: clients.size,
       domainCount: sql<number>`COUNT(domain_history.id)`.as("domainCount"),
       createdAt: clients.createdAt
-      }).from(clients).
+    }).from(clients).
       leftJoin(domainHistory, and(eq(domainHistory.entity, "Clientes"),
-      eq(domainHistory.entityId, clients.id),
-      eq(domainHistory.active, true))).
+        eq(domainHistory.entityId, clients.id),
+        eq(domainHistory.active, true))).
       groupBy(clients.id).orderBy(asc(clients.createdAt));
     return data;
   }

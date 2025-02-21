@@ -1,166 +1,124 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { AccessType } from "@/validators/client-validator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import { AtSign, Box, Eye, File, Lock, Router, Trash } from "lucide-react";
-import { Card, CardContent } from "../ui/card";
-import { PasswordCell } from "@/app/(root)/clients/_components/password-cell";
-import { decryptPassword } from "@/lib/pass";
-import { deleteAccess } from "@/actions/accesses-actions";
-import { AccessWithRelations } from "@/db/schema";
-import { toast } from "sonner";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
+import { deleteAccess } from "@/actions/accesses-actions";
+import { AccessWithRelations, domainAccess } from "@/db/schema";
+import { toast } from "sonner";
+import { AccessInfoCard } from "@/app/(root)/clients/_components/access-info-card";
+import { ResponsiveDialog } from "../responsive-dialog";
+import { Card, CardContent, CardTitle } from "../ui/card";
 interface DeleteAccessModalProps {
-  access: Omit<AccessWithRelations, "client" | "domainAccess">;
+  access: Omit<AccessWithRelations, "client">;
 }
 
 export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
-  const [isPending, setIsPending] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [decryptedPassword, setDecryptedPassword] = useState<string>("");
 
-  //Problema de decriptación (lenght 0) era por componente cliente/servidor
-  //Se paso función decryptPassword a lib/pass.ts con "use server" y funciona haciendo una llama asincronica
-  useEffect(() => {
-    async function fetchDecryption() {
-      if (!access?.password) return;
-      try {
-        const decrypted = await decryptPassword(access.password);
-        setDecryptedPassword(decrypted as unknown as string);
-      } catch (error) {
-        console.error("Error al desencriptar la contraseña", error);
-      }
-    }
-
-    fetchDecryption();
-  }, [access?.password]);
-
-  async function handleDelete() {
-    setIsPending(true);
+  const handleDelete = () => {
+    setIsSubmitting(true)
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          await deleteAccess(access);
+          await deleteAccess(access.id)
           resolve();
-          setIsPending(false);
           setIsModalOpen(false);
           setIsConfirmationModalOpen(false);
         } catch (error) {
-          if (error instanceof Error) {
-            toast.error("Hubo un error al eliminar el acceso.", {
-              description: error.message,
-            });
-          }
-          reject();
-          setIsPending(false);
-          setIsConfirmationModalOpen(false);
-          setIsModalOpen(false);
+          console.error(error)
+          reject(error)
+        } finally {
+          setIsSubmitting(false)
         }
       }),
       {
-        loading: "Eliminando acceso",
-        success: "Acceso eliminado correctamente.",
-        error: "Hubo un error al eliminar el acceso.",
-      },
-    );
+        loading: "Eliminando acceso...",
+        success: "Acceso eliminado satisfactoriamente.",
+        error: "No se pudo eliminar el acceso correctamente."
+      }
+    )
   }
   return (
     <>
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogTrigger asChild>
-          <Trash className="h-4 w-4 text-red-500 opacity-100 hover:cursor-pointer" />
-        </DialogTrigger>
-        <DialogContent className="w-auto max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Eliminar acceso</DialogTitle>
-            <DialogDescription>Esta acción es irreversible</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <h4 className="font-medium">Datos del acceso</h4>
-            <Card>
-              <CardContent className="pt-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <AtSign className="h-4 w-4" />
-                    <span className="font-medium">Username/email:</span>{" "}
-                    {access?.username}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    <span className="font-medium">Contraseña:</span>{" "}
-                    <div className="items-center pt-1 text-sm">
-                      {access?.password && (
-                        <PasswordCell password={decryptedPassword} />
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <File className="h-4 w-4" />
-                    <span className="font-medium">Notas:</span> {access?.notes}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Box className="h-4 w-4" />
-                    <span className="font-medium">Proveedor:</span>{" "}
-                    {access?.provider?.name}
-                  </div>
-                </div>
+      <Button
+        variant="outline"
+        className="gap-3 px-2 lg:px-3 h-8"
+        onClick={() => setIsModalOpen(true)}
+      >
+        <Trash className="w-4 h-4 text-red-500" />
+      </Button>
+      <ResponsiveDialog
+        open={isModalOpen}
+        onOpenChange={() => {
+          setIsModalOpen(false)
+        }}
+        title="Eliminar acceso."
+        description="Confirme la eliminación del acceso."
+      >
+        <div className="flex flex-col gap-2">
+          <h4 className="font-medium">Datos del acceso</h4>
+          <AccessInfoCard access={access} provider={access.provider?.name} index={1} readOnly />
+          {
+            access.domainAccess.length > 0 &&
+            <Card className="shadow-sm hover:shadow-md">
+              <h4 className="px-4 py-2 font-medium">Dominios asociados</h4>
+              <CardContent>
+
+                <ul className="">
+                  {access.domainAccess.map((a) => (
+                    <li key={a.id}>
+                      <h4 className="font-medium">{a.domain?.name}</h4>
+                    </li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
+          }
+          <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="h-8 w-full"
+              className="w-full h-8"
             >
               Cancelar
             </Button>
             <Button
               variant="destructive"
               onClick={() => setIsConfirmationModalOpen(true)}
-              className="h-8 w-full"
-              disabled={isPending}
+              className="w-full h-8"
+              disabled={isSubmitting}
             >
-              {isPending ? "Eliminando..." : "Eliminar"}
+              Eliminar
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
-      <Dialog
+        </div>
+      </ResponsiveDialog>
+      <ResponsiveDialog
+        title="¿Seguro que quieres eliminar este acceso? "
         open={isConfirmationModalOpen}
-        onOpenChange={setIsConfirmationModalOpen}
+        onOpenChange={() => setIsConfirmationModalOpen(false)}
       >
-        <DialogContent className="w-auto max-w-3xl">
-          <h2 className="m-2 text-lg font-medium">
-            ¿Seguro que quieres eliminar este acceso?
-          </h2>
-
-          <div className="flex flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              className="h-8 w-full"
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              className="h-8 w-full"
-              disabled={isPending}
-            >
-              {isPending ? "Eliminando..." : "Confirmar"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        <div className="flex flex-row gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsConfirmationModalOpen(false)}
+            className="w-full h-8"
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            className="w-full h-8"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Eliminando..." : "Confirmar"}
+          </Button>
+        </div>
+      </ResponsiveDialog>
     </>
   );
 }

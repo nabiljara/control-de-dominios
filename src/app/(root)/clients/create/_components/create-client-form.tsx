@@ -29,25 +29,26 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
-import { User, Plus, UserPlus, Loader2 } from "lucide-react"
+import { User, Plus, UserPlus, Loader2, Handshake } from "lucide-react"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { Contact } from "@/app/(root)/clients/create/_components/contacts/contact"
-import { CreateContactForm } from "@/app/(root)/clients/create/_components/contacts/create-contact-form"
+import { CreateContactModal } from "@/components/create-contact-modal"
 import { Access } from "@/app/(root)/clients/create/_components/accesses/access"
 import { CreateConfirmationModal } from "@/app/(root)/clients/create/_components/create-confirmation-modal"
 import { Provider } from "@/db/schema"
 import { Locality } from "@/db/schema"
 import { toast } from "sonner"
-import { insertClient } from "@/actions/client-actions"
+import { createClient } from "@/actions/client-actions"
 import {
-  AccessType,
+  accessFormSchema,
+  AccessFormValues,
   clientFormSchema,
   ClientFormValues,
-  ContactType
+  contactFormSchema,
+  ContactFormValues
 } from "@/validators/client-validator"
-import { validateEmail, validatePhone } from "@/actions/contacts-actions"
 import { validateUsername } from "@/actions/accesses-actions"
-import { CreateAccessModal } from "@/components/access/create-access-modal"
+import { CreateAccessModal } from "@/components/create-access-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
 import { clientSize, clientStatus, sizeConfig, statusConfig } from "@/constants"
 
@@ -58,55 +59,38 @@ export function CreateClientForm({
   providers: Provider[]
   localities: Locality[]
 }) {
-  const [isCreateContactModalOpen, setIsCreateContactModalOpen] =
-    useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [contacts, setContacts] = useState<ContactType[]>([])
-  const [accesses, setAccesses] = useState<AccessType[]>([])
+  const [contacts, setContacts] = useState<ContactFormValues[]>([])
+  const [accessArray, setAccessArray] = useState<AccessFormValues[]>([])
 
   const getContactSchema = (editingIndex: number | null) => {
-    return clientFormSchema.shape.contacts.unwrap().element.extend({
-      email: z
-        .string()
-        .email({ message: "El email no es válido." })
-        .max(30, {
-          message: "El email debe contener como máximo 30 caracteres."
-        })
-        .refine(
-          (email) =>
-            !contacts.some((c, i) => i !== editingIndex && c.email === email),
-          { message: "El correo ya ha sido cargado." }
-        )
-        .refine(async (email) => await validateEmail(email), {
-          message: "El correo ya está registrado en el sistema"
-        }),
+    return contactFormSchema.superRefine((data, ctx) => {
+      const { email, phone } = data
 
-      phone: z
-        .string()
-        .min(11, { message: "El número no es válido." })
-        .max(14, { message: "El número no es válido." })
-        .optional()
-        .refine(
-          (phone) =>
-            !contacts.some(
-              (c, i) =>
-                i !== editingIndex && c.phone !== undefined && c.phone === phone
-            ),
-          { message: "El número de teléfono ya está en uso." }
-        )
-        .refine(async (phone) => await validatePhone(phone), {
-          message: "El teléfono ya está registrado en el sistema"
-        })
+      if (contacts.some((c, i) => i !== editingIndex && c.email === email)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "El correo ya ha sido cargado.",
+          path: ["email"]
+        });
+      }
+
+      if (contacts.some((c, i) => i !== editingIndex && c.phone === phone)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "El número de teléfono ya está en uso.",
+          path: ["phone"]
+        });
+      }
     })
   }
 
   const getAccessSchema = (editingIndex: number | null) => {
-    return clientFormSchema.shape.accesses
-      .unwrap()
-      .element.superRefine(async (data, ctx) => {
+    return accessFormSchema
+      .superRefine(async (data, ctx) => {
         const { provider, username } = data
-        const isDuplicate = accesses.some(
+        const isDuplicate = accessArray.some(
           (access, i) =>
             i !== editingIndex &&
             access.provider.id === provider.id &&
@@ -121,20 +105,6 @@ export function CreateClientForm({
             path: ["username"]
           })
         }
-
-        const alreadyRegistered = await validateUsername(
-          username,
-          parseInt(provider.id, 10)
-        )
-
-        if (!alreadyRegistered) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message:
-              "El usuario o email ya está registrado en el sistema para el proveedor seleccionado.",
-            path: ["username"]
-          })
-        }
       })
   }
 
@@ -142,29 +112,23 @@ export function CreateClientForm({
     setIsConfirmationModalOpen(true)
   }
 
-  const addContact = (contact: ContactType) => {
-    setContacts([...contacts, contact])
-  }
   const removeContact = (index: number) => {
     setContacts(contacts.filter((_, i) => i !== index))
   }
 
-  const editContact = (index: number, updatedContact: ContactType) => {
+  const editContact = (index: number, updatedContact: ContactFormValues) => {
     setContacts(
       contacts.map((contact, i) => (i === index ? updatedContact : contact))
     )
   }
 
-  const addAccess = (access: AccessType) => {
-    setAccesses([...accesses, access])
-  }
   const removeAccess = (index: number) => {
-    setAccesses(accesses.filter((_, i) => i !== index))
+    setAccessArray(accessArray.filter((_, i) => i !== index))
   }
 
-  const editAccess = (index: number, updatedAccess: AccessType) => {
-    setAccesses(
-      accesses.map((access, i) => (i === index ? updatedAccess : access))
+  const editAccess = (index: number, updatedAccess: AccessFormValues) => {
+    setAccessArray(
+      accessArray.map((access, i) => (i === index ? updatedAccess : access))
     )
   }
 
@@ -173,19 +137,26 @@ export function CreateClientForm({
     defaultValues: {
       name: "",
       contacts: [],
-      accesses: []
+      access: []
     }
   })
 
-  const isDirty = Object.keys(form.formState.dirtyFields).length !== 0 || contacts.length !== 0 || accesses.length !== 0
+  const isDirty = Object.keys(form.formState.dirtyFields).length !== 0 || contacts.length !== 0 || accessArray.length !== 0
+
+  // console.log(form.getValues());
+  // console.log(contacts);
+  // console.log(accessArray);
+  
+  
 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true)
-    const client = { ...form.getValues(), contacts, accesses }
+    const client = { ...form.getValues(), contacts, access: accessArray }
+    
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          await insertClient(client)
+          await createClient(client)
           resolve()
           setIsConfirmationModalOpen(false)
         } catch (error) {
@@ -203,247 +174,240 @@ export function CreateClientForm({
     )
   }
 
-
-
   return (
     <div className="bg-gradient-to-b from-gray-50 dark:from-gray-900 to-gray-100/50 dark:to-gray-800 p-4 min-h-screen">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-bold text-2xl">
-            <User />
+            <div className="flex justify-center items-center bg-primary/10 rounded-full w-10 h-10">
+              <Handshake className="w-6 h-6 text-primary" />
+            </div>
             Registro de Cliente
           </CardTitle>
           <CardDescription>
             Complete el formulario para registrar un nuevo cliente. Los campos
-            marcados con * son obligatorios.
+            marcados con <span className="text-red-500">*</span> son obligatorios.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Nombre <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ingrese el nombre del cliente"
-                        autoComplete="name"
-                        {...field}
-                        autoFocus
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="flex gap-6">
 
-              <FormField
-                control={form.control}
-                name="size"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Tamaño <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      name="size"
-                    >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>
+                        Nombre <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione el tamaño" />
-                        </SelectTrigger>
+                        <Input
+                          placeholder="Ingrese el nombre del cliente"
+                          autoComplete="name"
+                          {...field}
+                          autoFocus
+                        />
                       </FormControl>
-                      <SelectContent>
-                        {clientSize.map((size) => (
-                          <SelectItem key={size} value={size}>
-                            <div className="flex items-center gap-2">
-                              <Badge className={sizeConfig[size].color}>
-                                {size}
-                              </Badge>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="locality.id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Localidad <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value)
-                        const selectedLocality = localities.find(
-                          (locality) => locality.id.toString() === value
-                        )
-                        if (selectedLocality) {
-                          form.setValue("locality.name", selectedLocality.name)
-                        }
-                      }}
-                      defaultValue={field.value}
-                      name="locality"
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione la localidad" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {localities.map((locality) => (
-                          <SelectItem
-                            key={locality.name}
-                            value={locality.id.toString()}
-                          >
-                            {locality.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="size"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>
+                        Tamaño <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        name="size"
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione el tamaño" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {clientSize.map((size) => (
+                            <SelectItem key={size} value={size}>
+                              <div className="flex items-center gap-2">
+                                <Badge className={sizeConfig[size].color}>
+                                  {size}
+                                </Badge>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex gap-6">
+                <FormField
+                  control={form.control}
+                  name="locality.id"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>
+                        Localidad <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value)
+                          const selectedLocality = localities.find(
+                            (locality) => locality.id.toString() === value
+                          )
+                          if (selectedLocality) {
+                            form.setValue("locality.name", selectedLocality.name)
+                          }
+                        }}
+                        defaultValue={field.value}
+                        name="locality"
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione la localidad" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {localities.map((locality) => (
+                            <SelectItem
+                              key={locality.name}
+                              value={locality.id.toString()}
+                            >
+                              {locality.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>
+                        Estado <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        name="state"
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione un estado" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {clientStatus.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className={statusConfig[status].color}>
+                                  {status}
+                                </Badge>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* CONTACTOS */}
 
               <FormItem>
                 <div className="flex items-center gap-5">
-                  <span className="peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
+                  <span className="peer-disabled:opacity-70 mb-1 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
                     Contactos
                   </span>
-                  <Button
-                    aria-labelledby="button-label"
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsCreateContactModalOpen(true)
-                    }}
-                    className="rounded-full w-8 h-8"
-                  >
-                    <Plus />
-                  </Button>
                 </div>
                 <FormControl>
-                  <>
-                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
-                      {contacts.map((contact, index) => (
-                        <Contact
-                          key={contact.email}
-                          contact={contact}
-                          index={index}
-                          removeContact={removeContact}
-                          editContact={editContact}
-                          contactSchema={getContactSchema(index)}
-                        />
-                      ))}
-                    </div>
-                    <ResponsiveDialog
-                      open={isCreateContactModalOpen}
-                      onOpenChange={() => setIsCreateContactModalOpen(false)}
-                      title="Agregar contacto"
-                      description="Agregue los datos correspondientes al contacto."
+                  <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    <CreateContactModal
+                      contacts={contacts}
+                      setContacts={setContacts}
+                      contactFormSchema={getContactSchema(null)}
                     >
-                      <CreateContactForm
-                        onSave={addContact}
-                        contactSchema={getContactSchema(null)}
-                        onClose={() => setIsCreateContactModalOpen(false)}
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        className="w-full h-36 [&_svg]:size-9"
+                      >
+                        <Plus className="text-gray-700" />
+                      </Button>
+                    </CreateContactModal>
+                    {contacts.map((contact, index) => (
+                      <Contact
+                        key={index}
+                        contact={contact}
+                        index={index}
+                        removeContact={removeContact}
+                        editContact={editContact}
+                        contactSchema={getContactSchema(index)}
                       />
-                    </ResponsiveDialog>
-                  </>
+                    ))}
+                  </div>
                 </FormControl>
               </FormItem>
+
+              {/* ACCESOS */}
 
               <FormItem>
-                <FormControl>
-                  <>
-                    <div className="flex items-center gap-8">
-                      <CreateAccessModal
-                        onSave={addAccess}
-                        accessSchema={getAccessSchema(null)}
-                        providers={providers}
-                        from="clients-create"
-                      // onClose={() => setIsCreateAccessModalOpen(false)}
-                      />
-                      {/* <span className="peer-disabled:opacity-70 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
+                <div className="flex items-center gap-5">
+                  <span className="peer-disabled:opacity-70 mb-1 font-medium text-sm leading-none peer-disabled:cursor-not-allowed">
                     Accesos
                   </span>
-                  <Button
-                    aria-labelledby="button-label"
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsCreateAccessModalOpen(true)
-                    }}
-                    className="rounded-full w-8 h-8"
-                  > */}
-                      {/* <Plus />
-                  </Button> */}
-                    </div>
-
-                    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
-                      {accesses.map((access, index) => (
-                        <Access
-                          key={index}
-                          access={access}
-                          index={index}
-                          removeAccess={removeAccess}
-                          editAccess={editAccess}
-                          accessSchema={getAccessSchema(index)}
-                          providers={providers}
-                        />
-                      ))}
-                    </div>
-                  </>
+                </div>
+                <FormControl>
+                  <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
+                    <CreateAccessModal
+                      accessArray={accessArray}
+                      setAccess={setAccessArray}
+                      providers={providers}
+                      accessFormSchema={getAccessSchema(null)}
+                    >
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        className="w-full h-36 [&_svg]:size-9"
+                      >
+                        <Plus className="text-gray-700" />
+                      </Button>
+                    </CreateAccessModal>
+                    {accessArray.map((access, index) => (
+                      <Access
+                        key={index}
+                        access={access}
+                        index={index}
+                        removeAccess={removeAccess}
+                        editAccess={editAccess}
+                        accessSchema={getAccessSchema(index)}
+                        providers={providers}
+                      />
+                    ))}
+                  </div>
                 </FormControl>
               </FormItem>
 
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Estado <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      name="state"
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione un estado" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {clientStatus.map((status) => (
-                          <SelectItem key={status} value={status}>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className={statusConfig[status].color}>
-                                {status}
-                              </Badge>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <div className="flex justify-end">
                 <Button
                   className="gap-2"
@@ -479,10 +443,10 @@ export function CreateClientForm({
           handleSubmit={handleFinalSubmit}
           contacts={contacts}
           form={form}
-          accesses={accesses}
+          accesses={accessArray}
         />
       </ResponsiveDialog>
       <PreventNavigation isDirty={isDirty} backHref={'/clients'} resetData={form.reset} />
-    </div>
+    </div >
   )
 }

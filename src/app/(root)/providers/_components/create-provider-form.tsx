@@ -53,7 +53,7 @@ export function CreateProviderForm({
       }
       setIsConfirmationModalOpen(true)
     } catch (error) {
-      toast.error('No se pudo registrar el proveedor correctamente.')
+      toast.error('No se pudo validar el proveedor correctamente.')
       console.log(error);
     }
   }

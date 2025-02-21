@@ -1,33 +1,15 @@
 "use server"
 
 import db from "@/db";
-import { access, AccessWithRelations } from "@/db/schema";
-import { decrypt, encrypt } from "@/lib/utils";
+import { access, AccessInsert } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
-import { AccessType } from "@/validators/client-validator";
+import { accessFormSchema, AccessFormValues } from "@/validators/client-validator";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import crypto from 'crypto';
+import { encrypt } from "@/lib/utils";
 
-
-export async function getAccessByClientAndProviderId(clientId: number, providerId: number) {
-  try {
-    const data = await db.query.access.findMany({
-      orderBy: [desc(access.id)],
-      where: and(eq(access.clientId, clientId), eq(access.providerId, providerId)),
-      with: {
-        provider: true
-      }
-    });
-    data.map((access) => {
-      access.password = proccessPassword(access.password)
-    });
-    return data;
-  } catch (error) {
-    console.error("Error al obtener accesos:", error);
-    throw error;
-  }
-}
+const SECRET_KEY = process.env.SECRET_KEY || '';
 
 export async function getAccess(id: number) {
   try {
@@ -45,6 +27,25 @@ export async function getAccess(id: number) {
   }
 }
 
+export async function getAccessByClientAndProviderId(clientId: number, providerId: number) {
+  try {
+    const data = await db.query.access.findMany({
+      orderBy: [desc(access.id)],
+      where: and(eq(access.clientId, clientId), eq(access.providerId, providerId)),
+      with: {
+        provider: true
+      }
+    });
+    data.map((access) => {
+      access.password = decryptPassword(access.password)
+    });
+    return data;
+  } catch (error) {
+    console.error("Error al obtener accesos:", error);
+    throw error;
+  }
+}
+
 export async function getKernelAccessByProviderId(providerId: number) {
   try {
     const data = await db.query.access.findMany({
@@ -55,28 +56,13 @@ export async function getKernelAccessByProviderId(providerId: number) {
       }
     });
     data.map((access) => {
-      access.password = proccessPassword(access.password)
+      access.password = decryptPassword(access.password)
     });
     return data;
   } catch (error) {
     console.error("Error al obtener accesos:", error);
     throw error;
   }
-}
-
-const proccessPassword = (password: string) => {
-
-  try {
-    if (!password.includes(":")) {
-      throw new Error("Formato de contraseña inválido");
-    }
-    const [retrievedEncrypted, retrievedIv] = password.split(":");
-    const decryptedPassword = decrypt(retrievedEncrypted, retrievedIv);
-    return decryptedPassword;
-  } catch (error) {
-    console.error(`Error al procesar la contraseña:`, error);
-    return '';
-  };
 }
 
 export async function validateUsername(username: string, providerId: number) {
@@ -89,38 +75,91 @@ export async function validateUsername(username: string, providerId: number) {
     console.error("Error al validar el email")
   }
 }
-//TODO: Hacer la redireccion o el revalidatePath aca para el cliente pero no para el dominio
-export async function insertAccess(acc: AccessType, clientId: number) {
+
+export async function createAccess(acc: AccessFormValues, pathToRevalidate: string | undefined) {
   let success = false;
   try {
+    const parsed = await accessFormSchema.parseAsync(acc);
+    if (!parsed) {
+      throw new Error("Error de validación del formulario de accesso.");
+    }
+    const { encrypted, iv } = encrypt(acc.password);
+
+    const newAccess: AccessInsert = {
+      username: parsed.username,
+      password: `${encrypted}:${iv}`,
+      providerId: parseInt(parsed.provider.id),
+      clientId: parsed.client && parsed.client.id ? parseInt(parsed.client.id) : null,
+      notes: parsed.notes ?? null
+    };
+
     await setUserId()
-    await db.transaction(async (tx) => {
-      const { encrypted, iv } = encrypt(acc.password);
-      acc.password = `${encrypted}:${iv}`
-      acc.providerId = parseInt(acc.provider.id, 10)
-      acc.clientId = clientId
-      await tx.insert(access).values(acc);
-      console.log("Contactos agregados correctamente.");
-    });
-    success = true;
-    return success;
+    await db.insert(access).values(newAccess);
+    success = true
   } catch (error) {
-    console.error("Error al insertar el acceso:", error);
+    console.error("Error al crear un nuevo acceso", error);
     throw error;
   }
+  if (success && pathToRevalidate) {
+    revalidatePath(`${pathToRevalidate}`);
+  }
 }
-export async function deleteAccess(acc: Omit<AccessWithRelations, "client" | "domainAccess">) {
+
+
+export async function deleteAccess(id: number) {
   let success = false;
   try {
     await setUserId()
-    await db.delete(access).where(eq(access.id, acc.id));
+    await db.delete(access).where(eq(access.id, id));
     success = true;
   } catch (error) {
-    console.error("Error al insertar el acceso:", error);
+    console.error("Error al eliminar el acceso:", error);
     throw error;
   }
   if (success) {
-    revalidatePath('/clients/' + acc.clientId);
-    redirect('/clients/' + acc.clientId);
+    revalidatePath('/clients');
   }
 }
+
+
+export const validateAccess = async (username: string, providerId: number, oldUsername: string | undefined, oldProviderId: string | undefined) => {
+  try {
+    const errorList: { field: "username"; message: string }[] = [];
+    const usernameIsValid = await validateUsername(username, providerId);
+    if (!usernameIsValid && username !== oldUsername) {
+      errorList.push({
+        field: "username",
+        message: "El usuario o email ya está registrado en el sistema para el proveedor seleccionado.",
+      });
+    }
+    return errorList;
+  } catch (error) {
+    console.error("Error al validar el acceso del cliente: ", error)
+    throw error;
+  }
+}
+
+export const decryptPassword = (password: string): string => {
+
+  try {
+    if (!password.includes(":")) {
+      throw new Error("Formato de contraseña inválido");
+    }
+    const [retrievedEncrypted, retrievedIv] = password.split(":");
+    return decrypt(retrievedEncrypted, retrievedIv);
+  } catch (error) {
+    console.error(`Error al procesar la contraseña:`, error);
+    throw error; 
+  };
+}
+
+const decrypt = (encrypted: string, iv: string): string => {
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(SECRET_KEY), Buffer.from(iv, 'hex'));
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (error) {
+    throw new Error(`Error al descifrar: ${error}`);
+  }
+};

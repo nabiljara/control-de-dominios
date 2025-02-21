@@ -1,23 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { IconMenu } from '@/components/icon-menu';
 import { ResponsiveDialog } from '@/components/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ContactType } from '@/validators/client-validator';
-import { Circle, Mail, MoreVertical, Pencil, Phone, SquarePen, Tag, Trash, Trash2, User } from 'lucide-react';
+import { ContactFormValues } from '@/validators/client-validator';
+import { Mail, Phone, SquarePen, Tag, Trash2, User } from 'lucide-react';
 import { EditContactForm } from '@/app/(root)/clients/create/_components/contacts/edit-contact-form';
 import { z } from 'zod';
 import { DeleteForm } from '@/app/(root)/clients/create/_components/delete-form';
 import { Badge } from '@/components/ui/badge';
+import { statusConfig } from '@/constants';
 
 export function Contact({
   contact,
@@ -26,14 +19,14 @@ export function Contact({
   editContact,
   contactSchema
 }: {
-  contact: ContactType;
+  contact: ContactFormValues;
   removeContact: (index: number) => void;
-  editContact: (index: number, updatedContact: ContactType) => void;
+  editContact: (index: number, updatedContact: ContactFormValues) => void;
   index: number
   contactSchema: z.Schema;
 }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);  
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleEdit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,13 +66,15 @@ export function Contact({
             <h2 className="font-bold text-md">
               {contact.name}
             </h2>
-            <Badge variant='outline' className={contact.status === 'Activo' ? 'bg-green-500' : ''}>
+            <Badge
+              className={statusConfig[contact.status].color}
+            >
               {contact.status}
             </Badge>
           </div>
           <div className='flex items-center gap-2'>
             <Mail className="w-4 h-4" />
-            <span className="text-neutral-500 text-sm overflow-hidden">
+            <span className="overflow-hidden text-neutral-500 text-sm">
               {contact.email}
             </span>
           </div>
@@ -93,11 +88,11 @@ export function Contact({
           )}
           <div className='flex items-center gap-2'>
             <Tag className="w-4 h-4" />
-            <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors focus:outline-none">
+            <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
               {contact.type}
             </span>
           </div>
-          <div className="top-4 right-4 z-10 absolute flex justify-between">
+          <div className="top-2 right-3 z-10 absolute flex justify-between">
             <Button
               onClick={handleEdit}
               className="flex justify-start hover:bg-neutral-100 p-2 rounded-md w-full text-neutral-900 transition-all duration-75"

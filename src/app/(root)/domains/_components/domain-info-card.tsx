@@ -11,13 +11,18 @@ import { Key, FileText } from 'lucide-react'
 import Link from "next/link";
 import { UsernameCopy } from "@/app/(root)/clients/_components/username-copy";
 import { PasswordCell } from "@/app/(root)/clients/_components/password-cell";
-import { getHistory } from "@/actions/domains-actions";
+import { getDomainHistory } from "@/actions/domains-actions";
 import { useEffect, useState } from "react";
 import { sizeConfig, statusConfig } from "@/constants";
 
 
 interface DomainInfoCardProps {
   domain: DomainWithRelations
+  domainHistory?: {
+    clientsHistory: ClientHistory[] | null;
+    providersHistory: ProviderHistory[] | null;
+    contactsHistory: ContactHistory[] | null;
+  }
 }
 
 
@@ -50,29 +55,9 @@ function Section({ title, icon, children, href }: SectionProps) {
   )
 }
 
-export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
+export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCardProps) {
   const historyTabs = ['Clientes', 'Contactos', 'Proveedores']
-  const [historyWithDetails, setHistoryWithDetails] = useState<{
-    clientsHistory: ClientHistory[] | null;
-    providersHistory: ProviderHistory[] | null;
-    contactsHistory: ContactHistory[] | null;
-  }>({
-    clientsHistory: null,
-    providersHistory: null,
-    contactsHistory: null
-  });
-
-  useEffect(() => {
-    const fetchHistoryWithDetails = async () => {
-      try {
-        const { clientsHistory, providersHistory, contactsHistory } = await getHistory(domain.history)
-        setHistoryWithDetails({ clientsHistory, providersHistory, contactsHistory })
-      } catch (error) {
-        console.error("Error al cargar el historial del dominio:", error)
-      }
-    }
-    fetchHistoryWithDetails()
-  }, [domain.history])
+  const { clientsHistory, providersHistory, contactsHistory } = domainHistory || {}
 
   return (
     <Card className="w-full">
@@ -104,18 +89,18 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
 
         <div className={`gap-4 grid grid-cols-1 md:${domain.accessData ? 'grid-cols-2' : ''} lg:${domain.accessData ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
           <Section title="Cliente" icon={<Handshake />} href={`/clients/${domain.clientId}`}>
-            <div className="space-y-2">
+            <div className="flex flex-col space-y-2">
               <p className="font-medium">{domain.client.name}</p>
-              <p>Tamaño: {' '}
+              <span>Tamaño: {' '}
                 <Badge className={sizeConfig[domain.client.size].color}>
                   {domain.client.size}
                 </Badge>
-              </p>
-              <p>Estado: {' '}
+              </span>
+              <span>Estado: {' '}
                 <Badge className={statusConfig[domain.client.status].color}>
                   {domain.client.status}
                 </Badge>
-              </p>
+              </span>
             </div>
           </Section>
 
@@ -158,7 +143,6 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
               <div className="space-y-2">
                 <div className="flex items-center">
                   <User className="mr-2" />
-                  {/* <span>Usuario: {domain.accessData.access.username}</span> */}
                   <UsernameCopy username={domain.accessData.access.username} />
                 </div>
                 <div className="flex items-center">
@@ -213,7 +197,7 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {historyWithDetails.clientsHistory && historyWithDetails.clientsHistory
+                {clientsHistory && clientsHistory
                   .filter(item => item.entity === tab)
                   .map((item) => (
                     <TableRow key={item.id}>
@@ -250,7 +234,7 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {historyWithDetails.contactsHistory && historyWithDetails.contactsHistory
+                {contactsHistory && contactsHistory
                   .filter(item => item.entity === tab)
                   .map((item) => (
                     <TableRow key={item.id}>
@@ -287,7 +271,7 @@ export default function DomainInfoCard({ domain }: DomainInfoCardProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {historyWithDetails.providersHistory && historyWithDetails.providersHistory
+                {providersHistory && providersHistory
                   .filter(item => item.entity === tab)
                   .map((item) => (
                     <TableRow key={item.id}>

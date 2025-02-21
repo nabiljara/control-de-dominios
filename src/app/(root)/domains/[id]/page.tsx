@@ -1,9 +1,10 @@
 import { getActiveClients, getClients } from "@/actions/client-actions"
 import { getProviders } from "@/actions/provider-actions"
 import EditableDomainCard from "@/app/(root)/domains/_components/editable-domain-card"
-import { getDomain } from "@/actions/domains-actions"
+import { getDomain, getDomainHistory } from "@/actions/domains-actions"
 import { EntityNotFound } from "@/components/entity-not-found"
 import { Globe } from "lucide-react"
+import { getContactsByClientId } from "@/actions/contacts-actions"
 
 export default async function DomainDetails({
   params
@@ -24,19 +25,24 @@ export default async function DomainDetails({
   }
 
   const domain = await getDomain(domainId)
+  const domainHistory = domain?.history ? await getDomainHistory(domain.history) : undefined
+
   if (!domain) {
     return entityNotFound
   }
 
   const clients = await getActiveClients()
   const providers = await getProviders()
+  const kernelContacts = await getContactsByClientId(1)
 
   return (
     <div className="space-y-4 p-8">
       <EditableDomainCard
+        domainHistory={domainHistory}
         domain={domain}
         clients={clients}
         providers={providers}
+        kernelContacts={kernelContacts}
       />
     </div>
   )

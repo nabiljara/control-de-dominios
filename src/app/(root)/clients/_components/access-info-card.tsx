@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Access } from "@/db/schema";
-import { Box, Eye, EyeOff, Lock, StickyNote, User } from "lucide-react";
+import { AtSign, Box, Eye, EyeOff, KeySquare, StickyNote, User } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 interface AccessInfoCardProps {
   access: Access | undefined;
@@ -33,7 +32,10 @@ export function AccessInfoCard({
   };
   return (
     <Card
-      className={`relative flex w-full p-4 shadow-sm transition-all duration-200 hover:shadow-md ${isSelected ? "bg-green-100 hover:bg-green-200" : ""} ${readOnly ? "" : "cursor-pointer hover:bg-gray-100"} `}
+      className=
+      {`relative flex w-full p-4 shadow-sm transition-all duration-200 hover:shadow-md 
+        ${isSelected ? "border-green-500 border" : ""} 
+        ${readOnly ? "" : "cursor-pointer hover:bg-zinc-100"} `}
       role={!readOnly ? "button" : undefined}
       tabIndex={!readOnly ? 0 : undefined}
       onClick={() => {
@@ -50,22 +52,22 @@ export function AccessInfoCard({
         }
       }}
     >
-      <CardContent className="flex h-full flex-col items-start justify-between gap-2 p-0">
+      <CardContent className="flex flex-col justify-between items-start gap-2 p-0 h-full">
         <div className="flex items-center gap-2">
-          <Box className="h-4 w-4" />
-          <h2 className="text-md font-bold">{provider}</h2>
+          <Box className="w-4 h-4" />
+          <h2 className="font-bold text-md">{provider}</h2>
         </div>
         <div className="flex items-center gap-2">
-          <User className="h-4 w-4" />
-          <span className="text-sm text-neutral-500">{access?.username}</span>
+          <AtSign className="w-4 h-4" />
+          <span className="text-neutral-500 text-sm">{access?.username}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Lock className="h-4 w-4" />
-          <span className="text-sm text-neutral-500">
+          <KeySquare className="w-4 h-4" />
+          <span className="text-neutral-500 text-sm">
             {showPasswords[index]
               ? access?.password
               : "•".repeat(
-                  access?.password.length ? access?.password.length : 0,
+                  access?.password.length ? 8 : 0,
                 )}
           </span>
           <Button
@@ -78,19 +80,19 @@ export function AccessInfoCard({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-full px-3 py-2 hover:bg-transparent"
+            className="hover:bg-transparent px-3 py-2 h-full"
           >
             {showPasswords[index] ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="w-4 h-4" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="w-4 h-4" />
             )}
           </Button>
         </div>
         {access?.notes && (
           <div className="flex items-start gap-2">
-            <StickyNote className="h-4 w-4 shrink-0" />
-            <span className="text-sm text-neutral-500">{access.notes}</span>
+            <StickyNote className="w-4 h-4 shrink-0" />
+            <span className="text-neutral-500 text-sm">{access.notes}</span>
           </div>
         )}
       </CardContent>

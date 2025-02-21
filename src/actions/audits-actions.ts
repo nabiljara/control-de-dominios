@@ -9,6 +9,7 @@ import { getAuditDomain, getDomain } from "./domains-actions";
 import { getAuditClient, getClient } from "./client-actions";
 import { getUser } from "./user-action/user-actions";
 import { getAccess } from "./accesses-actions";
+import { getLocality } from "./locality-actions";
 
 export async function getAudits() {
   try {
@@ -68,13 +69,11 @@ async function getEntityDetails(entity: keyof typeof entityMap, entityId: string
         result = getAuditProvider(Number(entityId));
         break;
       case 'contacts':
-        result = getContact(Number(entityId));
+        result = getContact(Number(entityId)); //TODO: CAMBIAR A GetAuditContact Para no traer los dominios
         break;
-
       case 'domains':
         result = getAuditDomain(Number(entityId));
         break;
-
       case 'clients':
         result = getAuditClient(Number(entityId));
         break;
@@ -83,6 +82,9 @@ async function getEntityDetails(entity: keyof typeof entityMap, entityId: string
         break;
       case 'access':
         result = getAccess(Number(entityId));
+        break;
+      case 'localities':
+        result = getLocality(Number(entityId));
         break;
       default:
         throw new Error(`No se configuró lógica para la tabla: ${tableName}`);

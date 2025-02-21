@@ -6,7 +6,7 @@ import { ContactPerDomain } from "../../types/contact-types";
 import { setUserId, setUserSystem } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { decryptPassword } from "@/lib/utils";
+import { decryptPassword } from "@/actions/accesses-actions";
 
 
 export async function getDomains() {
@@ -187,6 +187,8 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
     revalidatePath(`/domains/${domain.id}`);
   }
 };
+
+
 export async function updateDomainCron(domain: DomainInsert) {
   let success = false;
   try {
@@ -255,17 +257,6 @@ export async function insertDomain(domain: DomainInsert, accessId: number | unde
     redirect('/domains');
   }
 };
-
-export async function validateDomainName(name: string) {
-  try {
-    const response = await db.query.domains.findFirst({
-      where: eq(domains.name, name)
-    });
-    return response ? false : true;
-  } catch (error) {
-    console.error("Error al validar el email")
-  }
-}
 
 export async function getDomainHistory(history: DomainHistory[]) {
   try {
@@ -388,3 +379,38 @@ export async function getDashboardData(){
   }
 }
 
+/**
+ * Validates a domain name against the system's criteria and checks if it is already registered.
+ *
+ * @param domain - The domain name to be validated.
+ * @param oldDomain - The previous domain name, if any, to compare against.
+ * @returns A promise that resolves to an array of error objects, each containing a field and a message.
+ * @throws Will throw an error if the validation process fails.
+ */
+export const validateDomain = async (domainName: string, oldDomainName: string | undefined) => {
+  try {
+    const errorList: { field: "name"; message: string }[] = [];
+    const domainIsValid = await validateDomainName(domainName);
+    if (!domainIsValid && domainName !== oldDomainName) {
+      errorList.push({
+        field: "name",
+        message: "El nombre de dominio ya está registrado en el sistema.",
+      });
+    }
+    return errorList;
+  } catch (error) {
+    console.error("Error al validar el dominio: ", error)
+    throw error;
+  }
+}
+
+async function validateDomainName(name: string) {
+  try {
+    const response = await db.query.domains.findFirst({
+      where: eq(domains.name, name)
+    });
+    return response ? false : true;
+  } catch (error) {
+    console.error("Error al validar el email")
+  }
+}

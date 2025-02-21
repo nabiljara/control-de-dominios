@@ -2,13 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 
-import { sizes } from "@/app/(root)/clients/data/data"
+import { clientSizes } from "@/app/(root)/clients/data/data"
 
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { Client } from "@/db/schema"
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { clientStatus, statusConfig } from "@/constants"
+import { clientStatus, sizeConfig, statusConfig } from "@/constants"
 
 export const columns: ColumnDef<Client>[] = [
   {
@@ -63,10 +63,10 @@ export const columns: ColumnDef<Client>[] = [
 
       return (
         <Badge
-        className={statusConfig[row.getValue("status") as keyof typeof statusConfig].color}
-      >
-        {status}
-      </Badge>
+          className={statusConfig[row.getValue("status") as keyof typeof statusConfig].color}
+        >
+          {status}
+        </Badge>
       )
     },
     filterFn: (row, id, value) => {
@@ -80,7 +80,7 @@ export const columns: ColumnDef<Client>[] = [
       <DataTableColumnHeader column={column} title="Tamaño" />
     ),
     cell: ({ row }) => {
-      const size = sizes.find((size) => size.value === row.getValue("size"))
+      const size = clientSizes.find((size) => size.value === row.getValue("size"))
 
       if (!size) {
         return null
@@ -88,10 +88,11 @@ export const columns: ColumnDef<Client>[] = [
 
       return (
         <div className="flex items-center">
-          {size.icon && (
-            <size.icon className="mr-2 w-4 h-4 text-muted-foreground" />
-          )}
-          <span>{size.label}</span>
+          <Badge
+            className={sizeConfig[size.value as keyof typeof sizeConfig].color}
+          >
+            {size.value}
+          </Badge>
         </div>
       )
     },

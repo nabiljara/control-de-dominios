@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function ProviderEntityDetails(audit: AuditWithRelations) {
   return (
-    <Link href={`/providers/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="hover:shadow-md xl:w-1/3">
+    <Link href={`/providers/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="hover:shadow-md w-fit">
       <Card className="flex flex-col gap-2 w-full">
         <CardHeader className="p-3">
           <CardTitle className="flex md:flex-row items-center gap-4 p-0 text-xl">

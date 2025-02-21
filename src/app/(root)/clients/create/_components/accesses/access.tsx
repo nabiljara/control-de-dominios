@@ -5,7 +5,7 @@ import { ResponsiveDialog } from '@/components/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-import { AccessType } from '@/validators/client-validator';
+import { AccessFormValues } from '@/validators/client-validator';
 import { Box, SquarePen, StickyNote, Trash2, User } from 'lucide-react';
 import { z } from 'zod';
 import { EditAccessForm } from '@/app/(root)/clients/create/_components/accesses/edit-access-form';
@@ -20,9 +20,9 @@ export function Access({
   accessSchema,
   providers
 }: {
-  access: AccessType;
+  access: AccessFormValues;
   removeAccess: (index: number) => void;
-  editAccess: (index: number, updatedAccess: AccessType) => void;
+  editAccess: (index: number, updatedAccess: AccessFormValues) => void;
   index: number
   accessSchema: z.Schema;
   providers: Provider[]

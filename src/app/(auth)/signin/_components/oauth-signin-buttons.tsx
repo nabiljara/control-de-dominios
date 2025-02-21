@@ -9,14 +9,14 @@ export default function OAuthSigninButtons() {
   };
 
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex justify-center w-full">
       <Button
-        variant="secondary"
-        className="w-full gap-3"
+        variant="outline"
+        className="gap-3 w-full"
         onClick={handleClick.bind(null, "google")}
       >
         <span>Iniciar sesión con</span>
-        <FcGoogle size={30} />
+        <FcGoogle size={50} />
       </Button>
     </div>
   );

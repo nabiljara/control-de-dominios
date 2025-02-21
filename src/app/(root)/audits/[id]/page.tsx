@@ -26,6 +26,7 @@ import { ClientEntityDetails } from "../_components/entity-details/client-entity
 import { ContactEntityDetails } from "../_components/entity-details/contact-entity-details"
 import { UserEntityDetails } from "../_components/entity-details/user-entity-details"
 import { AccessEntityDetails } from "../_components/entity-details/access-entity-details"
+import { LocalityEntityDetails } from "../_components/entity-details/locality-entity-details"
 
 export default async function AuditDetailsPage({
   params
@@ -57,59 +58,61 @@ export default async function AuditDetailsPage({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-bold text-2xl"><BookOpen />Auditoría</CardTitle>
         </CardHeader>
-        <CardContent className="gap-4 grid grid-cols-2 lg:grid-cols-4"> 
-            <div className="flex items-start gap-2">
-              {/* TODO: Avatar del usuario ?  */}
-              <User2 className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-muted-foreground text-sm">Usuario</p>
-                <p className="font-medium">{audit.user?.name ?? "Sin usuario"}</p>
-              </div>
+        <CardContent className="gap-4 grid grid-cols-2 lg:grid-cols-4">
+          <div className="flex items-start gap-2">
+            {/* TODO: Avatar del usuario ?  */}
+            <User2 className="w-5 h-5 text-muted-foreground" />
+            <div>
+              <p className="text-muted-foreground text-sm">Usuario</p>
+              <p className="font-medium">{audit.user?.name ?? "Sin usuario"}</p>
             </div>
-            <div className="flex items-start gap-2">
-              <TableIcon className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-muted-foreground text-sm">Tabla</p>
-                <p className="font-medium">{audit.entity}</p>
-              </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <TableIcon className="w-5 h-5 text-muted-foreground" />
+            <div>
+              <p className="text-muted-foreground text-sm">Tabla</p>
+              <p className="font-medium">{audit.entity}</p>
             </div>
-            <div className="flex items-start gap-2">
-              <CalendarClock className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-muted-foreground text-sm">Fecha de movimiento</p>
-                <p className="font-medium">{formatDate(audit.createdAt)}</p>
-              </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <CalendarClock className="w-5 h-5 text-muted-foreground" />
+            <div>
+              <p className="text-muted-foreground text-sm">Fecha de movimiento</p>
+              <p className="font-medium">{formatDate(audit.createdAt)}</p>
             </div>
-            <div className="flex items-start gap-2">
-              <Pointer className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-muted-foreground text-sm">Acción</p>
-                <p className="font-medium">{audit.action}</p>
-              </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Pointer className="w-5 h-5 text-muted-foreground" />
+            <div>
+              <p className="text-muted-foreground text-sm">Acción</p>
+              <p className="font-medium">{audit.action}</p>
             </div>
-            <div className="gap-4 grid col-span-2 lg:col-span-4">
-              <span className="flex items-center gap-2 text-muted-foreground text-sm"><FileText className="w-5 h-5 text-muted-foreground" />Registro</span>
-              {
-                audit.entityDetails ? (() => {
-                  switch (audit.entity) {
-                    case 'Dominios':
-                      return <DomainEntityDetails {...audit} />;
-                    case 'Proveedores':
-                      return <ProviderEntityDetails {...audit} />
-                    case 'Contactos':
-                      return <ContactEntityDetails {...audit} />
-                    case 'Clientes':
-                      return <ClientEntityDetails {...audit} />
-                    case 'Usuarios':
-                      return <UserEntityDetails {...audit} />
-                    case 'Accesos':
-                      return <AccessEntityDetails {...audit} />
-                    default:
-                      return <span>Entidad no reconocida</span>;
-                  }
-                })() : <span className="text-gray-400">No encontrado</span>
-              }
-            </div>
+          </div>
+          <div className="gap-4 grid col-span-2 lg:col-span-4">
+            <span className="flex items-center gap-2 text-muted-foreground text-sm"><FileText className="w-5 h-5 text-muted-foreground" />Registro</span>
+            {
+              audit.entityDetails ? (() => {
+                switch (audit.entity) {
+                  case 'Dominios':
+                    return <DomainEntityDetails {...audit} />;
+                  case 'Proveedores':
+                    return <ProviderEntityDetails {...audit} />
+                  case 'Localidades':
+                    return <LocalityEntityDetails {...audit} />
+                  case 'Contactos':
+                    return <ContactEntityDetails {...audit} />
+                  case 'Clientes':
+                    return <ClientEntityDetails {...audit} />
+                  case 'Usuarios':
+                    return <UserEntityDetails {...audit} />
+                  case 'Accesos':
+                    return <AccessEntityDetails {...audit} />
+                  default:
+                    return <span>Entidad no reconocida</span>;
+                }
+              })() : <span className="text-gray-400">No encontrado</span>
+            }
+          </div>
         </CardContent>
       </Card>
 

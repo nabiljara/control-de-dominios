@@ -2,12 +2,10 @@
 
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
-
-import { sizes, clientStatus } from "@/app/(root)/clients/data/data"
+import { clientSizes,  clientStatus } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { UserPlus } from "lucide-react"
 import Link from "next/link"
@@ -113,7 +111,7 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("size")}
             title="Tamaño"
-            options={sizes}
+            options={clientSizes}
           />
         )}
         {isFiltered && (

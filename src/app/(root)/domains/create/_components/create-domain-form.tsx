@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect, Dispatch, SetStateAction } from "react"
-import { SubmitHandler, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { addDays, addYears, format, parse } from "date-fns"
+import { addDays, addYears, format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -53,46 +53,36 @@ import {
   CommandList
 } from "@/components/ui/command"
 import {
-  AccessType,
-  ContactType,
   domainFormSchema,
   DomainFormValues
 } from "@/validators/client-validator"
 import { toast } from "sonner"
 import {
   Client,
-  Contact as ContactDBType,
-  Access as AccessDBType,
-  ContactInsert,
+  Contact,
+  Access,
   Provider,
   AccessWithRelations,
   DomainInsert,
-  DomainWithRelations
+  DomainWithRelations,
 } from "@/db/schema"
 import {
   getContactsByClientId,
   getIndividualContacts,
-  insertContact,
-  validateEmail,
-  validatePhone
 } from "@/actions/contacts-actions"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
-import { CreateContactForm } from "@/app/(root)/clients/create/_components/contacts/create-contact-form"
+import { CreateContactModal } from "@/components/create-contact-modal"
 import ContactInfoCard from "@/app/(root)/clients/_components/contact-info-card"
 import { cn } from "@/lib/utils"
 import {
   getAccessByClientAndProviderId,
   getKernelAccessByProviderId,
-  insertAccess,
-  validateUsername
 } from "@/actions/accesses-actions"
-import { NewClientContactConfirmationModal } from "./new-client-contact-confirmation-modal"
 import { AccessInfoCard } from "@/app/(root)/clients/_components/access-info-card"
-import NewClientAccessConfirmationModal from "./new-client-access-confirmation-modal"
 import { es } from "date-fns/locale"
 import { CreateDomainConfirmationModal } from "./create-domain-confirmation-modal"
-import { insertDomain, updateDomain, validateDomainName } from "@/actions/domains-actions"
-import { CreateAccessModal } from "@/components/access/create-access-modal"
+import { insertDomain, updateDomain, validateDomain } from "@/actions/domains-actions"
+import { CreateAccessModal } from "@/components/create-access-modal"
 import { EditDomainConfirmationModal } from "./edit-domain.confirmation-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
 import { DropdownNavProps, DropdownProps } from "react-day-picker";
@@ -100,15 +90,16 @@ import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { domainStatus, statusConfig } from "@/constants"
 
-
 export default function CreateDomainForm({
   providers,
   clients,
   domain,
-  setIsEditing
+  setIsEditing,
+  kernelContacts
 }: {
   providers: Provider[]
   clients: Client[]
+  kernelContacts: Contact[]
   domain?: DomainWithRelations
   setIsEditing?: Dispatch<SetStateAction<boolean>>;
 }) {
@@ -116,63 +107,34 @@ export default function CreateDomainForm({
   //** CONTACTOS:
 
   // Contactos del cliente
-  const [clientContacts, setClientContacts] = useState<ContactDBType[]>([])
+  const [clientContacts, setClientContacts] = useState<Contact[]>([])
 
   //Contactos individuales
-  const [individualContacts, setIndividualContacts] = useState<ContactDBType[]>(
-    []
-  )
+  const [individualContacts, setIndividualContacts] = useState<Contact[]>([])
 
-  // Estado para mostrar el modal de creación de contacto
-  const [isCreateContactModalOpen, setIsCreateContactModalOpen] =
-    useState(false)
-
-  //Estado para mostrar el modal de confirmación de nuevo contacto de base de datos
-  const [
-    isNewDBContactConfirmationModalOpen,
-    setIsNewDBContactConfirmationModalOpen
-  ] = useState(false)
-
-  //Estado para manejar el nuevo contacto de la base de datos
-  const [newDBContact, setNewDBClientContact] = useState<ContactType>({
-    email: "",
-    name: "",
-    status: "Activo",
-    type: "Administrativo"
-  })
+  //Notificaciones para nuevos contacto creados y reactivar los useEffects
+  const [newClientContactCreated, setNewClientContactCreated] = useState(false)
+  const [newIndividualContactCreated, setNewIndividualContactCreated] = useState(false)
 
   //Estado para manejar el contacto seleccionado de la base de datos
-  const [selectedContact, setSelectedContact] = useState<ContactDBType>()
+  const [selectedContact, setSelectedContact] = useState<Contact>()
 
   //** ACCESOS
+
   //Accesos del cliente con la relacion de proveedores
-  const [clientAccess, setClientAccess] = useState<
-    Omit<AccessWithRelations, "domainAccess" | "client">[]
-  >([])
+  const [clientAccess, setClientAccess] = useState<Omit<AccessWithRelations, "domainAccess" | "client">[]>([])
 
-  const [kernelAccess, setKernelAccess] = useState<
-    Omit<AccessWithRelations, "domainAccess" | "client">[]
-  >([])
+  //Accesos del kernel con la relacion de proveedores
+  const [kernelAccess, setKernelAccess] = useState<Omit<AccessWithRelations, "domainAccess" | "client">[]>([])
 
-  //Estado para mostrar el modal de creación de acceso
-  const [isCreateAccessModalOpen, setIsCreateAccessModalOpen] = useState(false)
+  //Notificaciones para nuevos accesos creados y reactivar los useEffects
+  const [newClientAccessCreated, setNewClientAccessCreated] = useState(false)
+  const [newKernelAccessCreated, setNewKernelAccessCreated] = useState(false)
 
-  //Estado para mostrar el modal de confirmación de nuevo acceso de base de datos
-  const [
-    isNewDBAccessConfirmationModalOpen,
-    setIsNewDBAccessConfirmationModalOpen
-  ] = useState(false)
-
-  //Estado para manejar el nuevo acceso de la base de datos
-  const [newDBAccess, setNewDBAccess] = useState<AccessType>({
-    username: "",
-    password: "",
-    provider: { id: "", name: "" }
-  })
   //Estado para manejar el acceso seleccionado de la base de datos
-  const [selectedAccess, setSelectedAccess] = useState<AccessDBType>()
+  const [selectedAccess, setSelectedAccess] = useState<Access>()
 
-  //** FORMULARIO
+  //** FORMULARIO DE DOMINIO
 
   //Estado para manejar manualmente el envío del formulario
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -183,68 +145,7 @@ export default function CreateDomainForm({
   //Estado para mostrar el modal de confirmación cuando se edita el dominio
   const [isEditConfirmationDomainModalOpen, setIsEditConfirmationDomainModalOpen] = useState(false)
 
-  const getContactSchema = () => {
-    return domainFormSchema.shape.contact.superRefine(async (data, ctx) => {
-      const { email, phone } = data
-        ? data
-        : { email: undefined, phone: undefined }
-      if (email) {
-        const isValid = await validateEmail(email)
-        if (!isValid) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "El correo ya está registrado en el sistema.",
-            path: ["email"]
-          })
-        }
-      }
-
-      if (phone) {
-        const isValid = await validatePhone(phone)
-        if (!isValid) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "El teléfono ya está registrado en el sistema",
-            path: ["phone"]
-          })
-        }
-      }
-    })
-  }
-
-  const getAccessSchema = () => {
-    return domainFormSchema.shape.access.superRefine(async (data, ctx) => {
-      const { provider, username } = data
-        ? data
-        : { provider: undefined, username: undefined }
-      if (username && provider) {
-        const alreadyRegistered = await validateUsername(
-          username,
-          parseInt(provider.id, 10)
-        )
-        if (!alreadyRegistered) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message:
-              "El usuario o email ya está registrado en el sistema para el proveedor seleccionado.",
-            path: ["username"]
-          })
-        }
-      }
-    })
-  }
-
-  const addNewDbContact = (contact: ContactType) => {
-    setNewDBClientContact(contact)
-    setIsNewDBContactConfirmationModalOpen(true)
-  }
-
-  const addNewDbAccess = (access: AccessType) => {
-    setNewDBAccess(access)
-    setIsNewDBAccessConfirmationModalOpen(true)
-  }
-
-  const handleSelectContact = (contactId: string, contact: ContactDBType) => {
+  const handleSelectContact = (contactId: string, contact: Contact) => {
     const currentSelectedId = form.getValues("contactId");
 
     if (currentSelectedId === contactId) {
@@ -258,7 +159,7 @@ export default function CreateDomainForm({
     }
   };
 
-  const handleSelectAccess = (accessId: number, access: AccessDBType) => {
+  const handleSelectAccess = (accessId: number, access: Access) => {
     const currentSelectedId = form.getValues("accessId");
     if (currentSelectedId === accessId) {
       form.setValue("accessId", undefined, { shouldDirty: true })
@@ -271,12 +172,40 @@ export default function CreateDomainForm({
     }
   }
 
-  const onSubmit: SubmitHandler<DomainFormValues> = () => {
-    if (domain) {
-      setIsEditConfirmationDomainModalOpen(true)
-    }
-    else {
-      setIsConfirmationDomainModalOpen(true)
+  const onSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsSubmitting(true)
+      const isValid = await form.trigger() //ejecuto validación manual
+      const errorList = domain ? await validateDomain(form.getValues('name'), domain.name) : await validateDomain(form.getValues('name'), undefined); // valido el dominio en la base de datos manualmente
+
+      if (isValid) {
+
+        if (errorList.length > 0) {
+          errorList.forEach((error) => {
+            form.setError(error.field, {
+              type: "manual",
+              message: error.message,
+            });
+            toast.warning(error.message)
+          });
+          
+        } else {
+
+          if (domain) {
+            setIsEditConfirmationDomainModalOpen(true)
+          }
+          else {
+            setIsConfirmationDomainModalOpen(true)
+          }
+        }
+
+      }
+      setIsSubmitting(false)
+    } catch (error) {
+      toast.error('No se pudo validar el dominio correctamente.')
+      console.log(error);
     }
   }
 
@@ -286,15 +215,15 @@ export default function CreateDomainForm({
       ...form.getValues(),
       expirationDate: format(
         form.getValues("expirationDate"),
-        "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        "yyyy-MM-dd HH:mm"
       )
     }
     const domainInsert: DomainInsert = {
       id: form.getValues("id"),
       name: data.name,
-      providerId: parseInt(data.provider.id, 10),
-      clientId: parseInt(data.client.id, 10),
-      contactId: parseInt(data.contactId, 10),
+      providerId: parseInt(data.provider.id),
+      clientId: parseInt(data.client.id),
+      contactId: parseInt(data.contactId),
       expirationDate: data.expirationDate,
       status: data.status
     }
@@ -353,86 +282,9 @@ export default function CreateDomainForm({
     }
   }
 
-  const handleNewDBContactSubmit = async () => {
-    setIsSubmitting(true)
-    const contact: ContactInsert = {
-      clientId: form.getValues("isClientContact")
-        ? parseInt(form.getValues("client.id"), 10)
-        : undefined,
-      name: newDBContact.name,
-      email: newDBContact.email,
-      status: newDBContact.status,
-      type: newDBContact.type,
-      phone: newDBContact.phone
-    }
-    toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        try {
-          await insertContact(contact)
-          resolve()
-          setIsNewDBContactConfirmationModalOpen(false)
-          setIsCreateContactModalOpen(false)
-          setNewDBClientContact({
-            email: "",
-            name: "",
-            status: "Activo",
-            type: "Administrativo"
-          })
-        } catch (error) {
-          console.error(error)
-          reject(error)
-        } finally {
-          setIsSubmitting(false)
-        }
-      }),
-      {
-        loading: "Registrando contacto",
-        success: "Contacto registrado satisfactoriamente",
-        error: "No se pudo registrar el contacto correctamente."
-      }
-    )
-  }
-
-  const handleNewDBAccessSubmit = async () => {
-    setIsSubmitting(true)
-    const access: AccessType = {
-      username: newDBAccess.username,
-      password: newDBAccess.password,
-      providerId: parseInt(newDBAccess.provider.id, 10),
-      clientId: parseInt(form.getValues("client.id"), 10),
-      notes: newDBAccess.notes,
-      provider: newDBAccess.provider
-    }
-    toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        try {
-          await insertAccess(access, access.clientId as number)
-          resolve()
-          setIsNewDBAccessConfirmationModalOpen(false)
-          setIsCreateAccessModalOpen(false)
-          setNewDBAccess({
-            username: "",
-            password: "",
-            provider: { id: "", name: "" }
-          })
-        } catch (error) {
-          console.error(error)
-          reject(error)
-        } finally {
-          setIsSubmitting(false)
-        }
-      }),
-      {
-        loading: "Registrando acceso",
-        success: "Acceso registrado satisfactoriamente",
-        error: "No se pudo registrar el acceso correctamente."
-      }
-    )
-  }
-
   const getDomainSchema = () => {
     return domainFormSchema.superRefine(async (data, ctx) => {
-      const { contactId, name } = data
+      const { contactId } = data
       if (contactId === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -440,21 +292,14 @@ export default function CreateDomainForm({
           path: ["contactId"]
         })
       }
-
-      const alreadyRegistered = await validateDomainName(name)
-      if (!alreadyRegistered && name !== domain?.name) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "El nombre de dominio ya está registrado en el sistema.",
-          path: ["name"]
-        })
-      }
     })
   }
 
   const newDomainSchema = getDomainSchema()
 
-  const form = useForm<z.infer<typeof newDomainSchema>>({
+  const diffFromUndefined = domain?.contact.clientId !== undefined && domain?.clientId !== undefined
+
+  const form = useForm<DomainFormValues>({
     resolver: zodResolver(newDomainSchema),
     defaultValues: {
       id: domain?.id,
@@ -463,8 +308,9 @@ export default function CreateDomainForm({
       client: { id: domain?.client.id.toString(), name: domain?.client.name },
       contactId: domain?.contactId.toString() ? domain?.contactId.toString() : '',
       accessId: domain?.accessData?.access.id,
-      isClientContact: domain?.contact.clientId !== undefined && domain?.clientId !== undefined && domain?.contact.clientId === domain?.clientId,
-      isIndividualContact: domain?.contact.clientId !== undefined && domain?.clientId !== undefined && domain?.contact.clientId !== domain?.clientId,
+      isClientContact: diffFromUndefined && domain?.contact.clientId === domain?.clientId,
+      isKernelContact: diffFromUndefined && domain?.contact.clientId === 1,
+      isIndividualContact: diffFromUndefined && domain?.contact.clientId !== domain?.clientId && domain?.contact.clientId !== 1,
       isClientAccess: domain?.accessData?.access.clientId !== undefined && domain?.clientId !== undefined && domain?.accessData?.access.clientId === domain?.clientId,
       isKernelAccess: domain?.accessData?.access.clientId !== undefined && domain?.clientId !== undefined && domain?.accessData?.access.clientId !== domain?.clientId,
       status: domain?.status,
@@ -474,10 +320,11 @@ export default function CreateDomainForm({
   })
 
   const isDirty = Object.keys(form.formState.dirtyFields).length !== 0
-  const today = new Date();
 
-  const clientId = parseInt(form.getValues("client").id, 10)
-  const providerId = parseInt(form.getValues("provider").id, 10)
+  const clientId = parseInt(form.getValues("client").id)
+  const providerId = parseInt(form.getValues("provider").id)
+
+  // useEffect para buscar contactos de los clientes
 
   useEffect(() => {
     if (clientId) {
@@ -495,9 +342,12 @@ export default function CreateDomainForm({
           console.error("Error al cargar los contactos del cliente:", error)
         }
       }
-      fetchClientContacts()
+      fetchClientContacts();
+      setNewClientContactCreated(false);
     }
-  }, [clientId, form, domain, newDBContact])
+  }, [clientId, form, domain, newClientContactCreated])
+
+  // useEffect para buscar contactos individuales
 
   useEffect(() => {
     const fetchContactsWithoutClient = async () => {
@@ -509,7 +359,11 @@ export default function CreateDomainForm({
       }
     }
     fetchContactsWithoutClient()
-  }, [newDBContact])
+    setNewIndividualContactCreated(false);
+  }, [newIndividualContactCreated])
+
+
+  //useEffect para buscar los accesos entre  cliente y proveedor y los de kernel
 
   useEffect(() => {
     if (clientId && providerId) {
@@ -536,8 +390,10 @@ export default function CreateDomainForm({
       }
       fetchClientAccess()
       fetchKernelAccess()
+      setNewClientAccessCreated(false)
+      setNewKernelAccessCreated(false)
     }
-  }, [clientId, providerId, newDBAccess])
+  }, [clientId, providerId, newClientAccessCreated, newKernelAccessCreated])
 
   const handleCalendarChange = (
     _value: string | number,
@@ -559,7 +415,7 @@ export default function CreateDomainForm({
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={onSubmit} className="space-y-8">
             <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
 
               {/* Nombre */}
@@ -639,6 +495,8 @@ export default function CreateDomainForm({
                                     field.onChange(client.id.toString())
                                     form.setValue("client.name", client.name)
                                     form.setValue("isClientContact", false, { shouldDirty: true })
+                                    form.setValue("isKernelContact", false, { shouldDirty: true })
+                                    form.setValue("isIndividualContact", false, { shouldDirty: true })
                                     form.setValue("isClientAccess", false, { shouldDirty: true })
                                     form.setValue("isKernelAccess", false, { shouldDirty: true })
                                     form.setValue("accessId", undefined, { shouldDirty: true })
@@ -771,7 +629,7 @@ export default function CreateDomainForm({
                       month_caption: "mx-0",
                     }}
                     disabled={[
-                      { before: today },
+                      { before: new Date() },
                     ]}
                     captionLayout="dropdown"
                     defaultMonth={field.value || addDays(new Date(), 1)}
@@ -833,7 +691,7 @@ export default function CreateDomainForm({
             {/* CONTACTO DEL CLIENTE */}
 
             <div className="space-y-4">
-              <span className="items-center peer-disabled:opacity-70 font-medium text-center text-sm leading-none peer-disabled:cursor-not-allowed">
+              <span className="items-center peer-disabled:opacity-70 font-medium text-sm text-center leading-none peer-disabled:cursor-not-allowed">
                 Contacto <span className="text-red-500">*</span>
               </span>
               <FormField
@@ -843,7 +701,7 @@ export default function CreateDomainForm({
                   <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
-                        Usar un contacto activo del cliente
+                        Seleccionar un contacto activo del cliente
                       </FormLabel>
                       <FormDescription>
                         Activar para seleccionar un contacto del cliente.
@@ -857,6 +715,7 @@ export default function CreateDomainForm({
                           form.setValue("contactId", "", { shouldDirty: true })
                           setSelectedContact(undefined)
                           form.setValue("isIndividualContact", false)
+                          form.setValue("isKernelContact", false)
                         }}
                         disabled={!form.watch("client.id")}
                       />
@@ -864,31 +723,25 @@ export default function CreateDomainForm({
                   </FormItem>
                 )}
               />
+
               {form.watch("isClientContact") && (
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    <Button
-                      aria-labelledby="button-label"
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsCreateContactModalOpen(true)
-                      }}
-                      className="w-full h-36 [&_svg]:size-9"
+
+                    <CreateContactModal
+                      client={{ id: parseInt(form.getValues('client').id), name: form.getValues('client').name }}
+                      notification={setNewClientContactCreated}
                     >
-                      <Plus className="text-gray-700" />
-                    </Button>
-                    <ResponsiveDialog
-                      open={isCreateContactModalOpen}
-                      onOpenChange={() => setIsCreateContactModalOpen(false)}
-                      title="Agregar nuevo contacto del cliente"
-                      description="Agregue los datos correspondientes al contacto."
-                    >
-                      <CreateContactForm
-                        onSave={addNewDbContact}
-                        contactSchema={getContactSchema()}
-                      />
-                    </ResponsiveDialog>
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        className="w-full h-36 [&_svg]:size-9"
+                      >
+                        <Plus className="text-gray-700" />
+                      </Button>
+                    </CreateContactModal>
+
                     {clientContacts.length > 0 &&
                       clientContacts.map((contact) => {
                         return (
@@ -912,6 +765,87 @@ export default function CreateDomainForm({
                 </>
               )}
 
+              {/* CONTACTO DE KERNEL */}
+
+              <FormField
+                control={form.control}
+                name="isKernelContact"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
+                    <div className="space-y-0.5">
+                      <FormLabel className="flex items-center text-base">
+                        Seleccionar un contacto activo de Kernel
+                        <div className="flex justify-center items-center rounded-lg size-8 aspect-square text-sidebar-primary-foreground">
+                          <Image
+                            src="/images/logo.svg"
+                            width={20}
+                            height={20}
+                            alt='Logo'
+                          />
+                        </div>
+                      </FormLabel>
+                      <FormDescription>
+                        Activar para seleccionar un contacto de Kernel.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(value) => {
+                          form.setValue("isKernelContact", value, { shouldDirty: false })
+                          form.setValue("contactId", "", { shouldDirty: true })
+                          setSelectedContact(undefined)
+                          form.setValue("isIndividualContact", false)
+                          form.setValue("isClientContact", false)
+                        }}
+                        disabled={!form.watch("client.id")}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("isKernelContact") && (
+                <>
+                  <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+
+                    <CreateContactModal
+                      client={{ id: 1, name: 'Kernel' }}
+                      pathToRevalidate={`/domains/${domain?.id}`}
+                    >
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        className="w-full h-36 [&_svg]:size-9"
+                      >
+                        <Plus className="text-gray-700" />
+                      </Button>
+                    </CreateContactModal>
+
+                    {kernelContacts.length > 0 &&
+                      kernelContacts.map((contact) => {
+                        return (
+                          <ContactInfoCard
+                            key={contact.email}
+                            contact={contact}
+                            isSelected={
+                              form.getValues("contactId") ===
+                              contact.id.toString()
+                            }
+                            onSelect={handleSelectContact}
+                          />
+                        )
+                      })}
+                  </div>
+                  {kernelContacts.length === 0 && (
+                    <p className="font-medium text-destructive text-sm">
+                      Este cliente no tiene contactos.
+                    </p>
+                  )}
+                </>
+              )}
+
               {/* CONTACTO INDIVIDUAL */}
 
               <FormField
@@ -921,7 +855,7 @@ export default function CreateDomainForm({
                   <FormItem className="flex flex-row justify-between items-center p-4 border rounded-lg">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
-                        Usar un contacto activo individual
+                        Seleccionar un contacto activo individual
                       </FormLabel>
                       <FormDescription>
                         Activar para seleccionar un contacto que no pertenece
@@ -936,6 +870,7 @@ export default function CreateDomainForm({
                           form.setValue("contactId", "", { shouldDirty: true })
                           setSelectedContact(undefined)
                           form.setValue("isClientContact", false)
+                          form.setValue("isKernelContact", false)
                         }}
                         disabled={!form.watch("client.id")}
                       />
@@ -947,28 +882,20 @@ export default function CreateDomainForm({
               {form.watch("isIndividualContact") && (
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
-                    <Button
-                      aria-labelledby="button-label"
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsCreateContactModalOpen(true)
-                      }}
-                      className="w-full h-36 [&_svg]:size-9"
+
+                    <CreateContactModal
+                      notification={setNewIndividualContactCreated}
                     >
-                      <Plus className="text-gray-700" />
-                    </Button>
-                    <ResponsiveDialog
-                      open={isCreateContactModalOpen}
-                      onOpenChange={() => setIsCreateContactModalOpen(false)}
-                      title="Agregar nuevo contacto individual"
-                      description="Agregue los datos correspondientes al contacto."
-                    >
-                      <CreateContactForm
-                        onSave={addNewDbContact}
-                        contactSchema={getContactSchema()}
-                      />
-                    </ResponsiveDialog>
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        className="w-full h-36 [&_svg]:size-9"
+                      >
+                        <Plus className="text-gray-700" />
+                      </Button>
+                    </CreateContactModal>
+
                     {individualContacts.map((contact) => (
                       <ContactInfoCard
                         key={contact.email}
@@ -999,7 +926,7 @@ export default function CreateDomainForm({
             {/* ACCESO DEL CLIENTE */}
 
             <div className="space-y-4">
-              <span className="items-center peer-disabled:opacity-70 font-medium text-center text-sm leading-none peer-disabled:cursor-not-allowed">
+              <span className="items-center peer-disabled:opacity-70 font-medium text-sm text-center leading-none peer-disabled:cursor-not-allowed">
                 Acceso
               </span>
               <FormField
@@ -1038,12 +965,20 @@ export default function CreateDomainForm({
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     <CreateAccessModal
-                      onSave={addNewDbAccess}
-                      accessSchema={getAccessSchema()}
+                      notification={setNewClientAccessCreated}
+                      client={{ id: parseInt(form.getValues('client').id), name: form.getValues('client').name }}
                       providers={providers}
-                      provider={form.getValues("provider")}
-                      from="domains-create"
-                    />
+                      provider={{ id: parseInt(form.getValues('provider').id), name: form.getValues('provider').name }}
+                    >
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        className="w-full h-36 [&_svg]:size-9"
+                      >
+                        <Plus className="text-gray-700" />
+                      </Button>
+                    </CreateAccessModal>
                     {clientAccess.length > 0 &&
                       clientAccess.map((access, index) => (
                         <AccessInfoCard
@@ -1078,7 +1013,7 @@ export default function CreateDomainForm({
                     <div className="space-y-0.5">
                       <FormLabel className="flex items-center text-base">
                         Seleccionar un acceso de Kernel
-                        <div className="flex justify-center items-center rounded-lg text-sidebar-primary-foreground aspect-square size-8">
+                        <div className="flex justify-center items-center rounded-lg size-8 aspect-square text-sidebar-primary-foreground">
                           <Image
                             src="/images/logo.svg"
                             width={20}
@@ -1112,6 +1047,21 @@ export default function CreateDomainForm({
               {form.watch("isKernelAccess") && (
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    <CreateAccessModal
+                      notification={setNewKernelAccessCreated}
+                      client={{ id: 1, name: 'Kernel' }}
+                      providers={providers}
+                      provider={{ id: parseInt(form.getValues('provider').id), name: form.getValues('provider').name }}
+                    >
+                      <Button
+                        aria-labelledby="button-label"
+                        type="button"
+                        variant="outline"
+                        className="w-full h-36 [&_svg]:size-9"
+                      >
+                        <Plus className="text-gray-700" />
+                      </Button>
+                    </CreateAccessModal>
                     {kernelAccess.length > 0 &&
                       kernelAccess.map((access, index) => (
                         <AccessInfoCard
@@ -1154,8 +1104,8 @@ export default function CreateDomainForm({
                     </div>
                   ) : (
                     <>
-                      <Globe className="w-5 h-5" />
-                      Editar dominio
+
+                      Guardar
                     </>
                   )}
                 </Button>
@@ -1186,30 +1136,6 @@ export default function CreateDomainForm({
         </Form>
       </CardContent>
       {/* DIALOGS DE CONFIRMACIÓN */}
-      <ResponsiveDialog
-        open={isNewDBContactConfirmationModalOpen}
-        onOpenChange={() => setIsNewDBContactConfirmationModalOpen(false)}
-        title="Confirmar registro de nuevo contacto"
-        description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[420px]"
-      >
-        <NewClientContactConfirmationModal
-          contact={newDBContact}
-          handleSubmit={handleNewDBContactSubmit}
-        />
-      </ResponsiveDialog>
-      <ResponsiveDialog
-        open={isNewDBAccessConfirmationModalOpen}
-        onOpenChange={() => setIsNewDBAccessConfirmationModalOpen(false)}
-        title="Confirmar registro del nuevo acceso"
-        description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[420px]"
-      >
-        <NewClientAccessConfirmationModal
-          access={newDBAccess}
-          handleSubmit={handleNewDBAccessSubmit}
-        />
-      </ResponsiveDialog>
       <ResponsiveDialog
         open={isEditConfirmationDomainModalOpen}
         onOpenChange={() => setIsEditConfirmationDomainModalOpen(false)}

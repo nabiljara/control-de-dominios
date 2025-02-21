@@ -1,19 +1,18 @@
 "use client"
-//Filtros
-//TODO: Hacer también reutilizable
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { CreateContactModal } from "./create-contact-modal"
-import { getClients } from "@/actions/client-actions"
+import { getActiveClients, getClients } from "@/actions/client-actions"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
 import { contactStatus, contactTypes } from "../../clients/data/data"
 import { CommandShortcut } from "@/components/ui/command"
+import { Contact2 } from "lucide-react"
+import Plus from "@/components/plus"
+import { Client } from "@/db/schema"
+import { CreateContactModal } from "@/components/create-contact-modal"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -29,10 +28,12 @@ export function DataTableToolbar<TData>({
   table
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
-  const [clients, setClients] = useState<Options[]>([]);
+  const [filterClients, setFilterClients] = useState<Options[]>([]); // Los clientes para realizar el filtrado
+  const [formClients, setFormClients] = useState<Client[]>([]); // Los clientes para el formulario
 
   useEffect(() => {
-    const fetchClients = async () => {
+
+    const fetchFilterClients = async () => {
       try {
         const clients = await getClients();
         const newClients: Options[] = []
@@ -47,12 +48,22 @@ export function DataTableToolbar<TData>({
           label: 'Sin cliente',
           value: 'Sin cliente'
         })
-        setClients(newClients);
+        setFilterClients(newClients);
       } catch (error) {
-        console.error("Error al cargar los clientes:", error);
+        console.error("Error al cargar los clientes para el filtro:", error);
       }
     };
-    fetchClients();
+
+    const fetchFormClients = async () => {
+      try {
+        const clients = await getActiveClients();
+        setFormClients(clients);
+      } catch (error) {
+        console.error("Error al cargar los clientes del formulario:", error);
+      }
+    };
+    fetchFilterClients();
+    fetchFormClients();
   }, []);
 
   useEffect(() => {
@@ -88,7 +99,7 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("client")}
             title="Cliente"
-            options={clients}
+            options={filterClients}
           />
         )}
         {table.getColumn("status") && (
@@ -118,8 +129,26 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex space-x-2">
         <DataTableViewOptions table={table} />
-        <CreateContactModal from="contacts" />
+        <CreateContactModal
+          clients={formClients}
+          pathToRevalidate={`/contacts`}
+          command
+        >
+          <Button
+            variant="outline"
+            className="gap-3 px-2 lg:px-3 h-8"
+          >
+            <div className="relative">
+              <div className="flex flex-row justify-center items-center gap-4 text-xs">
+                <Contact2 />
+                <Plus />
+                <CommandShortcut>⌘N</CommandShortcut>
+              </div>
+            </div>
+          </Button>
+        </CreateContactModal>
       </div>
+
     </div>
   )
 }

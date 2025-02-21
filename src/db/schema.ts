@@ -400,7 +400,7 @@ export type AccessInsert = InferInsertModel<typeof access>;
 export type AccessWithRelations = Access & {
   client: Client
   provider: Provider | null
-  domainAccess: DomainAccess[],
+  domainAccess: DomainAccessWithRelations[],
 }
 
 //DOMAIN ACCESS

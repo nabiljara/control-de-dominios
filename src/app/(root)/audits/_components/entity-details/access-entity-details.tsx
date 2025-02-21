@@ -4,7 +4,7 @@ import { Box, Handshake, User } from "lucide-react";
 
 export function AccessEntityDetails(audit: AuditWithRelations) {
   return (
-    <Card className="flex flex-col gap-2 hover:shadow-md w-1/3 transition-all duration-200">
+    <Card className="flex flex-col gap-2 hover:shadow-md w-fit transition-all duration-200">
       <CardHeader className="p-3">
         <CardTitle className="flex md:flex-row justify-between items-center gap-4 p-0 text-xl">
           <span className="flex items-center gap-2">
