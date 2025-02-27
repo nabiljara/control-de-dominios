@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Activity, Handshake, User } from "lucide-react"
+import { Handshake } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,10 +15,8 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import {
-  ClientInsert,
   ClientWithRelations,
   Contact,
-  DomainInsert,
   Locality
 } from "@/db/schema"
 import { formatDate } from "@/lib/utils"
@@ -30,18 +28,17 @@ import {
   FormLabel,
   FormMessage
 } from "@/components/ui/form"
-import { SubmitHandler, useForm } from "react-hook-form"
+import {  SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   clientUpdateFormSchema,
   ClientUpdateValues
 } from "@/validators/client-validator"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
-import { EditConfirmationModal } from "./edit-confirmation-modal"
+import { EditClientConfirmationModal } from "./edit-client-confirmation-modal"
 import { toast } from "sonner"
-import { updateClient } from "@/actions/client-actions"
-import { updateDomain } from "@/actions/domains-actions"
-import { clientSize, clientStatus, sizeConfig, statusConfig } from "@/constants"
+import { updateClient, updateClientAndDomains } from "@/actions/client-actions"
+import { clientSizes, clientStatus, sizeConfig, statusConfig } from "@/constants"
 
 interface EditableClientCardProps {
   client: Omit<ClientWithRelations, "access" | "contacts">
@@ -49,25 +46,21 @@ interface EditableClientCardProps {
   contacts: Contact[]
 }
 
-export default function EditableClientCard({
+export function EditableClientCard({
   client,
   localities,
   contacts
 }: EditableClientCardProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
-  const activeDomains = client.domains.filter(
-    (domain) => domain.status === "Activo"
-  )
+  const [isEditConfirmationModalOpen, setIsEditConfirmationModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<Omit<ClientUpdateValues, "accesses" | "contacts">>({
     resolver: zodResolver(
-      clientUpdateFormSchema.omit({
-        access: true,
-        contacts: true
-      })
+      clientUpdateFormSchema
     ),
     defaultValues: {
+      id: client.id,
       name: client.name,
       status: client.status,
       size: client.size,
@@ -75,128 +68,113 @@ export default function EditableClientCard({
         id: client.localityId ? client.localityId.toString() : undefined,
         name: client.locality.name
       },
-      domains: activeDomains.map((domain) => {
-        const contact = contacts.find((c) => c.id === domain.contactId)
-
+      domains: client.domains ? client.domains.filter((domain) => domain.status === 'Activo').map((domain) => {
         return {
           id: domain.id,
           name: domain.name,
-          provider: { id: domain.providerId.toString(), name: "" },
           client: { id: domain.clientId.toString(), name: client.name },
           contactId: domain.contactId.toString(),
-          expirationDate: new Date(),
           status: domain.status,
-          contact: contact
-            ? {
-              id: contact.id.toString(),
-              name: contact.name,
-              clientId: contact.clientId ? contact.clientId : undefined
-            }
-            : { id: "", name: "", clientId: undefined },
-          isClientContact: false
+          accessId: domain.accessData?.accessId,
+          provider: { id: domain.providerId.toString(), name: '' },
+          expirationDate: new Date(domain.expirationDate)
         }
-      })
-    }
+      }) : []
+    },
+    mode: 'onSubmit'
   })
 
   const onSubmit: SubmitHandler<ClientUpdateValues> = () => {
-    setIsConfirmationModalOpen(true)
+    setIsEditConfirmationModalOpen(true)
   }
 
-  const handleFinalSubmit = async () => {
-    const modifiedClient: ClientInsert = {
-      name: form.getValues().name,
-      status: form.getValues().status,
-      size: form.getValues().size,
-      localityId: parseInt(form.getValues().locality.id, 10),
-      id: client.id
-    }
-    const domains = form.getValues().domains
-    toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        if (modifiedClient.status === "Inactivo") {
-          form.clearErrors("domains")
-          for (let index = 0; index < domains.length; index++) {
-            const domain = domains[index]
-            if (domain.status === "Activo") {
-              if (
-                modifiedClient.id?.toString() === domain.client.id.toString()
-              ) {
-                //Cliente a dar de baja sigue en seteado en el dominio
-                form.setError(`domains.${index}`, {
-                  type: "manual",
-                  message: "Este dominio tiene errores"
-                })
-                form.setError(`domains.${index}.client.id`, {
-                  type: "manual",
-                  message:
-                    "Debe cambiar el cliente si desea dejar el dominio activo"
-                })
-                reject(new Error("El cliente no puede ser el mismo"))
-                return
-              }
-              if (domain.contact?.clientId === modifiedClient.id) {
-                form.setError(`domains.${index}`, {
-                  type: "manual",
-                  message: "Este dominio tiene errores"
-                })
-                form.setError(`domains.${index}.contactId`, {
-                  type: "manual",
-                  message:
-                    "Debe cambiar el contacto ya que el cliente estará inactivo"
-                })
-                reject(new Error("El cliente no puede ser el mismo"))
-                return
-              }
-              if (!domain.contactId) {
-                form.setError(`domains.${index}`, {
-                  type: "manual",
-                  message: "Este dominio tiene errores"
-                })
-                form.setError(`domains.${index}.contactId`, {
-                  type: "manual",
-                  message: "Debe seleccionar un contacto para este dominio"
-                })
-                reject(new Error("Debe haber un contacto seleccionado"))
-                return
-              }
-            }
-          }
-        }
-        try {
-          domains.map(async (domain) => {
-            try {
-              const modifiedDomain: DomainInsert = {
-                contactId: parseInt(domain.contactId),
-                clientId: parseInt(domain.client.id),
-                id: domain.id ?? domain.id,
-                name: domain.name,
-                status: domain.status,
-                expirationDate: domain.expirationDate.toISOString(),
-                providerId: parseInt(domain.provider.id)
-              }
-              await updateDomain(modifiedDomain, undefined)
-            } catch (error) {
-              console.error(error)
-              reject(error)
-            }
+  const validateDomains = () => {
+    const { domains = [], status, id } = form.getValues();
+
+    if (domains.length === 0) return true;
+
+    if (status !== "Inactivo") return true;
+
+    form.clearErrors('domains');
+
+    domains.map((domain, index) => {
+      if (domain.status === 'Activo') {
+
+        if (Number(id) === Number(domain.client.id)) {
+          form.setError(`domains.${index}.client.id`, {
+            type: "manual",
+            message:
+              "Debe cambiar el cliente si desea dejar el dominio activo."
           })
-          setIsConfirmationModalOpen(false)
-          setIsEditing(false)
-          await updateClient(modifiedClient)
-          resolve()
-        } catch (error) {
-          console.error(error)
-          reject(error)
+          return true
         }
-      }),
-      {
-        loading: "Editando cliente",
-        success: "Cliente editado satisfactoriamente",
-        error: "No se pudo editar el cliente correctamente."
+
+        if (!domain.contactId) {
+          form.setError(`domains.${index}.contactId`, {
+            type: "manual",
+            message:
+              "El contacto es requerido."
+          })
+          return true;
+        }
       }
-    )
+    });
+    return Object.keys(form.formState.errors).length === 0;
+  };
+
+  const handleFinalSubmit = async () => {
+    if (validateDomains()) {
+      setIsSubmitting(true)
+      toast.promise(
+        new Promise<void>(async (resolve, reject) => {
+          try {
+            const { domains = [] } = form.getValues();
+            if (domains.length === 0 || form.getValues('status') !== 'Inactivo') {
+              await updateClient(form.getValues());
+            } else {
+              await updateClientAndDomains(form.getValues())
+            }
+            resolve()
+            form.reset({
+              id: form.getValues('id'),
+              name: form.getValues("name"),
+              locality: {
+                id: form.getValues("locality.id"),
+                name: form.getValues("locality.name")
+              },
+              size: form.getValues("size"),
+              status: form.getValues("status"),
+              domains: client.domains ? client.domains.filter((domain) => domain.status === 'Activo').map((domain) => {
+                return {
+                  id: domain.id,
+                  name: domain.name,
+                  client: { id: domain.clientId.toString(), name: client.name },
+                  contactId: domain.contactId.toString(),
+                  status: domain.status,
+                  accessId: domain.accessData?.accessId,
+                  provider: { id: domain.providerId.toString(), name: '' },
+                  expirationDate: new Date(domain.expirationDate)
+                }
+              }) : []
+            })
+            setIsEditConfirmationModalOpen(false)
+            setIsEditing(false)
+          } catch (error) {
+            console.error(error)
+            reject(error)
+          } finally {
+            setIsSubmitting(false)
+          }
+        }),
+        {
+          loading: "Editando cliente...",
+          success: "Cliente editado satisfactoriamente.",
+          error: "No se pudo editar el cliente correctamente."
+        }
+      )
+    }
   }
+
   return (
     <>
       <Form {...form}>
@@ -237,6 +215,7 @@ export default function EditableClientCard({
                   checked={isEditing}
                   onCheckedChange={setIsEditing}
                   aria-label="Habilitar edición"
+                  autoFocus
                 />
               </div>
             </CardHeader>
@@ -264,7 +243,7 @@ export default function EditableClientCard({
                             {clientStatus.map((status) => (
                               <SelectItem key={status} value={status}>
                                 <div className="flex items-center gap-2">
-                                  <Badge className={statusConfig[status].color}>
+                                  <Badge variant='outline' className={statusConfig[status].color}>
                                     {status}
                                   </Badge>
                                 </div>
@@ -274,6 +253,7 @@ export default function EditableClientCard({
                         </Select>
                       ) : (
                         <Badge
+                          variant='outline'
                           className={statusConfig[client.status].color}
                         >
                           {client.status}
@@ -302,10 +282,10 @@ export default function EditableClientCard({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {clientSize.map((size) => (
+                            {clientSizes.map((size) => (
                               <SelectItem key={size} value={size}>
                                 <div className="flex items-center gap-2">
-                                  <Badge className={sizeConfig[size].color}>
+                                  <Badge variant='outline' className={sizeConfig[size].color}>
                                     {size}
                                   </Badge>
                                 </div>
@@ -314,7 +294,7 @@ export default function EditableClientCard({
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge className={sizeConfig[client.size].color}>{client.size}</Badge>
+                        <Badge variant='outline' className={sizeConfig[client.size].color}>{client.size}</Badge>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -391,8 +371,7 @@ export default function EditableClientCard({
               {isEditing && form.formState.isDirty && (
                 <div className="flex justify-end gap-2 mt-4">
                   <Button
-                    type="button"
-                    onClick={() => setIsConfirmationModalOpen(true)}
+                    type="submit"
                   >
                     Editar cliente
                   </Button>
@@ -410,17 +389,19 @@ export default function EditableClientCard({
             </CardContent>
           </Card>
           <ResponsiveDialog
-            open={isConfirmationModalOpen}
-            onOpenChange={setIsConfirmationModalOpen}
+            open={isEditConfirmationModalOpen}
+            onOpenChange={() => setIsEditConfirmationModalOpen(false)}
             title="Confirmar edición del cliente"
             description="Revise si los datos modificados son correctos y confirme el cambio."
-            className="sm:max-w-[700px]"
+            className="md:max-w-fit"
           >
-            <EditConfirmationModal
+            <EditClientConfirmationModal
               handleSubmit={handleFinalSubmit}
+              setIsEditConfirmationModalOpen={setIsEditConfirmationModalOpen}
               form={form}
               client={client}
               contacts={contacts}
+              isSubmitting={isSubmitting}
             />
           </ResponsiveDialog>
         </form>

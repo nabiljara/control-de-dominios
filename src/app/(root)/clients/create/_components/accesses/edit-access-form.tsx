@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dispatch, SetStateAction, useState } from 'react';
 
-import { AccessType } from '@/validators/client-validator'
+import { AccessFormValues } from '@/validators/client-validator'
 import { Textarea } from '@/components/ui/textarea'
 import { PasswordInput } from '@/components/password-input'
 import { Provider } from '@/db/schema'
@@ -24,14 +24,14 @@ export function EditAccessForm({
 }: {
   accessSchema: z.Schema;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  editAccess: (index: number, updatedAccess: AccessType) => void;
+  editAccess: (index: number, updatedAccess: AccessFormValues) => void;
   index: number;
-  access: AccessType;
+  access: AccessFormValues;
   providers: Provider[]
 }) {
   const [isPending, setIsPending] = useState(false)
 
-  const form = useForm<AccessType>({
+  const form = useForm<AccessFormValues>({
     resolver: zodResolver(accessSchema),
     defaultValues: {
       provider: { id: access?.provider.id, name: access?.provider.name },

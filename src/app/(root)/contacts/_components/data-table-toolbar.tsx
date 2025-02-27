@@ -4,67 +4,27 @@ import { Table } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
-import { useEffect, useState } from "react"
-import { getActiveClients, getClients } from "@/actions/client-actions"
+import { useEffect} from "react"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { contactStatus, contactTypes } from "../../clients/data/data"
 import { CommandShortcut } from "@/components/ui/command"
 import { Contact2 } from "lucide-react"
 import Plus from "@/components/plus"
 import { Client } from "@/db/schema"
-import { CreateContactModal } from "@/components/create-contact-modal"
+import { ContactModal } from "@/components/contact-modal"
+import { contactStatus, contactTypes } from "@/constants"
 
-interface DataTableToolbarProps<TData> {
+export interface DataTableToolbarProps<TData> {
   table: Table<TData>
-}
-
-type Options = {
-  label: string
-  value: string
-  icon?: React.ComponentType<{ className?: string }>
+  filterClients?: Array<string> // Los clientes para realizar el filtrado
+  formClients?: Client[] // Los clientes para el formulario
 }
 
 export function DataTableToolbar<TData>({
-  table
+  table,
+  filterClients,
+  formClients
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
-  const [filterClients, setFilterClients] = useState<Options[]>([]); // Los clientes para realizar el filtrado
-  const [formClients, setFormClients] = useState<Client[]>([]); // Los clientes para el formulario
-
-  useEffect(() => {
-
-    const fetchFilterClients = async () => {
-      try {
-        const clients = await getClients();
-        const newClients: Options[] = []
-        clients.map((client) => {
-          const newClient: Options = {
-            label: client.name,
-            value: client.id.toString()
-          }
-          newClients.push(newClient)
-        })
-        newClients.push({
-          label: 'Sin cliente',
-          value: 'Sin cliente'
-        })
-        setFilterClients(newClients);
-      } catch (error) {
-        console.error("Error al cargar los clientes para el filtro:", error);
-      }
-    };
-
-    const fetchFormClients = async () => {
-      try {
-        const clients = await getActiveClients();
-        setFormClients(clients);
-      } catch (error) {
-        console.error("Error al cargar los clientes del formulario:", error);
-      }
-    };
-    fetchFilterClients();
-    fetchFormClients();
-  }, []);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -78,7 +38,7 @@ export function DataTableToolbar<TData>({
   }, [])
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex justify-between items-center w-full">
       <div className="flex flex-1 items-center space-x-2">
         <div className="relative w-[250px]">
           <Input
@@ -89,7 +49,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("combinedFilter")?.setFilterValue(event.target.value)
             }
-            className="w-[150px] lg:w-[250px] h-8"
+            className="h-8"
           />
           <div className="right-2 -bottom-[7px] absolute text-gray-400 -translate-y-1/2">
             <CommandShortcut>⌘F</CommandShortcut>
@@ -99,21 +59,21 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("client")}
             title="Cliente"
-            options={filterClients}
+            options={filterClients ?? []}
           />
         )}
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Estado"
-            options={contactStatus}
+            options={contactStatus.slice()}
           />
         )}
         {table.getColumn("type") && (
           <DataTableFacetedFilter
             column={table.getColumn("type")}
             title="Tipo"
-            options={contactTypes}
+            options={contactTypes.slice()}
           />
         )}
         {isFiltered && (
@@ -129,7 +89,7 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex space-x-2">
         <DataTableViewOptions table={table} />
-        <CreateContactModal
+        <ContactModal
           clients={formClients}
           pathToRevalidate={`/contacts`}
           command
@@ -146,7 +106,7 @@ export function DataTableToolbar<TData>({
               </div>
             </div>
           </Button>
-        </CreateContactModal>
+        </ContactModal>
       </div>
 
     </div>

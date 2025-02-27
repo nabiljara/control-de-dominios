@@ -15,7 +15,7 @@ export default function RootLayout({
         <AppSidebar />
         <SidebarInset>
           <AppSidebarInset />
-          <Toaster richColors closeButton expand={true}/>
+          <Toaster richColors closeButton expand={true} position="top-right"/>
           {children}
         </SidebarInset>
       </SidebarProvider>

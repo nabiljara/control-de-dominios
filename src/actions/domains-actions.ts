@@ -2,7 +2,6 @@
 import db from "@/db";
 import { clients, contacts, domainAccess, DomainHistory, DomainInsert, domains, DomainWithRelations, providers } from "@/db/schema";
 import { asc, desc, eq, or, sql, count, lt } from "drizzle-orm";
-import { ContactPerDomain } from "../../types/contact-types";
 import { setUserId, setUserSystem } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -120,16 +119,17 @@ export async function getDomainsByContact(idContact: number) {
 };
 
 
-export async function updateDomainContact(contactDomain: ContactPerDomain[]) {
+export async function updateDomainContact(selectedContacts: Record<number, number>) {
   try {
-    contactDomain.map(async (contact) => {
+    Object.entries(selectedContacts).map(async ([domainId, contactId]) => {
+      await setUserId()
       await db.update(domains)
-        .set({ contactId: contact.contactId })
-        .where(eq(domains.id, contact.domainId)).returning({ id: domains.id });
+        .set({ contactId: contactId })
+        .where(eq(domains.id, Number(domainId)))
     })
   }
   catch (error) {
-    console.error("Error al obtener los dominios:", error);
+    console.error("Error al actualizar el o los contactos del dominios:", error);
     throw error;
   }
 };
@@ -145,7 +145,6 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
       }
 
       await tx.update(domains)
-        // .set({ name: domain.name, expirationDate: domain.expirationDate, status: domain.status, updatedAt: sql`NOW()`, clientId: domain.clientId, providerId: domain.providerId, contactId: domain.contactId })
         .set(domain)
         .where(eq(domains.id, domain.id))
 
@@ -166,8 +165,8 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
               accessId
             });
         }
-        //Si tiene acceso asociado y se seleccionó un acceso, actualizo la asociación
-        else {
+        //Si tiene acceso asociado, se seleccionó un acceso y este es diferente al que ya tiene, actualizo la asociación
+        else if (response.accessId !== accessId) {
           await tx.update(domainAccess)
             .set({
               domainId: domain.id,

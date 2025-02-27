@@ -1,4 +1,4 @@
-import { clientSize, clientStatus, contactStatus, contactTypes, domainStatus } from "@/constants";
+import { clientSizes, clientStatus, contactStatus, contactTypes, domainStatus } from "@/constants";
 import { z } from "zod";
 
 const nameRegex = /^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$/;
@@ -18,19 +18,22 @@ export const providerSchema = z.object({
 })
 
 export const contactFormSchema = z.object({
-  id: z.string().optional(),
+  id: z.number().optional(),
   name: z
     .string()
+    .trim()
     .max(30, { message: "El nombre debe tener como máximo 30 caracteres." })
     .min(2, { message: "El nombre es obligatorio y debe contener al menos 2 caracteres." })
     .refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
 
   email: z
     .string()
+    .trim()
     .email({ message: "El email no es válido." }).max(50, { message: "El email debe contener como máximo 50 caracteres." }),
 
   phone: z
     .string()
+    .trim()
     .min(11, { message: "El número no es válido." })
     .max(15, { message: "El número no es válido." })
     .optional(),
@@ -48,13 +51,19 @@ export const accessFormSchema = z.object({
     id: z.string({ message: "El proveedor es requerido." }),
     name: z.string({ message: "El proveedor es requerido." }),
   }),
-  username: z.string()
+  username: z
+    .string()
+    .trim()
     .max(50, { message: "El usuario o email debe tener como máximo 50 caracteres." })
     .min(1, { message: "El usuario o email es requerido." }),
-  password: z.string()
-    .max(30, { message: "La contraseña debe tener como máximo 30 caracteres." })
-    .min(1, { message: "La contraseña es requerida." }),
-  notes: z.string()
+  password:
+    z.string()
+      .trim()
+      .max(30, { message: "La contraseña debe tener como máximo 30 caracteres." })
+      .min(1, { message: "La contraseña es requerida." }),
+  notes: z
+    .string()
+    .trim()
     .max(100, { message: "Máximo 100 caracteres" })
     .optional(),
   client: z.object({
@@ -64,14 +73,17 @@ export const accessFormSchema = z.object({
 })
 
 export const clientFormSchema = z.object({
-  name: z.string()
+  id: z.number().optional(),
+  name: z
+    .string()
+    .trim()
     .max(30, { message: "El nombre debe tener como máximo 30 caracteres." })
     .min(2, { message: "El nombre debe tener al menos 2 caracteres." })
     .refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
 
   contacts: z.array(contactFormSchema).optional(),
 
-  size: z.enum(clientSize, { message: "El tamaño del cliente es requerido." }),
+  size: z.enum(clientSizes, { message: "El tamaño del cliente es requerido." }),
 
   locality: z.object({
     id: z.string({ message: "La localidad es requerida." }),
@@ -86,7 +98,13 @@ export const clientFormSchema = z.object({
 
 export const domainFormSchema = z.object({
   id: z.number().optional(),
-  name: z.string().url('Nombre de dominio inválido.').max(60, { message: "Máximo 60 caracteres" }),
+
+  name: z.
+    string()
+    .trim()
+    .url('Nombre de dominio inválido.')
+    .max(60, { message: "Máximo 60 caracteres" }),
+
   provider: z.object({
     id: z.string({ message: "El proveedor es requerido." }),
     name: z.string({ message: "El proveedor es requerido." }),
@@ -113,8 +131,20 @@ export const domainFormSchema = z.object({
   isKernelAccess: z.boolean().optional(),
 })
 
-export const clientUpdateFormSchema = clientFormSchema.extend({
-  domains: z.array(domainFormSchema)
+export const clientUpdateFormSchema = clientFormSchema.omit({
+  access:true,
+  contacts:true,
+}).extend({
+  domains: z.array(domainFormSchema.pick({
+    id:true,
+    client: true,
+    status: true,
+    name:true,
+    contactId: true,
+    accessId:true,
+    provider:true,
+    expirationDate:true
+  })).optional()
 })
 export type ClientUpdateValues = z.infer<typeof clientUpdateFormSchema>
 export type ClientFormValues = z.infer<typeof clientFormSchema>

@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { Access, Contact, DomainWithRelations } from "@/db/schema"
 
 import { formatDate } from "@/lib/utils"
-import ContactInfoCard from "@/app/(root)/clients/_components/contact-info-card"
+import { ContactInfoCard } from "@/app/(root)/clients/_components/contact-info-card"
 import { AccessInfoCard } from "@/app/(root)/clients/_components/access-info-card"
+import { statusConfig } from "@/constants"
 
 export function EditDomainConfirmationModal({
   handleSubmit,
@@ -86,7 +87,7 @@ export function EditDomainConfirmationModal({
           client.name,
           clientState.isDirty
         )}
-        {statusState.isDirty && (
+        {statusState.isDirty && oldDomain && (
           <div className="bg-muted p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-4 h-4 text-primary" />
@@ -94,21 +95,15 @@ export function EditDomainConfirmationModal({
             </div>
             <div className="items-center gap-4 grid grid-cols-[1fr,auto,1fr]">
               <Badge
-                variant="outline"
-                className={
-                  oldDomain?.status === "Activo"
-                    ? "bg-green-500/10 text-green-500"
-                    : ""
-                }
+                variant='outline'
+                className={`${statusConfig[oldDomain?.status].color}`}
               >
                 {oldDomain?.status}
               </Badge>
               <ArrowRight className="w-4 h-4 text-muted-foreground" />
               <Badge
-                variant="outline"
-                className={
-                  status === "Activo" ? "bg-green-500/10 text-green-500" : ""
-                }
+                variant='outline'
+                className={`${statusConfig[status].color}`}
               >
                 {status}
               </Badge>
@@ -170,7 +165,7 @@ export function EditDomainConfirmationModal({
                     />
 
                   ) : (
-                    <span className="text-center text-destructive">Sin acceso</span>
+                    <span className="text-destructive text-center">Sin acceso</span>
                   )
               }
             </div>

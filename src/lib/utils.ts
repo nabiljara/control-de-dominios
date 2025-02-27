@@ -18,7 +18,6 @@ export const formatDate = (date: string) => {
 
 export const encrypt = (text: string): { encrypted: string; iv: string } => {
   try {
-    console.log('SECRET_KEY', SECRET_KEY);
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(SECRET_KEY), iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');

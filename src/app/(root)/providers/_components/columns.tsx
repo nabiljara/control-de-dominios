@@ -2,14 +2,8 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
-import { z } from "zod"
-
-export const providerSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  url: z.string()
-})
-type Provider = z.infer<typeof providerSchema>
+import { Box, ExternalLink } from "lucide-react"
+import { Provider } from "@/db/schema"
 
 export const columns: ColumnDef<Provider>[] = [
   {
@@ -24,7 +18,7 @@ export const columns: ColumnDef<Provider>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
+      <DataTableColumnHeader column={column} title="Nombre" icon={<Box/>}/>
     ),
     cell: ({ row }) => <div className="w-[500px]">{row.getValue("name")}</div>,
     enableSorting: true,
@@ -33,7 +27,7 @@ export const columns: ColumnDef<Provider>[] = [
   {
     accessorKey: "url",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="URL" />
+      <DataTableColumnHeader column={column} title="URL" icon={<ExternalLink/>}/>
     ),
     cell: ({ row }) => (
       <div className="w-[500px]">

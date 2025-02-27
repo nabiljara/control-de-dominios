@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { statusConfig } from "@/constants";
 import { AuditWithRelations } from "@/db/schema";
 import { Building, MapPin, User } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +16,10 @@ export function ClientEntityDetails(audit: AuditWithRelations) {
               {audit.entityDetails && 'name' in audit.entityDetails ? audit.entityDetails.name : ""}
             </span>
             {audit.entityDetails && 'status' in audit.entityDetails && (
-              <Badge variant='default'>
+              <Badge
+                variant='outline'
+                className={`${statusConfig[audit.entityDetails.status].color}`}
+              >
                 {audit.entityDetails.status}
               </Badge>
             )}

@@ -4,14 +4,33 @@ import { columns } from "./_components/columns"
 import { DataTable } from "@/components/data-table"
 import { getClients } from "@/actions/client-actions"
 import { DataTableToolbar } from "./_components/data-table-toolbar"
-import { Handshake, User2, Users } from "lucide-react"
+import { Handshake } from "lucide-react"
+import { getLocalities } from "@/actions/locality-actions"
+import { Client } from "@/db/schema"
 
 export const metadata: Metadata = {
   title: "Clientes",
 }
 
 export default async function ClientsPage() {
-  const clients = await getClients()
+  let clients: Client[] = [];
+  const newLocalities: Array<string> = [];
+
+  try {
+    clients = await getClients();
+  } catch (error) {
+    console.error("Error al obtener los clientes:", error);
+  }
+
+  try {
+    const localities = await getLocalities();
+    localities.map((locality) => {
+      const newLocality: string = locality.name
+      newLocalities.push(newLocality)
+    });
+  } catch (error) {
+    console.error("Error al obtener las localidades:", error);
+  }
 
   return (
     <>
@@ -29,7 +48,12 @@ export default async function ClientsPage() {
             </p>
           </div>
         </div>
-        <DataTable data={clients} columns={columns} ToolbarComponent={DataTableToolbar} from="clients" />
+        <DataTable
+          data={clients}
+          columns={columns}
+          ToolbarComponent={DataTableToolbar}
+          filterLocalities={newLocalities}
+          from="clients" />
       </div>
     </>
   )

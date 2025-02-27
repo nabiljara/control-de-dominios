@@ -27,25 +27,36 @@ import {
 
 import { DataTablePagination } from "@/components/data-table-pagination"
 import { useRouter } from "next/navigation"
+import { Client } from "@/db/schema"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
-  ToolbarComponent?: React.ComponentType<{ table: TanStackTable<TData> }>;
-  from:string 
+  ToolbarComponent?: React.ComponentType<{ table: TanStackTable<TData>, filterClients?: Array<string>, formClients?: Client[], filterLocalities?: Array<string>, filterProviders?: Array<string>, filterUsers?: Array<string> }>;
+  filterClients?: Array<string> // Los clientes para realizar el filtrado
+  formClients?: Client[] // Los clientes para el formulario de nuevo contacto
+  filterLocalities?: Array<string> // Las localidades para realizar el filtrado
+  filterProviders?: Array<string> // Los proveedores para realizar el filtrado
+  filterUsers?: Array<string> // Los usuarios para realizar el filtrado
+  from?: string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   ToolbarComponent,
-  from
+  from,
+  filterClients,
+  formClients,
+  filterLocalities,
+  filterProviders,
+  filterUsers
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
-      id:false,
+      id: false,
     })
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -73,10 +84,17 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues()
   })
-  
+
   return (
     <div className="space-y-4">
-      {ToolbarComponent && <ToolbarComponent table={table} />}
+      {ToolbarComponent && <ToolbarComponent
+        table={table}
+        filterClients={filterClients}
+        formClients={formClients}
+        filterLocalities={filterLocalities}
+        filterProviders={filterProviders} 
+        filterUsers={filterUsers}
+        />}
       <div className="border rounded-md">
         <Table>
           <TableHeader>
@@ -88,9 +106,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   )
                 })}
@@ -99,35 +117,36 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {
-            table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={
-                    () => router.push(`/${from}/${row.getAllCells()[0].getValue()}`)}
-                  className="cursor-pointer"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+              table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                    <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    onClick={
+                      from ? () => router.push(`/${from}/${row.getAllCells()[0].getValue()}`) : undefined
+                    }
+                    className={from ? "cursor-pointer" : ""}
+                    >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
                       )}
-                    </TableCell>
-                  ))}
+                      </TableCell>
+                    ))}
+                    </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No hay resultados.
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No hay resultados.
-                </TableCell>
-              </TableRow>
-            )}
+              )}
           </TableBody>
         </Table>
       </div>

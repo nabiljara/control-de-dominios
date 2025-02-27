@@ -71,8 +71,8 @@ import {
   getIndividualContacts,
 } from "@/actions/contacts-actions"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
-import { CreateContactModal } from "@/components/create-contact-modal"
-import ContactInfoCard from "@/app/(root)/clients/_components/contact-info-card"
+import { ContactModal } from "@/components/contact-modal"
+import { ContactInfoCard } from "@/app/(root)/clients/_components/contact-info-card"
 import { cn } from "@/lib/utils"
 import {
   getAccessByClientAndProviderId,
@@ -190,7 +190,7 @@ export default function CreateDomainForm({
             });
             toast.warning(error.message)
           });
-          
+
         } else {
 
           if (domain) {
@@ -591,11 +591,9 @@ export default function CreateDomainForm({
                       <SelectContent>
                         {domainStatus.map((status) => (
                           <SelectItem key={status} value={status}>
-                            <div className="flex items-center gap-2">
-                              <Badge className={statusConfig[status].color}>
+                              <Badge variant='outline' className={statusConfig[status].color}>
                                 {status}
                               </Badge>
-                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -612,7 +610,7 @@ export default function CreateDomainForm({
               control={form.control}
               name="expirationDate"
               render={({ field }) => (
-                <FormItem className="flex flex-col w-1/2">
+                <FormItem className="flex flex-col">
                   <FormLabel>
                     Fecha de Vencimiento{" "}
                     <span className="text-red-500">*</span>
@@ -623,7 +621,7 @@ export default function CreateDomainForm({
                     onSelect={field.onChange}
                     onMonthChange={field.onChange}
                     month={field.value || addDays(new Date(), 1)}
-                    className="p-2"
+                    className="p-2 border rounded-sm"
                     locale={es}
                     classNames={{
                       month_caption: "mx-0",
@@ -671,9 +669,9 @@ export default function CreateDomainForm({
                   />
                   {
                     domain && <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="justify-start w-min"
+                      className="w-min"
                       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -728,7 +726,7 @@ export default function CreateDomainForm({
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
-                    <CreateContactModal
+                    <ContactModal
                       client={{ id: parseInt(form.getValues('client').id), name: form.getValues('client').name }}
                       notification={setNewClientContactCreated}
                     >
@@ -740,7 +738,7 @@ export default function CreateDomainForm({
                       >
                         <Plus className="text-gray-700" />
                       </Button>
-                    </CreateContactModal>
+                    </ContactModal>
 
                     {clientContacts.length > 0 &&
                       clientContacts.map((contact) => {
@@ -809,7 +807,7 @@ export default function CreateDomainForm({
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
-                    <CreateContactModal
+                    <ContactModal
                       client={{ id: 1, name: 'Kernel' }}
                       pathToRevalidate={`/domains/${domain?.id}`}
                     >
@@ -821,7 +819,7 @@ export default function CreateDomainForm({
                       >
                         <Plus className="text-gray-700" />
                       </Button>
-                    </CreateContactModal>
+                    </ContactModal>
 
                     {kernelContacts.length > 0 &&
                       kernelContacts.map((contact) => {
@@ -883,7 +881,7 @@ export default function CreateDomainForm({
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
 
-                    <CreateContactModal
+                    <ContactModal
                       notification={setNewIndividualContactCreated}
                     >
                       <Button
@@ -894,7 +892,7 @@ export default function CreateDomainForm({
                       >
                         <Plus className="text-gray-700" />
                       </Button>
-                    </CreateContactModal>
+                    </ContactModal>
 
                     {individualContacts.map((contact) => (
                       <ContactInfoCard

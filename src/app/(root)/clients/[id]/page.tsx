@@ -1,14 +1,15 @@
 
 import { getClient } from "@/actions/client-actions"
 import { User } from "lucide-react"
-import EditableClientCard from "../_components/editable-client-card"
+import { EditableClientCard } from "../_components/editable-client-card"
 import { AccessWithRelations, ClientWithRelations, DomainWithRelations } from "@/db/schema"
 import { getLocalities } from "@/actions/locality-actions"
 import { getProviders } from "@/actions/provider-actions"
 import { EntityNotFound } from "@/components/entity-not-found"
-import ContactsTable from "../_components/tables/contacts-table"
-import AccessTable from "../_components/tables/access-table"
-import DomainTable from "../_components/tables/domain-table"
+import { ClientContactsTable } from "../_components/client-tables/contacts/client-contacts-table"
+import { ClientAccessTable } from "../_components/client-tables/access/client-access-table"
+import { ClientDomainsTable } from "../_components/client-tables/domains/client-domains-table"
+import { decryptPassword } from "@/actions/accesses-actions"
 
 export default async function ClientPage({
   params
@@ -35,7 +36,7 @@ export default async function ClientPage({
   }
 
   const { access, contacts, ...clientWithoutRelations } = client
-  const AccessWithRelations = access as Omit<AccessWithRelations, 'client'>[]
+  const accessWithRelations = access as Omit<AccessWithRelations, 'client'>[]
   const domainsWithRelations = client.domains as DomainWithRelations[]
   const clientWithoutRelationsTyped = clientWithoutRelations as Omit<
     ClientWithRelations,
@@ -43,6 +44,27 @@ export default async function ClientPage({
   >
   const localities = await getLocalities()
   const providers = await getProviders()
+
+  const filterProviders: Array<string> = []
+  try {
+    const providers = await getProviders();
+
+    providers.map((provider) => {
+      const newFilterProvider: string = provider.name
+      filterProviders.push(newFilterProvider)
+    })
+  } catch (error) {
+    console.error("Error al cargar las localidades:", error);
+  }
+
+  accessWithRelations.map(async (access) => {
+    try {
+      access.password = await decryptPassword(access.password)
+    } catch (error) {
+      console.error("Error al desencriptar la contraseña")
+      access.password = "Contraseña mal generada"
+    }
+  })
 
   return (
     <div className="space-y-4 p-8">
@@ -52,14 +74,15 @@ export default async function ClientPage({
         contacts={contacts}
       />
       <div className="gap-6 grid md:grid-rows">
+        {/* DOMAIN TABLE  */}
+        <ClientDomainsTable domains={domainsWithRelations} filterProviders={filterProviders} />
+
         {/* CONTACTS TABLE */}
-        <ContactsTable contacts={contacts} client={{ id: clientId, name: client.name }} />
+        <ClientContactsTable contacts={contacts} client={{ id: clientId, name: client.name }} />
 
         {/* ACCESS TABLE */}
-        <AccessTable access={AccessWithRelations} client={{ id: clientId, name: client.name }} providers={providers} />
+        <ClientAccessTable access={accessWithRelations} client={{ id: clientId, name: client.name }} providers={providers} filterProviders={filterProviders} />
 
-        {/* DOMAIN TABLE  */}
-        <DomainTable domains={domainsWithRelations} />
       </div>
     </div>
   )

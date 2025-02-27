@@ -67,6 +67,7 @@ export function Contact({
               {contact.name}
             </h2>
             <Badge
+            variant='outline'
               className={statusConfig[contact.status].color}
             >
               {contact.status}

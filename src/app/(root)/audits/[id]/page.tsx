@@ -89,7 +89,7 @@ export default async function AuditDetailsPage({
             </div>
           </div>
           <div className="gap-4 grid col-span-2 lg:col-span-4">
-            <span className="flex items-center gap-2 text-muted-foreground text-sm"><FileText className="w-5 h-5 text-muted-foreground" />Registro</span>
+            <span className="flex items-center gap-2 text-muted-foreground text-sm"><FileText className="w-5 h-5 text-muted-foreground" />Registro implicado</span>
             {
               audit.entityDetails ? (() => {
                 switch (audit.entity) {

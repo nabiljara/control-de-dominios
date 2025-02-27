@@ -34,7 +34,10 @@ export function DataTableViewOptions<TData>({
     user: "Usuario",
     action: "Acción",
     createdAt: "Fecha",
-    entity: "Entidad"
+    entity: "Entidad",
+    password:"Contraseña",
+    username:"Usuario / Email",
+    notes: "Notas"
   };
   return (
     <DropdownMenu>
@@ -42,7 +45,7 @@ export function DataTableViewOptions<TData>({
         <Button
           variant="outline"
           size="sm"
-          className="lg:flex hidden ml-auto h-8"
+          className="hidden lg:flex ml-auto h-8"
         >
           <MixerHorizontalIcon className="mr-2 w-4 h-4" />
           Ver

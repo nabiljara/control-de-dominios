@@ -49,7 +49,7 @@ export function RecentClients({ clients, loading }: RecentClientsProps) {
   return (
     <div className="spcae-y-2">
       <div className="h-[300px]">
-        <div className="h-fit rounded-lg border">
+        <div className="border rounded-lg h-fit">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -68,16 +68,16 @@ export function RecentClients({ clients, loading }: RecentClientsProps) {
                 ? Array.from({ length: 5 }).map((_, index) => (
                     <TableRow key={index}>
                       <TableCell className="text-center">
-                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="w-full h-4" />
                       </TableCell>
                       <TableCell className="text-center">
-                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="w-full h-4" />
                       </TableCell>
                       <TableCell className="text-center">
-                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="w-full h-4" />
                       </TableCell>
                       <TableCell className="text-center">
-                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="w-full h-4" />
                       </TableCell>
                     </TableRow>
                   ))
@@ -94,7 +94,7 @@ export function RecentClients({ clients, loading }: RecentClientsProps) {
                         </Link>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge className={sizeConfig[client.size].color}>
+                        <Badge variant='outline' className={sizeConfig[client.size].color}>
                           {client.size}
                         </Badge>
                       </TableCell>
@@ -122,54 +122,54 @@ export function RecentClients({ clients, loading }: RecentClientsProps) {
         </div>
       </div>
       {!loading && (
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex justify-between items-center pt-4">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="w-8 h-8"
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
                 >
-                  <ChevronFirst className="h-4 w-4" />
+                  <ChevronFirst className="w-4 h-4" />
                 </Button>
               </PaginationItem>
               <PaginationItem>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="w-8 h-8"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="w-4 h-4" />
                 </Button>
               </PaginationItem>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {currentPage} de {totalPages}
               </p>
               <PaginationItem>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="w-8 h-8"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="w-4 h-4" />
                 </Button>
               </PaginationItem>
               <PaginationItem>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="w-8 h-8"
                   onClick={() => handlePageChange(totalPages)}
                   disabled={currentPage === totalPages}
                 >
-                  <ChevronLast className="h-4 w-4" />
+                  <ChevronLast className="w-4 h-4" />
                 </Button>
               </PaginationItem>
             </PaginationContent>

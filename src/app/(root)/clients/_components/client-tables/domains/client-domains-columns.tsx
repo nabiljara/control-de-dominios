@@ -6,7 +6,6 @@ import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { formatDate } from "@/lib/utils";
 import { domainStatus, statusConfig } from "@/constants";
 import { Badge } from "@/components/ui/badge";
-import { Box, CalendarArrowDown, CalendarArrowUp, CheckCircle, Globe, Handshake } from "lucide-react";
 
 export const columns: ColumnDef<Domain>[] = [
   {
@@ -21,7 +20,7 @@ export const columns: ColumnDef<Domain>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" icon={<Globe className="w-4 h-4"/>}/>
+      <DataTableColumnHeader column={column} title="Nombre" />
     ),
     cell: ({ row }) => <span>{row.getValue("name")}</span>,
     enableSorting: false,
@@ -30,7 +29,7 @@ export const columns: ColumnDef<Domain>[] = [
   {
     accessorKey: "provider",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Proveedor"  icon={<Box className="w-4 h-4"/>}/>
+      <DataTableColumnHeader column={column} title="Proveedor" />
     ),
     cell: ({ row }) => {
       const provider: { id: number; name: string } = row.getValue("provider");
@@ -49,28 +48,9 @@ export const columns: ColumnDef<Domain>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "client",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cliente" icon={<Handshake className="w-4 h-4"/>}/>
-    ),
-    cell: ({ row }) => {
-      const client: { id: number; name: string } = row.getValue("client");
-      return (
-        <span className="max-w-[500px] font-medium truncate">
-          {client.name || "Sin cliente"}
-        </span>
-      );
-    },
-    filterFn: (row, id, value) => {
-      const client: { id: number; name: string } = row.getValue(id);
-      return value.includes(client.name);
-    },
-    enableSorting: false,
-  },
-  {
     accessorKey: "status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Estado" icon={<CheckCircle className="w-4 h-4"/>}/>
+      <DataTableColumnHeader column={column} title="Estado" />
     ),
     cell: ({ row }) => {
       const status = domainStatus.find(
@@ -84,9 +64,9 @@ export const columns: ColumnDef<Domain>[] = [
       return (
         <Badge
         variant='outline'
-          className=
-            {`${statusConfig[row.getValue("status") as keyof typeof statusConfig].color} truncate`}
-          
+          className={
+            statusConfig[row.getValue("status") as keyof typeof statusConfig].color
+          }
         >
           {status}
         </Badge>
@@ -100,7 +80,7 @@ export const columns: ColumnDef<Domain>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha de registro"  icon={<CalendarArrowUp className="w-4 h-4"/>}/>
+      <DataTableColumnHeader column={column} title="Fecha de registro" />
     ),
     cell: ({ row }) => <span>{formatDate(row.getValue("createdAt"))}</span>,
     enableSorting: true,
@@ -109,7 +89,7 @@ export const columns: ColumnDef<Domain>[] = [
   {
     accessorKey: "expirationDate",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha de vencimiento" icon={<CalendarArrowDown className="w-4 h-4"/>} />
+      <DataTableColumnHeader column={column} title="Fecha de vencimiento" />
     ),
     cell: ({ row }) => (
       <span>{formatDate(row.getValue("expirationDate"))}</span>

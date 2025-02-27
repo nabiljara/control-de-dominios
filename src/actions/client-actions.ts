@@ -1,8 +1,8 @@
 "use server"
 
 import db from "@/db";
-import { clientFormSchema, ClientFormValues } from "@/validators/client-validator";
-import { ClientInsert, clients, Contact, contacts, localities, domainHistory, AccessInsert } from "@/db/schema";
+import { clientFormSchema, ClientFormValues, clientUpdateFormSchema, ClientUpdateValues, DomainFormValues } from "@/validators/client-validator";
+import { ClientInsert, clients, Contact, contacts, localities, domainHistory, AccessInsert, DomainInsert, domains } from "@/db/schema";
 import { desc, eq, count, gte, and, lte, lt, asc } from "drizzle-orm";
 import { revalidatePath } from 'next/cache';
 import { redirect } from "next/navigation";
@@ -10,6 +10,8 @@ import { setUserId } from "./user-action/user-actions";
 import { access } from "@/db/schema";
 import { sql } from 'drizzle-orm'
 import { encrypt } from "@/lib/utils";
+import { format } from "date-fns";
+import { updateDomain } from "./domains-actions";
 
 export async function getClients() {
   try {
@@ -48,7 +50,7 @@ export async function getClient(id: number) {
       where: eq(clients.id, id),
       with:
       {
-        domains: { with: { provider: true } },
+        domains: { with: { provider: true, accessData: true } },
         locality: true,
         access: {
           with: { provider: true, domainAccess: { with: { domain: true } } },
@@ -93,16 +95,20 @@ export async function getAuditClient(id: number) {
   }
 };
 
-export async function updateClient(client: ClientInsert) {
+export async function updateClient(client: ClientFormValues) {
   let success = false;
   try {
-    if (!client.id) {
+    const parsed = await clientFormSchema.parseAsync(client);
+    if (!parsed) {
+      throw new Error("Error de validación del formulario de cliente.");
+    }
+    if (!parsed.id) {
       throw new Error("El ID del cliente no está definido.");
     }
     await setUserId()
     await db.update(clients)
-      .set({ name: client.name, localityId: client.localityId, size: client.size, status: client.status, updatedAt: sql`NOW()` })
-      .where(eq(clients.id, client.id))
+      .set({ ...parsed, updatedAt: sql`NOW()` })
+      .where(eq(clients.id, parsed.id))
     success = true;
   } catch (error) {
     console.error("Error al modificar el cliente:", error);
@@ -113,14 +119,67 @@ export async function updateClient(client: ClientInsert) {
   }
 }
 
+export async function updateClientAndDomains(client: ClientUpdateValues) {
+  try {
+    const parsed = await clientUpdateFormSchema.parseAsync(client);
+    await db.transaction(async (tx) => {
+      
+      if (!parsed.id) {
+        throw new Error("El ID del cliente no está definido.");
+      }
+
+      await setUserId();
+      // Actualizar cliente
+      await tx
+        .update(clients)
+        .set({ ...parsed, updatedAt: sql`NOW()` })
+        .where(eq(clients.id, parsed.id));
+
+      // Actualizar dominios
+      if (parsed.domains) {
+        for (const domain of parsed.domains) {
+          const data = {
+            ...domain,
+            expirationDate: format(domain.expirationDate, "yyyy-MM-dd HH:mm"),
+          };
+          
+          const modifiedDomain: DomainInsert = {
+            name: data.name,
+            clientId: parseInt(data.client.id),
+            expirationDate: data.expirationDate,
+            contactId: parseInt(data.contactId),
+            providerId: parseInt(data.provider.id),
+            id: data.id,
+            status: data.status,
+          };
+          
+          if (!modifiedDomain.id) {
+            throw new Error("El ID del cliente no está definido.");
+          }
+          
+          await setUserId();
+          await tx
+            .update(domains)
+            .set(modifiedDomain)
+            .where(eq(domains.id, modifiedDomain.id));
+        }
+      }
+    });
+    revalidatePath(`/clients/${client.id}`);
+  } catch (error) {
+    console.error("Error al modificar el cliente:", error);
+    throw error;
+  }
+}
+
 export async function createClient(client: ClientFormValues) {
   let success = false;
   let clientId: number = 0;
   try {
 
-    const parsed = clientFormSchema.safeParse(client);
+    const parsed = await clientFormSchema.parseAsync(client);
 
-    if (!parsed.success) {
+    if (!parsed) {
       throw new Error("Error de validación del formulario de cliente.");
     }
     await setUserId()
@@ -128,24 +187,24 @@ export async function createClient(client: ClientFormValues) {
     await db.transaction(async (tx) => {
 
       const response = await tx.insert(clients)
-        .values({ localityId: parseInt(client.locality.id), ...client })
+        .values({ localityId: parseInt(parsed.locality.id), ...parsed })
         .returning({ insertedId: clients.id });
 
       clientId = response[0].insertedId
 
-      if (client.contacts && client.contacts.length > 0) {
+      if (parsed.contacts && parsed.contacts.length > 0) {
 
-        client.contacts.map((contact) => {
+        parsed.contacts.map((contact) => {
           contact.clientId = clientId
         })
 
-        await tx.insert(contacts).values(client.contacts.map(({ id, ...rest }) => rest));
+        await tx.insert(contacts).values(parsed.contacts.map(({ id, ...rest }) => rest));
       }
 
       const newAccessArray: AccessInsert[] = [];
 
-      if (client.access && client.access.length > 0) {
-        client.access.map((access) => {
+      if (parsed.access && parsed.access.length > 0) {
+        parsed.access.map((access) => {
           const { encrypted, iv } = encrypt(access.password);
           const newAccess: AccessInsert = {
             clientId: clientId,

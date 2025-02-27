@@ -2,84 +2,31 @@
 
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
-
-import { domainStatus } from "@/app/(root)/clients/data/data"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { Globe, Router } from "lucide-react"
+import { Globe } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
-import { getClients } from "@/actions/client-actions"
-import { getProviders } from "@/actions/provider-actions"
+import { useEffect } from "react"
 import Plus from "@/components/plus"
 import { CommandShortcut } from "@/components/ui/command"
 import { useRouter } from "next/navigation"
+import { domainStatus } from "@/constants"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
-}
-
-type Options = {
-  label: string
-  value: string
-  icon?: React.ComponentType<{ className?: string }>
+  filterClients?: Array<string> // Los clientes para realizar el filtrado
+  filterProviders?: Array<string> // Los proveedores para realizar el filtrado
 }
 
 export function DataTableToolbar<TData>({
   table,
+  filterClients,
+  filterProviders
 }: DataTableToolbarProps<TData>) {
   const router = useRouter()
   const isFiltered = table.getState().columnFilters.length > 0
-
-  const [clients, setClients] = useState<Options[]>([]);
-
-  const [providers, setProviders] = useState<Options[]>([]);
-
-  useEffect(() => {
-    const fetchProviders = async () => {
-      try {
-        const providers = await getProviders();
-        const newProviders: Options[] = []
-        providers.map((provider) => {
-          const newProvider: Options = {
-            label: provider.name,
-            value: provider.id.toString()
-          }
-          newProviders.push(newProvider)
-        })
-        setProviders(newProviders);
-      } catch (error) {
-        console.error("Error al cargar las localidades:", error);
-      }
-    };
-
-    fetchProviders();
-  }, []);
-
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const clients = await getClients();
-        const newClients: Options[] = []
-        clients.map((client) => {
-          const newClient: Options = {
-            label: client.name,
-            value: client.id.toString()
-          }
-          newClients.push(newClient)
-        })
-        setClients(newClients);
-      } catch (error) {
-        console.error("Error al cargar las localidades:", error);
-      }
-    };
-
-    fetchClients();
-  }, []);
-
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -103,8 +50,6 @@ export function DataTableToolbar<TData>({
     return () => document.removeEventListener("keydown", down)
   }, [])
 
-
-
   return (
     <div className="flex justify-between items-center">
       <div className="flex flex-1 items-center space-x-2">
@@ -127,21 +72,21 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Estado"
-            options={domainStatus}
+            options={domainStatus.slice()}
           />
         )}
         {table.getColumn("client") && (
           <DataTableFacetedFilter
             column={table.getColumn("client")}
             title="Cliente"
-            options={clients}
+            options={filterClients ?? []}
           />
         )}
         {table.getColumn("provider") && (
           <DataTableFacetedFilter
             column={table.getColumn("provider")}
             title="Proveedor"
-            options={providers}
+            options={filterProviders ?? []}
           />
         )}
         {isFiltered && (

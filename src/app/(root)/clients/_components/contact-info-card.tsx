@@ -13,7 +13,7 @@ interface ContactInfoCardProps {
   onSelect?: (contactId: string, contact: Contact) => void;
 }
 
-export default function ContactInfoCard({
+export function ContactInfoCard({
   contact,
   isSelected = false,
   onSelect,
@@ -48,13 +48,14 @@ export default function ContactInfoCard({
         }
       }}
     >
-      <CardContent className='flex flex-col justify-between items-start gap-2 p-0 h-full'>
+      <CardContent className='flex flex-col justify-between items-start gap-3 p-0'>
         <div className='flex items-center gap-2'>
           <User className="w-4 h-4" />
-          <h2 className="font-bold text-md">
+          <h2 className="font-bold text-md truncate">
             {contact?.name}
           </h2>
           <Badge
+            variant='outline'
             className={contact ? statusConfig[contact.status].color : ''}
           >
             {contact?.status}

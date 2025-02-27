@@ -24,11 +24,12 @@ import { Separator } from "@/components/ui/separator"
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>
   title?: string
-  options: {
-    label: string
-    value: string
-    icon?: React.ComponentType<{ className?: string }>
-  }[]
+  // options: {
+  //   value: string
+  //   // label: string
+  //   // icon?: React.ComponentType<{ className?: string }>
+  // }[]
+  options: Array<string>
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
@@ -49,29 +50,29 @@ export function DataTableFacetedFilter<TData, TValue>({
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
               <Badge
-                variant="secondary"
+                variant="outline"
                 className="lg:hidden px-1 rounded-sm font-normal"
               >
                 {selectedValues.size}
               </Badge>
-              <div className="lg:flex space-x-1 hidden">
+              <div className="hidden lg:flex space-x-1">
                 {selectedValues.size > 2 ? (
                   <Badge
-                    variant="secondary"
+                    variant="outline"
                     className="px-1 rounded-sm font-normal"
                   >
                     {selectedValues.size} seleccionados
                   </Badge>
                 ) : (
                   options
-                    .filter((option) => selectedValues.has(option.value))
+                    .filter((option) => selectedValues.has(option))
                     .map((option) => (
                       <Badge
-                        variant="secondary"
-                        key={option.value}
+                        variant="outline"
+                        key={option}
                         className="px-1 rounded-sm font-normal"
                       >
-                        {option.label}
+                        {option}
                       </Badge>
                     ))
                 )}
@@ -87,15 +88,15 @@ export function DataTableFacetedFilter<TData, TValue>({
             <CommandEmpty>No hay resultados.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
-                const isSelected = selectedValues.has(option.value)
+                const isSelected = selectedValues.has(option)
                 return (
                   <CommandItem
-                    key={option.value}
+                    key={option}
                     onSelect={() => {
                       if (isSelected) {
-                        selectedValues.delete(option.value)
+                        selectedValues.delete(option)
                       } else {
-                        selectedValues.add(option.value)
+                        selectedValues.add(option)
                       }
                       const filterValues = Array.from(selectedValues)
                       column?.setFilterValue(
@@ -113,13 +114,13 @@ export function DataTableFacetedFilter<TData, TValue>({
                     >
                       <CheckIcon className={cn("h-4 w-4")} />
                     </div>
-                    {option.icon && (
+                    {/* {option.icon && (
                       <option.icon className="mr-2 w-4 h-4 text-muted-foreground" />
-                    )}
-                    <span>{option.label}</span>
-                    {facets?.get(option.value) && (
+                    )} */}
+                    <span>{option}</span>
+                    {facets?.get(option) && (
                       <span className="flex justify-center items-center ml-auto w-4 h-4 font-mono text-xs">
-                        {facets.get(option.value)}
+                        {facets.get(option)}
                       </span>
                     )}
                   </CommandItem>

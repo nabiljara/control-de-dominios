@@ -11,14 +11,14 @@ export function NewContactConfirmationModal(
     contact,
     handleSubmit,
     isSubmitting,
-    setIsCreateContactModalOpen,
+    setIsContactModalOpen,
     setIsConfirmationModalOpen,
     client
   }: {
     contact: ContactFormValues;
     handleSubmit?: (() => void) | ((contact: ContactFormValues) => void);
     isSubmitting: boolean
-    setIsCreateContactModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsContactModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsConfirmationModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
     client?: string
   }
@@ -36,7 +36,7 @@ export function NewContactConfirmationModal(
                 <h2 className="font-bold text-md">
                   {contact.name}
                 </h2>
-                <Badge className={statusConfig[contact.status].color}>
+                <Badge variant='outline' className={statusConfig[contact.status].color}>
                   {contact.status}
                 </Badge>
               </div>
@@ -77,7 +77,7 @@ export function NewContactConfirmationModal(
             type="button"
             variant='destructive'
             onClick={() => {
-              setIsCreateContactModalOpen(true)
+              setIsContactModalOpen(true)
               setIsConfirmationModalOpen(false)
             }}
             disabled={isSubmitting}

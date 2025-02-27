@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel, relations, sql, SQL } from "drizzle-orm"
-import { clientSize, clientStatus, contactStatus, contactTypes, domainStatus} from "@/constants";
+import { clientSizes, clientStatus, contactStatus, contactTypes, domainStatus} from "@/constants";
 
 import {
   boolean,
@@ -22,7 +22,7 @@ export function lower(email: AnyPgColumn): SQL {
 }
 
 export const userRoleEnum = pgEnum("user_role", ["user", "admin"])
-export const clientSizeEnum = pgEnum("client_size", clientSize)
+export const clientSizeEnum = pgEnum("client_size", clientSizes)
 export const clientStatusEnum = pgEnum("client_status", clientStatus)
 export const domainStatusEnum = pgEnum("domain_status", domainStatus)
 export const contactTypeEnum = pgEnum("contact_type", contactTypes)
@@ -380,9 +380,12 @@ export type ProviderWithRelations = Provider & {
 export type Client = InferSelectModel<typeof clients>
 export type ClientInsert = InferInsertModel<typeof clients>
 export type ClientWithRelations = Client & {
-  domains: Domain[];
+  domains: DomainWithAccess[];
   locality: Locality;
   access: Access[];
+  contacts: Contact[];
+};
+export type ClientWithContactsRelation = Client & {
   contacts: Contact[];
 };
 
@@ -391,7 +394,7 @@ export type Contact = InferSelectModel<typeof contacts>;
 export type ContactInsert = InferInsertModel<typeof contacts>;
 export type ContactWithRelations = Contact & {
   client: Client | null
-  domains: Domain[],
+  domains: DomainWithClientRelation[],
 }
 
 //ACCESOS
@@ -414,12 +417,18 @@ export type DomainAccessWithRelations = DomainAccess & {
 //DOMINIOS
 export type Domain = InferSelectModel<typeof domains>;
 export type DomainInsert = InferInsertModel<typeof domains>;
+export type DomainWithAccess = Domain & {
+  accessData: Omit<DomainAccessWithRelations, 'domain'> | null
+}
 export type DomainWithRelations = Domain & {
   client: Client,
   provider: Provider,
   contact: Contact,
   history: DomainHistory[]
   accessData: Omit<DomainAccessWithRelations, 'domain'> | null
+}
+export type DomainWithClientRelation = Domain & {
+  client: ClientWithContactsRelation,
 }
 
 //HISTORIAL DE DOMINIO

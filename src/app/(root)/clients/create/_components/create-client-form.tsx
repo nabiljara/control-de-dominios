@@ -29,12 +29,12 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
-import { User, Plus, UserPlus, Loader2, Handshake } from "lucide-react"
+import { Plus, UserPlus, Loader2, Handshake } from "lucide-react"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { Contact } from "@/app/(root)/clients/create/_components/contacts/contact"
-import { CreateContactModal } from "@/components/create-contact-modal"
+import { ContactModal } from "@/components/contact-modal"
 import { Access } from "@/app/(root)/clients/create/_components/accesses/access"
-import { CreateConfirmationModal } from "@/app/(root)/clients/create/_components/create-confirmation-modal"
+import { CreateClientConfirmationModal } from "@/app/(root)/clients/create/_components/create-client-confirmation-modal"
 import { Provider } from "@/db/schema"
 import { Locality } from "@/db/schema"
 import { toast } from "sonner"
@@ -47,10 +47,9 @@ import {
   contactFormSchema,
   ContactFormValues
 } from "@/validators/client-validator"
-import { validateUsername } from "@/actions/accesses-actions"
 import { CreateAccessModal } from "@/components/create-access-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
-import { clientSize, clientStatus, sizeConfig, statusConfig } from "@/constants"
+import { clientSizes, clientStatus, sizeConfig, statusConfig } from "@/constants"
 
 export function CreateClientForm({
   providers,
@@ -143,10 +142,6 @@ export function CreateClientForm({
 
   const isDirty = Object.keys(form.formState.dirtyFields).length !== 0 || contacts.length !== 0 || accessArray.length !== 0
 
-  // console.log(form.getValues());
-  // console.log(contacts);
-  // console.log(accessArray);
-  
   
 
   const handleFinalSubmit = async () => {
@@ -193,7 +188,6 @@ export function CreateClientForm({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex gap-6">
-
                 <FormField
                   control={form.control}
                   name="name"
@@ -234,10 +228,10 @@ export function CreateClientForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {clientSize.map((size) => (
+                          {clientSizes.map((size) => (
                             <SelectItem key={size} value={size}>
                               <div className="flex items-center gap-2">
-                                <Badge className={sizeConfig[size].color}>
+                                <Badge variant='outline' className={sizeConfig[size].color}>
                                   {size}
                                 </Badge>
                               </div>
@@ -316,7 +310,7 @@ export function CreateClientForm({
                           {clientStatus.map((status) => (
                             <SelectItem key={status} value={status}>
                               <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className={statusConfig[status].color}>
+                                <Badge variant="outline" className={statusConfig[status].color}>
                                   {status}
                                 </Badge>
                               </div>
@@ -340,7 +334,7 @@ export function CreateClientForm({
                 </div>
                 <FormControl>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    <CreateContactModal
+                    <ContactModal
                       contacts={contacts}
                       setContacts={setContacts}
                       contactFormSchema={getContactSchema(null)}
@@ -353,7 +347,7 @@ export function CreateClientForm({
                       >
                         <Plus className="text-gray-700" />
                       </Button>
-                    </CreateContactModal>
+                    </ContactModal>
                     {contacts.map((contact, index) => (
                       <Contact
                         key={index}
@@ -437,9 +431,9 @@ export function CreateClientForm({
         onOpenChange={setIsConfirmationModalOpen}
         title="Confirmar registro"
         description="Revise que los datos sean correctos y confirme el registro."
-        className="md:max-w-[700px]"
+        className="md:max-w-fit"
       >
-        <CreateConfirmationModal
+        <CreateClientConfirmationModal
           handleSubmit={handleFinalSubmit}
           contacts={contacts}
           form={form}

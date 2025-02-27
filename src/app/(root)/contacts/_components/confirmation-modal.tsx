@@ -27,12 +27,13 @@ import {
 import { ContactWithRelations } from "@/db/schema";
 import {
   getContact,
-  getContactsByClient,
-  getContactsWithoutClient,
+  getActiveContactsByClientId,
+  getActiveIndividualContacts,
+  getIndividualContacts,
 } from "@/actions/contacts-actions";
 import { toast } from "sonner";
 import { ContactPerDomain } from "../../../../../types/contact-types";
-import { CreateContactModal } from "./create-contact-modal";
+// import { ContactModal } from "./create-contact-modal";
 
 type ConfirmationModalProps = {
   isOpen: boolean;
@@ -92,8 +93,8 @@ export function ConfirmationModal({
       const contactsByDomain = await Promise.all(
         domains.map(async (domain) => {
           const contacts = domain.clientId
-            ? await getContactsByClient(domain.clientId)
-            : await getContactsWithoutClient();
+            ? (await getActiveContactsByClientId(domain.clientId)).map(contact => ({ ...contact, client: domain.client }))
+            : (await getActiveIndividualContacts()).map(contact => ({ ...contact, client: null }));
           return { domainId: domain.id, contacts };
         }),
       );
@@ -145,53 +146,53 @@ export function ConfirmationModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
+            <DialogTitle className="font-bold text-xl">
               Información del Contacto
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Card>
               <CardContent className="pt-6">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                      <User className="h-4 w-4 text-primary" />
+                    <div className="flex justify-center items-center bg-primary/10 rounded-lg w-8 h-8">
+                      <User className="w-4 h-4 text-primary" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Nombre</p>
-                      <p className="text-sm font-medium leading-none">
+                      <p className="text-muted-foreground text-sm">Nombre</p>
+                      <p className="font-medium text-sm leading-none">
                         {updatedContact?.name}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                      <Phone className="h-4 w-4 text-primary" />
+                    <div className="flex justify-center items-center bg-primary/10 rounded-lg w-8 h-8">
+                      <Phone className="w-4 h-4 text-primary" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Teléfono</p>
-                      <p className="text-sm font-medium leading-none">
+                      <p className="text-muted-foreground text-sm">Teléfono</p>
+                      <p className="font-medium text-sm leading-none">
                         {updatedContact?.phone}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                      <Mail className="h-4 w-4 text-primary" />
+                    <div className="flex justify-center items-center bg-primary/10 rounded-lg w-8 h-8">
+                      <Mail className="w-4 h-4 text-primary" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="text-sm font-medium leading-none">
+                      <p className="text-muted-foreground text-sm">Email</p>
+                      <p className="font-medium text-sm leading-none">
                         {updatedContact?.email}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                      <Activity className="h-4 w-4 text-primary" />
+                    <div className="flex justify-center items-center bg-primary/10 rounded-lg w-8 h-8">
+                      <Activity className="w-4 h-4 text-primary" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Estado</p>
+                      <p className="text-muted-foreground text-sm">Estado</p>
                       <p
                         className={`text-sm font-medium leading-none ${
                           updatedContact?.status === "Inactivo"
@@ -204,12 +205,12 @@ export function ConfirmationModal({
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                      <CheckCircle className="h-4 w-4 text-primary" />
+                    <div className="flex justify-center items-center bg-primary/10 rounded-lg w-8 h-8">
+                      <CheckCircle className="w-4 h-4 text-primary" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Tipo</p>
-                      <p className="text-sm font-medium leading-none">
+                      <p className="text-muted-foreground text-sm">Tipo</p>
+                      <p className="font-medium text-sm leading-none">
                         {updatedContact?.type === "Técnico"
                           ? "Técnico"
                           : updatedContact?.type}
@@ -217,12 +218,12 @@ export function ConfirmationModal({
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                      <CheckCircle className="h-4 w-4 text-primary" />
+                    <div className="flex justify-center items-center bg-primary/10 rounded-lg w-8 h-8">
+                      <CheckCircle className="w-4 h-4 text-primary" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Cliente</p>
-                      <p className="text-sm font-medium leading-none">
+                      <p className="text-muted-foreground text-sm">Cliente</p>
+                      <p className="font-medium text-sm leading-none">
                         {updatedContact?.client?.name}
                       </p>
                     </div>
@@ -237,7 +238,7 @@ export function ConfirmationModal({
                   <CardTitle className="mb-2">Dominios afectados</CardTitle>
                   <CardDescription className="mb-4">
                     Los siguientes dominios se verán afectados por la baja del
-                    dominio, deberá seleccionar un nuevo contacto(del cliente
+                    contacto, deberá seleccionar un nuevo contacto (del cliente
                     del dominio o individual) para cada uno.
                   </CardDescription>
                   {domains.length > 0 ? (
@@ -245,9 +246,9 @@ export function ConfirmationModal({
                       {domains.map((domain, index) => (
                         <li
                           key={index}
-                          className="flex items-center justify-between gap-4"
+                          className="flex justify-between items-center gap-4"
                         >
-                          <span className="text-sm font-medium">
+                          <span className="font-medium text-sm">
                             {domain.name}
                           </span>
                           <div className="flex items-center gap-2">
@@ -264,7 +265,7 @@ export function ConfirmationModal({
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectGroup>
-                                  <div className="px-2 text-sm font-semibold text-gray-500">
+                                  <div className="px-2 font-semibold text-gray-500 text-sm">
                                     Contactos de {domain.client?.name}
                                   </div>
                                   {contactsByDomain[domain.id]
@@ -280,9 +281,9 @@ export function ConfirmationModal({
                                       </SelectItem>
                                     ))}
                                 </SelectGroup>
-                                <div className="my-2 border-t border-gray-200" />
+                                <div className="my-2 border-gray-200 border-t" />
                                 <SelectGroup>
-                                  <div className="px-2 text-sm font-semibold text-gray-500">
+                                  <div className="px-2 font-semibold text-gray-500 text-sm">
                                     Contactos individuales
                                   </div>
                                   {contactsByDomain[domain.id]
@@ -313,9 +314,9 @@ export function ConfirmationModal({
                       ))}
                     </ul>
                   ) : (
-                    <div className="flex items-center justify-center">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex justify-center items-center">
+                      <div className="flex flex-col justify-center items-center gap-2">
+                        <p className="text-muted-foreground text-sm">
                           No hay dominios asociados a este contacto.
                         </p>
                       </div>
@@ -336,18 +337,18 @@ export function ConfirmationModal({
                       {domains.map((domain, index) => (
                         <li
                           key={index}
-                          className="flex items-center justify-between gap-4"
+                          className="flex justify-between items-center gap-4"
                         >
-                          <span className="text-sm font-medium">
+                          <span className="font-medium text-sm">
                             {domain.name}
                           </span>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <div className="flex items-center justify-center">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex justify-center items-center">
+                      <div className="flex flex-col justify-center items-center gap-2">
+                        <p className="text-muted-foreground text-sm">
                           No hay dominios asociados a este contacto.
                         </p>
                       </div>
@@ -376,7 +377,7 @@ export function ConfirmationModal({
               <DialogTitle>Crear Nuevo Contacto</DialogTitle>
             </DialogHeader>
 
-            <CreateContactModal from="contacts" />
+            {/* <ContactModal from="contacts" /> */}
           </DialogContent>
         </Dialog>
       )}

@@ -5,50 +5,20 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { useEffect, useState } from "react"
-import { getUsers } from "@/actions/user-action/user-actions"
-import { auditActions, auditEntities } from "../../clients/data/data"
+import { useEffect} from "react"
 import { CommandShortcut } from "@/components/ui/command"
+import { auditActions, auditEntities } from "@/constants"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
-}
-
-type Options = {
-  label: string
-  value: string
-  icon?: React.ComponentType<{ className?: string }>
+  filterUsers?: Array<string> // Los usuarios para realizar el filtrado
 }
 
 export function DataTableToolbar<TData>({
   table,
+  filterUsers
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
-  const [users, setUsers] = useState<Options[]>([]);
-
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const newUsers: Options[] = []
-        const users = await getUsers()
-        users.map((user) => {
-          const newUser: Options = {
-            label: user.name,
-            value: user.name
-          }
-          newUsers.push(newUser)
-        })
-        newUsers.push({
-          label: 'Sin usuario',
-          value: 'Sin usuario'
-        })
-        setUsers(newUsers)
-      } catch (error) {
-        console.error("Error al obtener los usuarios:", error)
-      }
-    }
-    fetchUsers()
-  }, [])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -73,7 +43,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("entity")?.setFilterValue(event.target.value)
             }
-            className="w-[150px] lg:w-[250px] h-8"
+            className="h-8"
           />
           <div className="right-2 -bottom-[7px] absolute text-gray-400 -translate-y-1/2">
             <CommandShortcut>⌘F</CommandShortcut>
@@ -97,7 +67,7 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("user")}
             title="Usuario"
-            options={users}
+            options={filterUsers ?? []}
           />
         )}
         {isFiltered && (

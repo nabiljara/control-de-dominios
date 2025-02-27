@@ -6,20 +6,20 @@ import {
   CardTitle
 } from "@/components/ui/card"
 import {Contact2 } from "lucide-react"
-import { CreateContactModal } from "@/components/create-contact-modal"
+import { ContactModal } from "@/components/contact-modal"
 import { Contact } from '@/db/schema'
 import { Button } from "@/components/ui/button"
 import Plus from "@/components/plus"
 import { DataTable } from "@/components/data-table"
-import { columns } from './columns'
-import { DataTableToolbar } from "./data-table-toolbar"
+import { columns } from './client-contacts-columns'
+import { DataTableToolbar } from "./client-contacts-data-table-toolbar"
 
 interface ContactsTableProps {
   contacts: Contact[]
   client: { id: number; name: string; }
 }
 
-export default function ContactsTable({ contacts, client }: ContactsTableProps) {
+export function ClientContactsTable({ contacts, client }: ContactsTableProps) {
 
   return (
     <Card>
@@ -37,7 +37,7 @@ export default function ContactsTable({ contacts, client }: ContactsTableProps) 
             </CardDescription>
           </div>
 
-          <CreateContactModal
+          <ContactModal
             client={client}
             pathToRevalidate={`/clients/${client.id}`}
           >
@@ -51,7 +51,7 @@ export default function ContactsTable({ contacts, client }: ContactsTableProps) 
               </div>
               Nuevo contacto
             </Button>
-          </CreateContactModal>
+          </ContactModal>
 
         </div>
       </CardHeader>

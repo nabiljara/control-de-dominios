@@ -1,7 +1,7 @@
 "use server"
 import db from "@/db";
-import { contacts, Contact, ContactWithRelations, ContactInsert } from "@/db/schema";
-import { desc, eq, or, isNull, and } from "drizzle-orm";
+import { contacts, Contact, ContactWithRelations, ContactInsert, domains } from "@/db/schema";
+import { desc, eq, or, isNull, and, sql } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -13,41 +13,6 @@ export async function getContacts() {
             orderBy: [desc(contacts.id)],
             with: {
                 client: true
-            }
-        });
-        return data;
-    }
-    catch (error) {
-        console.error("Error al obtener los contactos:", error);
-        throw error;
-    }
-};
-export async function getContactsByClient(idClient: number) {
-    try {
-        const data = await db.query.contacts.findMany({
-            where: or(eq(contacts.clientId, idClient), isNull(contacts.clientId)),
-            orderBy: [desc(contacts.id)],
-            with: {
-                client: true,
-                domains: true,
-            }
-        });
-        return data;
-    }
-    catch (error) {
-        console.error("Error al obtener los contactos:", error);
-        throw error;
-    }
-};
-
-export async function getContactsWithoutClient() {
-    try {
-        const data = await db.query.contacts.findMany({
-            where: isNull(contacts.clientId),
-            orderBy: [desc(contacts.id)],
-            with: {
-                client: true,
-                domains: true,
             }
         });
         return data;
@@ -86,33 +51,38 @@ export async function createContact(contact: ContactFormValues, pathToRevalidate
     }
 }
 
-export async function updateContact(contact: Omit<ContactWithRelations, "domains">) {
+export async function updateContact(contact: ContactFormValues, pathToRevalidate: string | undefined) {
+    let success = false
     try {
         if (!contact.id) {
             throw new Error("El ID del contacto no está definido.");
         }
-        const actualContact = await getContact(contact.id);
-        if (actualContact?.email != contact.email) {
-            const existingEmail = await validateEmail(contact.email);
-            if (!existingEmail) {
-                throw new Error("El email ya esta registrado en el sistema.");
-            }
+        const parsed = await contactFormSchema.parseAsync(contact);
+        if (!parsed) {
+            throw new Error("Error de validación del formulario de contacto.");
         }
-        if (actualContact?.phone != contact.phone) {
-            const existingPhone = await validatePhone(contact.phone?.toString());
-            if (!existingPhone) {
-                throw new Error("El teléfono ya esta registrado en el sistema.");
-            }
-        }
+
         await setUserId()
-        const updatedContact = await db.update(contacts)
-            .set({ name: contact.name, email: contact.email, phone: contact.phone, type: contact.type, status: contact.status, clientId: contact.clientId, updatedAt: new Date().toISOString() })
-            .where(eq(contacts.id, contact.id)).returning({ id: contacts.id });
-        return updatedContact[0];
+        await db
+            .update(contacts)
+            .set({
+                name: parsed.name,
+                email: parsed.email,
+                phone: contact.phone,
+                type: contact.type,
+                status: contact.status,
+                clientId: contact.clientId ? contact.clientId : null ,
+                updatedAt: sql`NOW()`
+            })
+            .where(eq(contacts.id, contact.id))
+        success = true
     }
     catch (error) {
         console.error("Error al modificar el contacto:", error);
         throw error;
+    }
+    if (success && pathToRevalidate) {
+        revalidatePath(`${pathToRevalidate}`, "page");
     }
 };
 
@@ -122,7 +92,15 @@ export async function getContact(id: number) {
             where: eq(contacts.id, id),
             with: {
                 client: true,
-                domains: true,
+                domains: {
+                    where: eq(domains.status, 'Activo'),
+                    with: {
+                        client: { with: { contacts: {
+                            where: eq(contacts.status, 'Activo')
+                        } } },
+                        contact: true
+                    }
+                },
             }
         });
         return data;
@@ -148,6 +126,20 @@ export async function getContactsByClientId(id: number) {
     }
 };
 
+export async function getActiveContactsByClientId(id: number) {
+    try {
+        const data = await db.query.contacts.findMany({
+            where: and(eq(contacts.clientId, id), eq(contacts.status, 'Activo')),
+            orderBy: [desc(contacts.id)],
+        });
+        return data;
+    }
+    catch (error) {
+        console.error("Error al obtener los contactos del cliente:", error);
+        throw error;
+    }
+};
+
 export async function getIndividualContacts() {
     try {
         const data = await db.query.contacts.findMany({
@@ -158,6 +150,20 @@ export async function getIndividualContacts() {
     }
     catch (error) {
         console.error("Error al obtener los contactos individuales:", error);
+        throw error;
+    }
+};
+
+export async function getActiveIndividualContacts() {
+    try {
+        const data = await db.query.contacts.findMany({
+            where: and(isNull(contacts.clientId), eq(contacts.status, 'Activo')),
+            orderBy: [desc(contacts.id)],
+        });
+        return data;
+    }
+    catch (error) {
+        console.error("Error al obtener los contactos individuales activos:", error);
         throw error;
     }
 };
@@ -188,26 +194,26 @@ async function validateEmail(email: string) {
     }
 }
 
-export const validateContact = async (phone: string | undefined, email: string, oldPhone:string | undefined, oldEmail: string | undefined) => {
-  try {
-    const errorList: { field: "phone" | "email"; message: string }[] = [];
-    const phoneIsValid = await validatePhone(phone);
-    if (!phoneIsValid && phone !== oldPhone) {
-      errorList.push({
-        field: "phone",
-        message: "El teléfono ya está registrado en el sistema.",
-      });
+export const validateContact = async (phone: string | undefined, email: string, oldPhone: string | undefined, oldEmail: string | undefined) => {
+    try {
+        const errorList: { field: "phone" | "email"; message: string }[] = [];
+        const phoneIsValid = await validatePhone(phone);
+        if (!phoneIsValid && phone !== oldPhone) {
+            errorList.push({
+                field: "phone",
+                message: "El teléfono ya está registrado en el sistema.",
+            });
+        }
+        const emailIsValid = await validateEmail(email);
+        if (!emailIsValid && email !== oldEmail) {
+            errorList.push({
+                field: "email",
+                message: "El correo ya está registrado en el sistema.",
+            });
+        }
+        return errorList;
+    } catch (error) {
+        console.error("Error al validar el contacto: ", error)
+        throw error;
     }
-    const emailIsValid = await validateEmail(email);
-    if (!emailIsValid && email !== oldEmail) {
-      errorList.push({
-        field: "email",
-        message: "El correo ya está registrado en el sistema.",
-      });
-    }
-    return errorList;
-  } catch (error) {
-    console.error("Error al validar el contacto: ", error)
-    throw error;
-  }
 }

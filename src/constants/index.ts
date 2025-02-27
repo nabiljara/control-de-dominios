@@ -12,7 +12,6 @@ import {
   XCircle,
   AlertTriangle,
   Ban,
-  PauseCircle,
   Slash,
   LucidePauseCircle
 } from "lucide-react"
@@ -72,41 +71,41 @@ export const entityMap = {
 };
 
 export const statusConfig = {
-  Activo: { 
-    color: "bg-green-100 text-green-800 hover:bg-green-100/80", 
+  Activo: {
+    color: "bg-green-100 text-green-800 hover:bg-green-100/80",
     icon: CheckCircle
   },
-  Vencido: { 
-    color: "bg-red-100 text-red-800 hover:bg-red-100/80", 
+  Vencido: {
+    color: "bg-red-100 text-red-800 hover:bg-red-100/80",
     icon: XCircle
   },
-  "Dejar vencer": { 
-    color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80", 
+  "Dejar vencer": {
+    color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80",
     icon: AlertTriangle
   },
-  "Baja permanente": { 
-    color: "bg-gray-100 text-gray-800 hover:bg-gray-100/80", 
+  "Baja permanente": {
+    color: "bg-gray-100 text-gray-800 hover:bg-gray-100/80",
     icon: Ban
   },
-  Inactivo: { 
-    color: "bg-gray-100 text-gray-800 hover:bg-gray-100/80", 
+  Inactivo: {
+    color: "bg-gray-100 text-gray-800 hover:bg-gray-100/80",
     icon: LucidePauseCircle
   },
-  Suspendido: { 
-    color: "bg-red-100 text-red-800 hover:bg-red-100/80", 
+  Suspendido: {
+    color: "bg-red-100 text-red-800 hover:bg-red-100/80",
     icon: Slash
   },
 } as const;
 
 export const sizeConfig = {
   Chico: { color: "bg-blue-100 text-blue-800 hover:bg-blue-100/80", icon: User },
-  Mediano: { color: "bg-orange-100 text-orange-800 hover:bg-orange-100/80" , icon: Users},
-  Grande: { color: "bg-purple-100 text-purple-800 hover:bg-purple-100/80" , icon: Building},
+  Mediano: { color: "bg-orange-100 text-orange-800 hover:bg-orange-100/80", icon: Users },
+  Grande: { color: "bg-purple-100 text-purple-800 hover:bg-purple-100/80", icon: Building },
 } as const;
 
 
 export const domainStatus = ["Activo", "Vencido", "Dejar vencer", "Baja permanente"] as const
-export const clientSize = ["Chico", "Mediano", "Grande"] as const
+export const clientSizes = ["Chico", "Mediano", "Grande"] as const
 export const clientStatus = ["Activo", "Inactivo", "Suspendido"] as const
 export const contactTypes = [
   "Administrativo",
@@ -136,3 +135,15 @@ export const contactTypes = [
   "Ventas",
 ] as const;
 export const contactStatus = ["Activo", "Inactivo"] as const
+
+export const auditActions = ["Agregar", "Actualizar", "Eliminar"]
+
+export const auditEntities = [
+  "Dominios",
+  "Clientes",
+  "Contactos",
+  "Accesos",
+  "Proveedores",
+  "Localidades",
+  "Usuarios"
+];

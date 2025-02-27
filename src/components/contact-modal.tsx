@@ -12,15 +12,16 @@ import 'react-phone-input-2/lib/high-res.css';
 import { contactFormSchema as defaultContactFormSchema, ContactFormValues } from '@/validators/client-validator'
 import { Badge } from '@/components/ui/badge'
 import { contactStatus, contactTypes, statusConfig } from '@/constants'
-import { Client, Contact } from '@/db/schema'
+import { Client, Contact, ContactWithRelations } from '@/db/schema'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import { NewContactConfirmationModal } from '@/app/(root)/domains/create/_components/new-contact-confirmation-modal'
-import { createContact, validateContact } from '@/actions/contacts-actions'
+import { createContact, updateContact, validateContact } from '@/actions/contacts-actions'
 import { toast } from 'sonner'
 import { Contact2, Loader2 } from "lucide-react";
+import { EditContactConfirmationModal } from "./edit-contact-confirmation-modal";
 
 
-export function CreateContactModal({
+export function ContactModal({
   contactFormSchema,
   contacts,
   setContacts,
@@ -32,7 +33,9 @@ export function CreateContactModal({
   command,
   contact,
   isOpen,
-  setIsOpen
+  setIsOpen,
+  individualContacts,
+  kernelContacts
 }: {
   contactFormSchema?: z.Schema;
   contacts?: ContactFormValues[]; //Indica que trata al registro como un contacto temporal
@@ -43,11 +46,13 @@ export function CreateContactModal({
   notification?: React.Dispatch<React.SetStateAction<boolean>>;
   pathToRevalidate?: string;
   command?: boolean
-  contact?: Contact
+  contact?: ContactWithRelations
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>; //Permite controlar el estado de abierto y cerrado desde afuera
-  isOpen?: boolean
+  isOpen?: boolean;
+  individualContacts?: Contact[]
+  kernelContacts?: Contact[]
 }) {
-  const [isCreateContactModalOpen, setIsCreateContactModalOpen] = useState(isOpen ?? false)
+  const [isContactModalOpen, setIsContactModalOpen] = useState(isOpen ?? false)
   const [isNewContactConfirmationModalOpen, setIsNewContactConfirmationModalOpen] = useState(false)
   const [isEditContactConfirmationModalOpen, setIsEditContactConfirmationModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -56,6 +61,7 @@ export function CreateContactModal({
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema ?? defaultContactFormSchema),
     defaultValues: {
+      id: contact ? contact.id : undefined,
       clientId: client ? client.id : undefined,
       name: contact ? contact.name : '',
       email: contact ? contact.email : '',
@@ -70,7 +76,6 @@ export function CreateContactModal({
     if (setContacts) {
       setContacts([...(contacts ?? []), contact])
     }
-    setIsCreateContactModalOpen(false)
     form.reset({
       clientId: client ? client.id : undefined,
       name: '',
@@ -108,8 +113,8 @@ export function CreateContactModal({
           setIsEditContactConfirmationModalOpen(true);
         } else {
           setIsNewContactConfirmationModalOpen(true);
-          setIsCreateContactModalOpen(false)
         }
+        setIsContactModalOpen(false)
       }
       setIsSubmitting(false)
     } catch (error) {
@@ -129,7 +134,7 @@ export function CreateContactModal({
             notification(true);
           }
           setIsNewContactConfirmationModalOpen(false)
-          setIsCreateContactModalOpen(false)
+          setIsContactModalOpen(false)
           setSelectedClientName('')
           form.reset({
             clientId: client ? client.id : undefined,
@@ -142,7 +147,7 @@ export function CreateContactModal({
         } catch (error) {
           console.error(error)
           reject(error)
-          setIsCreateContactModalOpen(true)
+          setIsContactModalOpen(true)
           setIsNewContactConfirmationModalOpen(false);
         } finally {
           setIsSubmitting(false)
@@ -156,12 +161,42 @@ export function CreateContactModal({
     )
   }
 
+  const handleEditDBContactSubmit = () => { //submit para editar el contacto en la base de datos
+    setIsSubmitting(true)
+    toast.promise(
+      new Promise<void>(async (resolve, reject) => {
+        try {
+          await updateContact(form.getValues(), pathToRevalidate)
+          resolve();
+          setIsContactModalOpen(false)
+          setIsEditContactConfirmationModalOpen(false)
+          setSelectedClientName('')
+          if (setIsOpen) {
+            setIsOpen(false)
+          }
+        } catch (error) {
+          console.error(error)
+          reject(error)
+          setIsContactModalOpen(true)
+          setIsEditContactConfirmationModalOpen(false)
+        } finally {
+          setIsSubmitting(false)
+        }
+      }),
+      {
+        loading: "Editando contacto...",
+        success: "Contacto editado satisfactoriamente",
+        error: "No se pudo editar el contacto correctamente."
+      }
+    )
+  }
+
   useEffect(() => {
     if (command) {
       const down = (e: KeyboardEvent) => {
         if (e.key === "n" && (e.metaKey || e.altKey)) {
           e.preventDefault()
-          setIsCreateContactModalOpen((open) => !open)
+          setIsContactModalOpen((open) => !open)
         }
       }
       document.addEventListener("keydown", down)
@@ -169,19 +204,21 @@ export function CreateContactModal({
     }
   }, [command])
 
+  const isDirty = Object.keys(form.formState.dirtyFields).length !== 0
+
   return (
     <>
-      {children && cloneElement(children, { onClick: () => setIsCreateContactModalOpen(true) })}
+      {children && cloneElement(children, { onClick: () => setIsContactModalOpen(true) })}
       <ResponsiveDialog
-        open={isCreateContactModalOpen}
+        open={isContactModalOpen}
         onOpenChange={() => {
-          setIsCreateContactModalOpen(false)
+          setIsContactModalOpen(false)
           if (setIsOpen) {
             setIsOpen(false)
           }
         }}
-        title="Agregar nuevo contacto."
-        description="Agregue los datos correspondientes al contacto."
+        title={contact ? "Editar contacto." : 'Agregar nuevo contacto.'}
+        description={contact ? "Editar los datos correspondientes del contacto." : 'Agregue los datos correspondientes al contacto.'}
       >
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -324,7 +361,7 @@ export function CreateContactModal({
                       {contactStatus.map((status) => (
                         <SelectItem key={status} value={status}>
                           <div className="flex items-center gap-2">
-                            <Badge className={statusConfig[status].color}>
+                            <Badge variant='outline' className={statusConfig[status].color}>
                               {status}
                             </Badge>
                           </div>
@@ -345,12 +382,13 @@ export function CreateContactModal({
                     <FormLabel>Cliente</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        field.onChange(parseInt(value))
+                        field.onChange(parseInt(value) !== 0 ? parseInt(value) : undefined)
                         const clientName = clients.find((client) => client.id === parseInt(value))?.name;
                         if (clientName) {
                           setSelectedClientName(clientName);
+                        }else{
+                          setSelectedClientName('Sin cliente');
                         }
-
                       }}
                       name="clientId"
                       defaultValue={field.value ? field.value.toString() : ""}
@@ -361,6 +399,11 @@ export function CreateContactModal({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem
+                          value={"0"}
+                        >
+                          Sin cliente
+                        </SelectItem>
                         {clients.map((client) => (
                           <SelectItem
                             key={client.id}
@@ -375,35 +418,70 @@ export function CreateContactModal({
                   </FormItem>
                 )}
               />}
-            <div className='flex gap-2'>
-              <Button
-                type="button"
-                variant='destructive'
-                onClick={() => {
-                  setIsCreateContactModalOpen(false)
-                  if (setIsOpen) {
-                    setIsOpen(false)
-                  }
-                }}
-                disabled={isSubmitting}
-                className='w-full'
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isSubmitting} className='w-full'>
-                {isSubmitting ? (
-                  <div className="flex items-center gap-1">
-                    <Loader2 className="animate-spin" />
-                    Agregando contacto
-                  </div>
-                ) : (
-                  <>
-                    <Contact2 className="w-5 h-5" />
-                    Agregar contacto
-                  </>
-                )}
-              </Button>
-            </div>
+            {
+              isDirty && contact ? (
+                <div className='flex gap-2'>
+                  <Button
+                    type="button"
+                    variant='destructive'
+                    onClick={() => {
+                      setIsContactModalOpen(false)
+                      if (setIsOpen) {
+                        setIsOpen(false)
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    className='w-full'
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className='w-full'>
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-1">
+                        <Loader2 className="animate-spin" />
+                        Editando contacto
+                      </div>
+                    ) : (
+                      <>
+                        <Contact2 className="w-5 h-5" />
+                        Editar contacto
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : !contact && (
+                <div className='flex gap-2'>
+                  <Button
+                    type="button"
+                    variant='destructive'
+                    onClick={() => {
+                      setIsContactModalOpen(false)
+                      if (setIsOpen) {
+                        setIsOpen(false)
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    className='w-full'
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className='w-full'>
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-1">
+                        <Loader2 className="animate-spin" />
+                        Agregando contacto
+                      </div>
+                    ) : (
+                      <>
+                        <Contact2 className="w-5 h-5" />
+                        Agregar contacto
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )
+            }
+
           </form>
         </Form>
       </ResponsiveDialog>
@@ -417,7 +495,7 @@ export function CreateContactModal({
         className="sm:max-w-[420px]"
       >
         <NewContactConfirmationModal
-          setIsCreateContactModalOpen={setIsCreateContactModalOpen}
+          setIsContactModalOpen={setIsContactModalOpen}
           setIsConfirmationModalOpen={setIsNewContactConfirmationModalOpen}
           contact={form.getValues()}
           handleSubmit={contacts ? addContact : handleNewDBContactSubmit} //Envía una función u otra dependiendo si es temporal o no
@@ -429,18 +507,27 @@ export function CreateContactModal({
       {/* EDICIÓN DE CONTACTO */}
       <ResponsiveDialog
         open={isEditContactConfirmationModalOpen}
-        onOpenChange={() => setIsEditContactConfirmationModalOpen(false)}
+        onOpenChange={
+          () => {
+            setIsEditContactConfirmationModalOpen(false)
+            setIsContactModalOpen(true)
+          }
+        }
         title="Confirmar la edición del contacto"
         description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[420px]"
+        className="sm:max-w-fit"
       >
-        <NewContactConfirmationModal
-          setIsCreateContactModalOpen={setIsCreateContactModalOpen}
-          setIsConfirmationModalOpen={setIsNewContactConfirmationModalOpen}
-          contact={form.getValues()}
-          handleSubmit={contacts ? addContact : handleNewDBContactSubmit} //Envía una función u otra dependiendo si es temporal o no
+        <EditContactConfirmationModal
+          setIsContactModalOpen={setIsContactModalOpen}
+          form={form}
+          setIsEditConfirmationModalOpen={setIsEditContactConfirmationModalOpen}
+          oldContact={contact ? contact : undefined}
+          handleSubmit={handleEditDBContactSubmit}
           isSubmitting={isSubmitting}
           client={selectedClientName ? selectedClientName : client?.name}
+          kernelContacts={kernelContacts}
+          individualContacts={individualContacts}
+          clients={clients}
         />
       </ResponsiveDialog>
     </>

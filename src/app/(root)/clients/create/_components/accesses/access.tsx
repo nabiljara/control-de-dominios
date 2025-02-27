@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 import { AccessFormValues } from '@/validators/client-validator';
-import { Box, SquarePen, StickyNote, Trash2, User } from 'lucide-react';
+import { AtSign, Box, SquarePen, StickyNote, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { EditAccessForm } from '@/app/(root)/clients/create/_components/accesses/edit-access-form';
 import { DeleteForm } from '@/app/(root)/clients/create/_components/delete-form';
@@ -62,7 +62,7 @@ export function Access({
       </ResponsiveDialog>
       <Card className="relative flex shadow-sm hover:shadow-md p-4 w-full transition-all duration-200">
         {/* Card Content */}
-        <CardContent className='flex flex-col justify-between items-start gap-2 p-0 h-full'>
+        <CardContent className='flex flex-col items-start gap-3 p-0 h-full'>
           <div className='flex items-center gap-2'>
             <Box className="w-4 h-4" />
             <h2 className="font-bold text-md">
@@ -70,7 +70,7 @@ export function Access({
             </h2>
           </div>
           <div className='flex items-center gap-2'>
-            <User className="w-4 h-4" />
+            <AtSign className="w-4 h-4" />
             <span className="text-neutral-500 text-sm">
               {access.username}
             </span>

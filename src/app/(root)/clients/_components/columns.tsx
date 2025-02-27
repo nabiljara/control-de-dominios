@@ -1,14 +1,12 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-
-import { clientSizes } from "@/app/(root)/clients/data/data"
-
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { Client } from "@/db/schema"
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { clientStatus, sizeConfig, statusConfig } from "@/constants"
+import { clientSizes, clientStatus, sizeConfig, statusConfig } from "@/constants"
+import { BarChart2, CalendarArrowUpIcon, CheckCircle, CircleCheckBig, Handshake, MapPin } from "lucide-react"
 
 export const columns: ColumnDef<Client>[] = [
   {
@@ -23,7 +21,7 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
+      <DataTableColumnHeader column={column} title="Nombre" icon={<Handshake />} />
     ),
     cell: ({ row }) => <span>{row.getValue("name")}</span>,
     enableSorting: true,
@@ -32,7 +30,7 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "locality",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Localidad" />
+      <DataTableColumnHeader column={column} title="Localidad" icon={<MapPin className="w-4 h-4" />} />
     ),
     cell: ({ row }) => {
       const locality: { id: number; name: string } = row.getValue("locality")
@@ -44,14 +42,14 @@ export const columns: ColumnDef<Client>[] = [
     },
     filterFn: (row, id, value) => {
       const locality: { id: number; name: string } = row.getValue(id)
-      return value.includes(locality.id.toString())
+      return value.includes(locality.name)
     },
     enableSorting: false,
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Estado" />
+      <DataTableColumnHeader column={column} title="Estado" icon={<CheckCircle className="w-4 h-4" />} />
     ),
     cell: ({ row }) => {
       const status = clientStatus.find(
@@ -63,6 +61,7 @@ export const columns: ColumnDef<Client>[] = [
 
       return (
         <Badge
+          variant='outline'
           className={statusConfig[row.getValue("status") as keyof typeof statusConfig].color}
         >
           {status}
@@ -77,10 +76,10 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "size",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Tamaño" />
+      <DataTableColumnHeader column={column} title="Tamaño" icon={<BarChart2 className="w-4 h-4" />} />
     ),
     cell: ({ row }) => {
-      const size = clientSizes.find((size) => size.value === row.getValue("size"))
+      const size = clientSizes.find((size) => size === row.getValue("size"))
 
       if (!size) {
         return null
@@ -89,9 +88,9 @@ export const columns: ColumnDef<Client>[] = [
       return (
         <div className="flex items-center">
           <Badge
-            className={sizeConfig[size.value as keyof typeof sizeConfig].color}
+            className={sizeConfig[size as keyof typeof sizeConfig].color}
           >
-            {size.value}
+            {size}
           </Badge>
         </div>
       )
@@ -104,7 +103,7 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha de registro" />
+      <DataTableColumnHeader column={column} title="Fecha de registro"  icon={<CalendarArrowUpIcon className="w-4 h-4" />}/>
     ),
     cell: ({ row }) => (
       <div>

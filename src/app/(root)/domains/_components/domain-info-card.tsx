@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientHistory, ContactHistory, DomainWithRelations, ProviderHistory } from "@/db/schema";
-import { Box, CalendarDays, Clock, Contact, ExternalLink, ExternalLinkIcon, Eye, Globe, Handshake, History, Mail, Phone, Tag, User } from "lucide-react";
+import { BarChart2, Box, CalendarArrowDown, CalendarDays, CheckCircle, Clock, Contact, ExternalLink, ExternalLinkIcon, Eye, Globe, Handshake, History, KeySquare, Mail, Phone, Tag, User } from "lucide-react";
 import { formatDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -71,7 +71,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
           </Link>
         </CardTitle>
         <div className="flex items-center text-muted-foreground">
-          <CalendarDays className="mr-2" />
+          <CalendarArrowDown className="mr-2" />
           <span>Expira: {formatDate(domain.expirationDate)}</span>
         </div>
         {/* <div className="flex items-center text-muted-foreground">
@@ -79,7 +79,8 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
           <span>Actualizado: {formatDate(domain.updatedAt)}</span>
         </div> */}
         <Badge
-          className={statusConfig[domain.status].color}
+          variant='outline'
+          className={`${statusConfig[domain.status].color} w-min truncate`}
         >
           {domain.status}
         </Badge>
@@ -87,20 +88,22 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
       <CardContent>
         <Separator className="my-6" />
 
-        <div className={`gap-4 grid grid-cols-1 md:${domain.accessData ? 'grid-cols-2' : ''} lg:${domain.accessData ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
+        <div className={`gap-4 grid grid-cols-1 lg:${domain.accessData ? 'grid-cols-2' : ''} xl:${domain.accessData ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
           <Section title="Cliente" icon={<Handshake />} href={`/clients/${domain.clientId}`}>
             <div className="flex flex-col space-y-2">
               <p className="font-medium">{domain.client.name}</p>
-              <span>Tamaño: {' '}
-                <Badge className={sizeConfig[domain.client.size].color}>
+              <div className="flex">
+                <BarChart2 className="mr-2" />
+                <Badge variant='outline' className={sizeConfig[domain.client.size].color}>
                   {domain.client.size}
                 </Badge>
-              </span>
-              <span>Estado: {' '}
-                <Badge className={statusConfig[domain.client.status].color}>
+              </div>
+              <div className="flex gap-2">
+                <CheckCircle />
+                <Badge variant='outline' className={statusConfig[domain.client.status].color}>
                   {domain.client.status}
                 </Badge>
-              </span>
+              </div>
             </div>
           </Section>
 
@@ -121,7 +124,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
               </p>
               <div className='flex items-center gap-2'>
                 <Tag />
-                <Badge className="bg-gray-100 hover:bg-gray-300 text-black">
+                <Badge variant='outline'>
                   {domain.contact.type}
                 </Badge>
               </div>
@@ -139,18 +142,19 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
           </Section>
 
           {domain.accessData && (
-            <Section title="Acceso" icon={<Key className="mr-2" />}>
+            <Section title="Acceso" icon={<KeySquare className="mr-2" />}>
               <div className="space-y-2">
                 <div className="flex items-center">
-                  <User className="mr-2" />
+                  <User className="mr-2 shrink-0" />
                   <UsernameCopy username={domain.accessData.access.username} />
                 </div>
                 <div className="flex items-center">
+                  <KeySquare className="mr-2 shrink-0" />
                   <PasswordCell password={domain.accessData.access.password} />
                 </div>
                 {domain.accessData.access.notes &&
                   <p className="flex items-center">
-                    <FileText className="mr-2" />
+                    <FileText className="mr-2 shrink-0" />
                     <span>Notas: {domain.accessData.access.notes}</span>
                   </p>
                 }
@@ -205,6 +209,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
                       <TableCell>{item.data?.size}</TableCell>
                       <TableCell>
                         <Badge
+                          variant='outline'
                           className={statusConfig[item.active ? 'Activo' : 'Inactivo'].color}
                         >
                           {item.active ? 'Activo' : 'Inactivo'}
@@ -244,6 +249,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
                       <TableCell>{item.data?.type}</TableCell>
                       <TableCell>
                         <Badge
+                          variant='outline'
                           className={statusConfig[item.active ? 'Activo' : 'Inactivo'].color}
                         >
                           {item.active ? 'Activo' : 'Inactivo'}
@@ -279,6 +285,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
                       <TableCell>{item.data?.url}</TableCell>
                       <TableCell>
                         <Badge
+                          variant='outline'
                           className={statusConfig[item.active ? 'Activo' : 'Inactivo'].color}
                         >
                           {item.active ? 'Activo' : 'Inactivo'}

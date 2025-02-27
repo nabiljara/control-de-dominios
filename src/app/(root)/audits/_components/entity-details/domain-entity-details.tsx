@@ -39,7 +39,7 @@ export function DomainEntityDetails(audit: AuditWithRelations) {
       value: audit.entityDetails && 'provider' in audit.entityDetails ? (audit.entityDetails.provider as { name: string }).name : ""
     }
   ]
-  
+
   return (
     <Link href={`/domains/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="w-fit">
       <Card className="flex flex-col gap-2 hover:shadow-md transition-all duration-200">
@@ -50,7 +50,10 @@ export function DomainEntityDetails(audit: AuditWithRelations) {
               {audit.entityDetails && 'name' in audit.entityDetails ? audit.entityDetails.name : ""}
             </span>
             {audit.entityDetails && 'status' in audit.entityDetails && (
-              <Badge className={statusConfig[audit.entityDetails.status].color}>
+              <Badge
+                variant='outline'
+                className={`${statusConfig[audit.entityDetails.status].color}`}
+              >
                 {audit.entityDetails.status}
               </Badge>
             )}

@@ -20,24 +20,17 @@ async function resetTable(db: DB, table: Table) {
 
 async function main() {
   for (const table of [
-    // schema.clients,
-    // schema.contacts,
     schema.providers,
     schema.localities,
     schema.clients,
-    // schema.domains,
-    // schema.access,
     schema.users,
   ]) {
     await resetTable(db, table);
   }
-  // await seeds.contacts(db);
   await seeds.providers(db);
   await seeds.localities(db);
   await seeds.clients(db);
   await seeds.users(db);
-  // await seeds.domains(db);
-  // await seeds.access(db);
 }
 
 main()

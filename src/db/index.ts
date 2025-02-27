@@ -18,7 +18,7 @@ function getSqlInstance() {
   return sqlInstance;
 }
 
-export const sql = getSqlInstance();
+const sql = getSqlInstance();
 
 // export const sql = postgres(
 //   DATABASE_URL,

@@ -187,7 +187,7 @@ export function EditContactForm({
                   {contactStatus.map((status) => (
                     <SelectItem key={status} value={status}>
                       <div className="flex items-center gap-2">
-                        <Badge className={statusConfig[status].color}>
+                        <Badge variant='outline' className={statusConfig[status].color}>
                           {status}
                         </Badge>
                       </div>

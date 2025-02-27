@@ -64,11 +64,7 @@ export function AccessInfoCard({
         <div className="flex items-center gap-2">
           <KeySquare className="w-4 h-4" />
           <span className="text-neutral-500 text-sm">
-            {showPasswords[index]
-              ? access?.password
-              : "•".repeat(
-                  access?.password.length ? 8 : 0,
-                )}
+            {showPasswords[index] ? access?.password : "•".repeat(8)}
           </span>
           <Button
             onClick={() => toggleShowPassword(index)}

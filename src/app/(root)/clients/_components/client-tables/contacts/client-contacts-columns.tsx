@@ -3,6 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { Contact } from "@/db/schema"
+import { CircleCheckBig, Mail, Phone, Tag, User } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { statusConfig } from "@/constants"
 
 export const columns: ColumnDef<Contact>[] = [
   {
@@ -17,9 +20,9 @@ export const columns: ColumnDef<Contact>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
+      <DataTableColumnHeader column={column} title="Nombre" icon={<User />} />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
+    cell: ({ row }) => <div className="w-fit font-bold truncate">{row.getValue("name")}</div>,
     enableSorting: true,
     enableHiding: true,
     filterFn: (row, id, value) => {
@@ -30,27 +33,33 @@ export const columns: ColumnDef<Contact>[] = [
   {
     accessorKey: "email",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Email" />
+      <DataTableColumnHeader column={column} title="Email" icon={<Mail />} />
     ),
-    cell: ({ row }) => <div>{row.getValue("email")}</div>,
+    cell: ({ row }) => <div className="max-w-fit">{row.getValue("email")}</div>,
     enableSorting: true,
     enableHiding: true
   },
   {
     accessorKey: "phone",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Teléfono" />
+      <DataTableColumnHeader column={column} title="Teléfono" icon={<Phone className="w-4 h-4" />} />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("phone") ? row.getValue("phone"): '-' }</div>,
+    cell: ({ row }) => <div className="w-fit">{row.getValue("phone")}</div>,
     enableSorting: false,
     enableHiding: true
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Estado" />
+      <DataTableColumnHeader column={column} title="Estado" icon={<CircleCheckBig />} />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("status")}</div>,
+    cell: ({ row }) =>
+      <Badge
+        variant='outline'
+        className={statusConfig[row.getValue("status") as keyof typeof statusConfig].color}
+      >
+        {row.getValue("status")}
+      </Badge>,
     enableSorting: true,
     enableHiding: true,
     filterFn: (row, id, value) => {
@@ -60,9 +69,13 @@ export const columns: ColumnDef<Contact>[] = [
   {
     accessorKey: "type",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Tipo" />
+      <DataTableColumnHeader column={column} title="Tipo" icon={<Tag />} />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("type")}</div>,
+    cell: ({ row }) =>
+      <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
+        {row.getValue('type')}
+      </span>
+    ,
     enableSorting: true,
     enableHiding: true,
     filterFn: (row, id, value) => {

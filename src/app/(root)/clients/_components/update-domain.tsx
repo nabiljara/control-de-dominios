@@ -13,20 +13,22 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { ClientWithRelations, Contact } from "@/db/schema"
+import { Client, ClientWithRelations, Contact } from "@/db/schema"
 import {
   clientUpdateFormSchema,
+  ClientUpdateValues,
   domainFormSchema
 } from "@/validators/client-validator"
 import { useEffect, useState } from "react"
-import { getContactsByClient } from "@/actions/contacts-actions"
+// import { getContactsByClient } from "@/actions/contacts-actions"
 import {
   Controller,
   Form,
   FormProvider,
   useFieldArray,
   useForm,
-  useFormContext
+  useFormContext,
+  UseFormReturn
 } from "react-hook-form"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -36,79 +38,81 @@ import {
   FormItem,
   FormLabel
 } from "@/components/ui/form"
+import { domainStatus, statusConfig } from "@/constants"
+import { Badge } from "@/components/ui/badge"
+import { Globe, Mail } from "lucide-react"
+import { getActiveContactsByClientId } from "@/actions/contacts-actions"
 
-interface DomainAccordionProps {
-  client: Omit<ClientWithRelations, "access" | "contacts">
-  clients: Omit<
-    ClientWithRelations,
-    "locality" | "domains" | "access" | "contacts"
-  >[]
+interface UpdateDomainProps {
+  clients: Client[]
   contacts: Contact[]
-  //   onUpdate: (domainId: string, data: Partial<Domain>) => void
+  individualContacts: Contact[]
+  clientId: number
+  form: UseFormReturn<Omit<ClientUpdateValues, "accesses" | "contacts">>
 }
 
-export default function UpdateDomain({
-  client,
+export function UpdateDomain({
   contacts,
-  clients
-  //   onUpdate
-}: DomainAccordionProps) {
-  const domainStatusOptions = domainFormSchema.shape.status.options
-  const [selectedClientId, setSelectedClientId] = useState<number>(client.id)
-  const [contactsClient, setContactsClient] = useState<Contact[]>(contacts)
-  const activeDomains = client.domains.filter(
-    (domain) => domain.status === "Activo"
+  individualContacts,
+  clients,
+  clientId,
+  form
+}: UpdateDomainProps) {
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
+  const [activeClientContacts, setActiveContactsClient] = useState<{ [key: number]: Contact[] }>(
+    { [clientId]: contacts.filter((contact) => contact.status === 'Activo') }
   )
 
-  const { control, register, setValue, formState } =
-    useFormContext<z.infer<typeof clientUpdateFormSchema>>()
+  const { control, setValue, formState } = form
+  const domains = form.getValues('domains')
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "domains"
-  })
-
-  const fetchContacts = async (clientId: number) => {
-    const contactsData = await getContactsByClient(clientId)
-    setContactsClient(contactsData)
+  const fetchActiveClientContacts = async (id: number) => {
+    try {
+      const activeContacts = await getActiveContactsByClientId(id)
+      setActiveContactsClient((prevState) => ({
+        ...prevState,
+        [id]: activeContacts
+      }))
+    } catch (error) {
+      console.error('Error al traer los contactos activos del cliente: ', error)
+    }
   }
 
   useEffect(() => {
-    fetchContacts(selectedClientId)
+    if (selectedClientId !== null) {
+      fetchActiveClientContacts(selectedClientId)
+    }
   }, [selectedClientId])
-
-  // const onSubmit = (data: z.infer<typeof domainArray>) => {
-  //   console.log("Formulario enviado:", data)
-  // }
 
   return (
     <div className="w-full">
-      <Accordion type="single" collapsible className="w-full space-y-2">
-        {fields.map((domain, index) => {
+      <Accordion type="single" collapsible className="space-y-2 w-full">
+        {domains && domains.map((domain, index) => {
           const hasError = formState.errors.domains?.[index]
           return (
             <AccordionItem
               key={domain.id}
-              value={domain.id}
-              className={`mx-2 rounded-lg border px-2 ${hasError ? "border-red-500" : "border-gray-300"}`}
+              value={domain.id?.toString() || ''}
+              className={`rounded-lg border px-2 ${hasError ? "border-red-500" : "border-gray-300"}`}
             >
               <AccordionTrigger className="hover:no-underline">
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-md font-medium">{domain.name}</span>
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs ${
-                      domain.status === "Activo"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
+                <div className="flex justify-between items-center gap-4 w-full">
+                  <div className="flex items-center space-x-2">
+                    <Globe className="w-4 h-4" />
+                    <span className="font-normal text-sm">{domain.name}</span>
+                  </div>
+                  <Badge
+                    variant='outline'
+                    className={statusConfig[domain.status].color}
                   >
                     {domain.status}
-                  </span>
+                  </Badge>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="space-y-2 px-4">
-                <div className="-mx-4 mb-4 border-t border-gray-200" />
-                <div className="grid gap-4">
+                <div className="-mx-4 mb-4 border-gray-200 border-t" />
+                <div className="gap-4 grid">
+                  {/* ESTADO */}
                   <Controller
                     control={control}
                     name={`domains.${index}.status`}
@@ -116,7 +120,10 @@ export default function UpdateDomain({
                       <FormItem>
                         <FormLabel>Estado</FormLabel>
                         <Select
-                          onValueChange={(value) => field.onChange(value)}
+                          onValueChange={(value) => {
+                            field.onChange(value)
+                            form.trigger()
+                          }}
                           value={field.value}
                         >
                           <FormControl>
@@ -125,13 +132,14 @@ export default function UpdateDomain({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {domainStatusOptions.map((opt) => (
-                              <SelectItem
-                                key={opt}
-                                value={opt}
-                                className="hover:bg-gray-100"
-                              >
-                                {opt}
+                            {domainStatus.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                <Badge 
+                                variant='outline'
+                                className={statusConfig[status].color}
+                                >
+                                  {status}
+                                </Badge>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -149,14 +157,18 @@ export default function UpdateDomain({
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value)
+                            setSelectedClientId(parseInt(value))
                             const selectedClient = clients.find(
                               (cl) => cl.id.toString() === value
                             )
-                            setSelectedClientId(selectedClient?.id as number)
                             if (selectedClient) {
                               setValue(
                                 `domains.${index}.client.name`,
                                 selectedClient.name
+                              )
+                              setValue(
+                                `domains.${index}.contactId`,
+                                ''
                               )
                             }
                           }}
@@ -180,7 +192,7 @@ export default function UpdateDomain({
                           </SelectContent>
                         </Select>
                         {fieldState.error && (
-                          <p className="mt-1 text-sm text-red-500">
+                          <p className="mt-1 text-red-500 text-sm">
                             {fieldState.error.message}
                           </p>
                         )}
@@ -198,27 +210,6 @@ export default function UpdateDomain({
                           defaultValue={`domains.${index}.contactId`}
                           onValueChange={(value) => {
                             field.onChange(value)
-                            const selectedContact = contactsClient.find(
-                              (contact) => contact.id.toString() === value
-                            )
-                            if (selectedContact) {
-                              setValue(
-                                `domains.${index}.contact.name`,
-                                selectedContact.name
-                              )
-                              setValue(
-                                `domains.${index}.contact.id`,
-                                selectedContact.id.toString()
-                              )
-                              setValue(
-                                `domains.${index}.contact.clientId`,
-                                selectedContact.clientId as number
-                              )
-                              setValue(
-                                `domains.${index}.contactId`,
-                                selectedContact.id.toString()
-                              )
-                            }
                           }}
                           value={field.value}
                         >
@@ -229,40 +220,67 @@ export default function UpdateDomain({
                           </FormControl>
                           <SelectContent>
                             <SelectGroup>
-                              <div className="px-2 text-sm font-semibold text-gray-500">
-                                Contactos del cliente
+                              <div className="px-2 font-semibold text-gray-500 text-sm">
+                                Contactos de {domain.client.name}
                               </div>
-                              {contactsClient
-                                ?.filter((contact) => contact.clientId !== null)
-                                .map((contact) => (
-                                  <SelectItem
-                                    key={contact.id}
-                                    value={contact.id.toString()}
-                                  >
-                                    {contact.name}
-                                  </SelectItem>
-                                ))}
+                              {activeClientContacts[Number(domain.client.id)]?.length > 0 ? (
+                                <SelectGroup>
+                                  {
+                                    activeClientContacts[Number(domain.client.id)].map((contact) => (
+                                      <SelectItem
+                                        key={contact.id}
+                                        value={contact.id.toString()}
+                                        className='hover:bg-muted hover:cursor-pointer'
+                                      >
+                                        <div>
+                                          <p className="font-medium text-sm text-left">{contact.name}</p>
+                                          <p className="flex items-center text-gray-500 text-xs">
+                                            <Mail className="mr-1 w-3 h-3 shrink-0" />
+                                            {contact.email}
+                                          </p>
+                                        </div>
+                                      </SelectItem>
+                                    )
+                                    )
+                                  }
+                                </SelectGroup>
+                              ) : (
+                                <span className='ml-2 text-destructive text-xs'>No hay contactos activos.</span>
+                              )}
                             </SelectGroup>
-                            <div className="my-2 border-t border-gray-200" />
-                            <SelectGroup>
-                              <div className="px-2 text-sm font-semibold text-gray-500">
-                                Contactos individuales
-                              </div>
-                              {contactsClient
-                                ?.filter((contact) => contact.clientId === null)
-                                .map((contact) => (
-                                  <SelectItem
-                                    key={contact.id}
-                                    value={contact.id.toString()}
-                                  >
-                                    {contact.name}
-                                  </SelectItem>
-                                ))}
-                            </SelectGroup>
+                            <div className="my-2 border-gray-200 border-t" />
+                            <div className="px-2 font-semibold text-gray-500 text-sm">
+                              Contactos individuales
+                            </div>
+                            {individualContacts && individualContacts.length > 0 ? (
+                              <SelectGroup>
+                                {
+                                  individualContacts
+                                    .map((contact) => (
+                                      <SelectItem
+                                        key={contact.id}
+                                        value={contact.id.toString()}
+                                        className='hover:bg-muted hover:cursor-pointer'
+                                      >
+                                        <div>
+                                          <p className="font-medium text-sm text-left">{contact.name}</p>
+                                          <p className="flex items-center text-gray-500 text-xs">
+                                            <Mail className="mr-1 w-3 h-3 shrink-0" />
+                                            {contact.email}
+                                          </p>
+                                        </div>
+                                      </SelectItem>
+                                    )
+                                    )
+                                }
+                              </SelectGroup>
+                            ) : (
+                              <span className='ml-2 text-destructive text-xs'>No hay contactos activos.</span>
+                            )}
                           </SelectContent>
                         </Select>
                         {fieldState.error && (
-                          <p className="mt-1 text-sm text-red-500">
+                          <p className="mt-1 text-red-500 text-sm">
                             {fieldState.error.message}
                           </p>
                         )}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
+import { Globe, Trash } from "lucide-react";
 import { deleteAccess } from "@/actions/accesses-actions";
 import { AccessWithRelations, domainAccess } from "@/db/schema";
 import { toast } from "sonner";
@@ -64,13 +64,15 @@ export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
           {
             access.domainAccess.length > 0 &&
             <Card className="shadow-sm hover:shadow-md">
-              <h4 className="px-4 py-2 font-medium">Dominios asociados</h4>
+              <h4 className="px-4 py-2 font-medium">Dominios asociados a este acceso:</h4>
               <CardContent>
-
                 <ul className="">
                   {access.domainAccess.map((a) => (
                     <li key={a.id}>
-                      <h4 className="font-medium">{a.domain?.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4"/>
+                        {a.domain?.name}
+                        </div>
                     </li>
                   ))}
                 </ul>

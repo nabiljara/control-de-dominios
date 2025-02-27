@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table-column-header"
 import { formatDate } from "@/lib/utils"
 import { Audit } from "@/db/schema"
-
+import { CalendarClock, Pointer, Table, User } from "lucide-react"
 
 export const columns: ColumnDef<Audit>[] = [
   {
@@ -19,7 +19,7 @@ export const columns: ColumnDef<Audit>[] = [
   {
     accessorKey: "user",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Usuario" />
+      <DataTableColumnHeader column={column} title="Usuario" icon={<User />} />
     ),
     cell: ({ row }) => {
       const user: { id: string, name: string } = row.getValue("user")
@@ -49,7 +49,7 @@ export const columns: ColumnDef<Audit>[] = [
   {
     accessorKey: "action",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Acción" />
+      <DataTableColumnHeader column={column} title="Acción" icon={<Pointer />} />
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("action")}</div>,
     enableSorting: true,
@@ -58,7 +58,7 @@ export const columns: ColumnDef<Audit>[] = [
   {
     accessorKey: "entity",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Entidad" />
+      <DataTableColumnHeader column={column} title="Entidad" icon={<Table/>} />
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("entity")}</div>,
     enableSorting: true,
@@ -67,7 +67,7 @@ export const columns: ColumnDef<Audit>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha de movimiento" />
+      <DataTableColumnHeader column={column} title="Fecha de movimiento" icon={<CalendarClock/>}/>
     ),
     cell: ({ row }) => (
       <div>

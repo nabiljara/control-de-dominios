@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { contactStatus, contactTypes } from "../../data/data"
+import { contactStatus, contactTypes } from "@/constants"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -20,9 +20,8 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-2">
         <div className="relative w-[250px]">
           <Input
-            id="filter"
+            id="filter-contacts"
             placeholder="Filtrar por nombre o email"
-            autoFocus
             value={(table.getColumn("combinedFilter")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("combinedFilter")?.setFilterValue(event.target.value)
@@ -34,14 +33,14 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Estado"
-            options={contactStatus}
+            options={contactStatus.slice()}
           />
         )}
         {table.getColumn("type") && (
           <DataTableFacetedFilter
             column={table.getColumn("type")}
             title="Tipo"
-            options={contactTypes}
+            options={contactTypes.slice()}
           />
         )}
         {isFiltered && (
