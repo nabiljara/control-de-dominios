@@ -24,11 +24,6 @@ import { Separator } from "@/components/ui/separator"
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>
   title?: string
-  // options: {
-  //   value: string
-  //   // label: string
-  //   // icon?: React.ComponentType<{ className?: string }>
-  // }[]
   options: Array<string>
 }
 
