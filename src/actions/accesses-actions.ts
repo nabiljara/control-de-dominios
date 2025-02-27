@@ -6,7 +6,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { accessFormSchema, AccessFormValues } from "@/validators/client-validator";
 import { revalidatePath } from "next/cache";
-import crypto from 'crypto';
+// import crypto from 'crypto';
 import { encrypt } from "@/lib/utils";
 
 const SECRET_KEY = process.env.SECRET_KEY || '';
@@ -155,10 +155,10 @@ export const decryptPassword = (password: string): string => {
 
 const decrypt = (encrypted: string, iv: string): string => {
   try {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(SECRET_KEY), Buffer.from(iv, 'hex'));
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+    // const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(SECRET_KEY), Buffer.from(iv, 'hex'));
+    // let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    // decrypted += decipher.final('utf8');
+    return encrypted;
   } catch (error) {
     throw new Error(`Error al descifrar: ${error}`);
   }
