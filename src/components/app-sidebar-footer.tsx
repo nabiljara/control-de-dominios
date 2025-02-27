@@ -1,8 +1,6 @@
 'use client'
 import {
   ChevronsUpDown,
-  Settings,
-  User,
 } from "lucide-react"
 
 import {
@@ -14,12 +12,10 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import DropdownMenuItem from "@/components/dropdown-menu-item"
 import {
   SidebarMenu,
   SidebarMenuButton,

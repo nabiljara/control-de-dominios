@@ -1,6 +1,5 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Globe, GlobeIcon as GlobeOff } from 'lucide-react'
 import Link from "next/link"
 
 interface EntityNotFoundProps {
@@ -22,7 +21,7 @@ export function EntityNotFound({icon,title,description,href,linkText}: EntityNot
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-gray-600">
+          <p className="text-gray-600 text-center">
             {description}
           </p>
         </CardContent>
