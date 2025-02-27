@@ -6,7 +6,7 @@ import { insertNotification } from '@/actions/notifications-actions';
 import { getClient } from '@/actions/client-actions';
 import { sendMail } from '@/actions/mail-actions';
 import { getUsers } from '@/actions/user-action/user-actions';
-
+export const runtime = 'nodejs';
 export async function GET(request: NextRequest){
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

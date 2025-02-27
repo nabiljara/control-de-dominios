@@ -11,7 +11,6 @@ import { access } from "@/db/schema";
 import { sql } from 'drizzle-orm'
 import { encrypt } from "@/lib/utils";
 import { format } from "date-fns";
-import { updateDomain } from "./domains-actions";
 
 export async function getClients() {
   try {
