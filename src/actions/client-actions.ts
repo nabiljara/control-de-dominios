@@ -126,8 +126,7 @@ export async function updateClientAndDomains(client: ClientUpdateValues) {
       if (!parsed.id) {
         throw new Error("El ID del cliente no está definido.");
       }
-
-      await setUserId();
+      await setUserId(tx);
       // Actualizar cliente
       await tx
         .update(clients)
@@ -155,8 +154,6 @@ export async function updateClientAndDomains(client: ClientUpdateValues) {
           if (!modifiedDomain.id) {
             throw new Error("El ID del cliente no está definido.");
           }
-          
-          await setUserId();
           await tx
             .update(domains)
             .set(modifiedDomain)
@@ -181,10 +178,9 @@ export async function createClient(client: ClientFormValues) {
     if (!parsed) {
       throw new Error("Error de validación del formulario de cliente.");
     }
-    await setUserId()
-
+    
     await db.transaction(async (tx) => {
-
+      await setUserId(tx)
       const response = await tx.insert(clients)
         .values({ localityId: parseInt(parsed.locality.id), ...parsed })
         .returning({ insertedId: clients.id });

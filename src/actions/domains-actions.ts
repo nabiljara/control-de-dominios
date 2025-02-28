@@ -6,6 +6,7 @@ import { setUserId, setUserSystem } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
+import { auth } from "@/auth";
 
 
 export async function getDomains() {
@@ -137,13 +138,15 @@ export async function updateDomainContact(selectedContacts: Record<number, numbe
 export async function updateDomain(domain: DomainInsert, accessId: number | undefined) {
   let success = false;
   try {
-    await setUserId()
+    // await setUserId()
     await db.transaction(async (tx) => {
-
+      
+      await setUserId(tx)
+      
       if (!domain.id) {
         throw new Error("El ID del dominio no está definido.");
       }
-
+      
       await tx.update(domains)
         .set(domain)
         .where(eq(domains.id, domain.id))
@@ -153,12 +156,14 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
 
       //Si tiene acceso asociado y no se seleccionó un acceso, elimino la asociación
       if (response && !accessId) {
+        
         await tx.delete(domainAccess)
           .where(eq(domainAccess.domainId, domain.id));
       }
       //Si no tiene acceso asociado y se seleccionó un acceso, creo la asociación
       else if (accessId) { 
         if (!response) {
+          
           await tx.insert(domainAccess)
             .values({
               domainId: domain.id,
@@ -167,6 +172,7 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
         }
         //Si tiene acceso asociado, se seleccionó un acceso y este es diferente al que ya tiene, actualizo la asociación
         else if (response.accessId !== accessId) {
+          
           await tx.update(domainAccess)
             .set({
               domainId: domain.id,
@@ -192,9 +198,8 @@ export async function updateDomainCron(domain: DomainInsert) {
   let success = false;
   try {
     //Para el cron job, se setea el userId del usuario SISTEMA (desde seed)
-    await setUserSystem()
     await db.transaction(async (tx) => {
-
+      await setUserSystem(tx)
       if (!domain.id) {
         throw new Error("El ID del dominio no está definido.");
       }
@@ -319,7 +324,6 @@ export async function getExpiringDomains(){
       expirationDate.setHours(0, 0, 0, 0);      
       const diffInMs = expirationDate.getTime() - today.valueOf();
       const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-      // console.log("Expira en ", daysRemaining, " días");
       return daysRemaining >= 0 ;
     }).sort((a, b)=> new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
     const expiredDomains = data.filter((domain) => {
@@ -327,7 +331,7 @@ export async function getExpiringDomains(){
       expirationDate.setHours(0, 0, 0, 0);      
       const diffInMs = expirationDate.getTime() - today.valueOf();
       const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-      return daysRemaining <= 0 ;
+      return daysRemaining < 0 ;
     });
     
     return {expiringDomains, expiredDomains};

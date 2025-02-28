@@ -42,7 +42,9 @@ export async function getUser(id: string) {
     }
 };
 
-export async function setUserId() {
+//La transaccion de drizzle no tiene un tipo especificado, utilizamos el ignore any para poder utilizarlo
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function setUserId(tx?: any) {
     try {
         const session = await auth()
         
@@ -51,20 +53,37 @@ export async function setUserId() {
         }
 
         const userId = session.user.id;
-        
-        await db.execute(sql`SELECT set_user_id(${userId})`);
-
+        if (tx) {
+            // dentro de transacción
+            await tx.execute(sql`SELECT set_user_id(${userId})`);
+        } else {
+            // fuera de transacción
+            await db.execute(sql`SELECT set_user_id(${userId})`);
+        }
+        // await db.execute(sql`SELECT set_user_id(${userId})`);
     } catch (error) {
         throw error
     }
 }
-export async function setUserSystem() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function setUserSystem(tx?: any) {
     try {
         const userSystem = await db.query.users.findFirst({
             where: eq(users.email, "desarrollo@kerneltech.dev"),
         });
-        const userId = userSystem?.id;
-        await db.execute(sql`SELECT set_user_id(${userId})`);
+        if (!userSystem?.id) {
+            throw new Error("Usuario Sistema no encontrado en la base de datos.");
+        }
+        const sysUserId = userSystem.id;
+
+        if (tx) {
+            // dentro de transacción
+            await tx.execute(sql`SELECT set_user_id(${sysUserId})`);
+        } else {
+            // fuera de transacción
+            await db.execute(sql`SELECT set_user_id(${sysUserId})`);
+        }
+        // await db.execute(sql`SELECT set_user_id(${sysUserId})`);
         
     } catch (error) {
         throw error

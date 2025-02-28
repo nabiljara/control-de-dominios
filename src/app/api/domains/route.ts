@@ -31,6 +31,7 @@ export async function GET(request: NextRequest){
 
         const diffInMs = expirationDate.getTime() - today.valueOf();
         const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+        // console.log(domain.name + " vence en "+daysRemaining+" días")
         if (daysRemaining === 0) {
             domainsByExpiration.expiringToday.push(domain);
           } else if (daysRemaining === 7) {
@@ -40,23 +41,7 @@ export async function GET(request: NextRequest){
           }
     })
     
-
-    async function updateDomainsState(doms: typeof expiredDomains){
-        for (const dom of doms) {
-            try{
-                //Modifica el estado del dominio vencido
-                const updatedDomain = { ...dom, status: "Vencido" as (typeof domainStatus)[number] };
-
-                await updateDomainCron(updatedDomain)
-                
-            }
-            catch(error){
-                console.log("Error al modificar el estado del dominio: ", error)
-            }
-        }
-        //Crea notificaciones para todos los dominios vencidos
-        await createNotificationForDomain(doms, " venció")
-    }
+    //Creación de notificación para cada dominio
     async function createNotificationForDomain(doms: typeof expiringDomains, message:string){
         for (const dom of doms) {
             const messageComplete = "El dominio "+ dom.name+ message
@@ -83,7 +68,26 @@ export async function GET(request: NextRequest){
             }
         }
     }
+    //Modifica estado de los dominios vencidos y se crea modificación para c/u
+    async function updateDomainsState(doms: typeof expiredDomains){
+        for (const dom of doms) {
+            try{
+                //Modifica estado dominio
+                const updatedDomain = { ...dom, status: "Vencido" as (typeof domainStatus)[number]};
+                await updateDomainCron(updatedDomain);
+            }
+            catch(error){
+                console.log("Error al modificar el estado del dominio: ", error)
+            }
+        }
+        //Crea notificaciones para todos los dominios vencidos
+        await createNotificationForDomain(doms, " venció")
+    }
     
+    //Notificaciones segun proximidad a vencer
+    if(domainsByExpiration.expiringToday.length > 0){
+        await createNotificationForDomain(domainsByExpiration.expiring7days, " expira hoy")
+    }
     if(domainsByExpiration.expiring7days.length > 0){
         await createNotificationForDomain(domainsByExpiration.expiring7days, " expira en 7 días")
     }
@@ -94,11 +98,6 @@ export async function GET(request: NextRequest){
     await updateDomainsState(expiredDomains);
     
     return NextResponse.json({
-        success: true,
-        // expiringDomains: domains,
-        // expiredDomains: expiredDomains,
-        // expiringToday: domainsByExpiration.expiringToday,
-        // expiring7days: domainsByExpiration.expiring7days,
-        // expiring30days: domainsByExpiration.expiring30days,
+        success: true
     });
 }

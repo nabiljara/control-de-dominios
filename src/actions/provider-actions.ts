@@ -56,11 +56,14 @@ export async function updateProvider(provider: ProviderFormValues) {
     if (!provider.id) {
       throw new Error("El ID del proveedor no está definido.");
     }
-    await setUserId()
-    await db.update(providers)
+    await db.transaction(async (tx) => {
+      await setUserId(tx)
+
+      await tx.update(providers)
       .set({ name: provider.name, url: provider.url })
-      .where(eq(providers.id, provider.id))
-    success = true;
+      .where(eq(providers.id, Number(provider.id)))
+      success = true;
+    });
   } catch (error) {
     console.error("Error al modificar el proveedor:", error);
     throw error;
@@ -78,9 +81,12 @@ export async function insertProvider(provider: ProviderFormValues) {
     if (!parsed.success) {
       throw new Error("Error al validar los datos del proveedor");
     }
-    await setUserId()
-    await db.insert(providers).values({ name: provider.name.trim(), url: provider.url.trim() });
-    success = true
+    await db.transaction(async (tx) => {
+      await setUserId(tx)
+      
+      await tx.insert(providers).values({ name: provider.name.trim(), url: provider.url.trim() })
+      success = true;
+    });
   }
   catch (error) {
     console.error("Error al registrar el proveedor:", error);

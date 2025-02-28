@@ -38,10 +38,12 @@ export async function createContact(contact: ContactFormValues, pathToRevalidate
             type: parsed.type,
             clientId: parsed.clientId ?? null,
         };
-
-        await setUserId()
-        await db.insert(contacts).values(newContact);
-        success = true
+        await db.transaction(async (tx) => {
+            await setUserId(tx)
+      
+            await tx.insert(contacts).values(newContact);
+            success = true;
+        });
     } catch (error) {
         console.error("Error al crear un nuevo contacto:", error);
         throw error;
@@ -61,9 +63,10 @@ export async function updateContact(contact: ContactFormValues, pathToRevalidate
         if (!parsed) {
             throw new Error("Error de validación del formulario de contacto.");
         }
-
-        await setUserId()
-        await db
+        await db.transaction(async (tx) => {
+            await setUserId(tx)
+      
+            await tx
             .update(contacts)
             .set({
                 name: parsed.name,
@@ -74,8 +77,9 @@ export async function updateContact(contact: ContactFormValues, pathToRevalidate
                 clientId: contact.clientId ? contact.clientId : null ,
                 updatedAt: sql`NOW()`
             })
-            .where(eq(contacts.id, contact.id))
-        success = true
+            .where(eq(contacts.id, Number(contact.id)))
+            success = true;
+        });
     }
     catch (error) {
         console.error("Error al modificar el contacto:", error);
