@@ -36,14 +36,13 @@ export default async function ClientPage({
   }
 
   const { access, contacts, ...clientWithoutRelations } = client
-  const accessWithRelations = access as Omit<AccessWithRelations, 'client'>[]
+  const accessWithRelations = access as AccessWithRelations[]
   const domainsWithRelations = client.domains as DomainWithRelations[]
   const clientWithoutRelationsTyped = clientWithoutRelations as Omit<
     ClientWithRelations,
     "access" | "contacts"
   >
   const localities = await getLocalities()
-  const providers = await getProviders()
 
   const filterProviders: Array<string> = []
   try {
@@ -81,7 +80,7 @@ export default async function ClientPage({
         <ClientContactsTable contacts={contacts} client={{ id: clientId, name: client.name }} />
 
         {/* ACCESS TABLE */}
-        <ClientAccessTable access={accessWithRelations} client={{ id: clientId, name: client.name }} providers={providers} filterProviders={filterProviders} />
+        <ClientAccessTable access={accessWithRelations} client={{ id: clientId, name: client.name }} filterProviders={filterProviders} />
 
       </div>
     </div>

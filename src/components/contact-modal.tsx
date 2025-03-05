@@ -105,9 +105,12 @@ export function ContactModal({
               type: "manual",
               message: error.message,
             });
-            toast.warning(error.message)
           });
-        } else if (contacts) {
+          setIsSubmitting(false)
+          return
+        }
+
+        if (contacts) {
           addContact(form.getValues());
         } else if (contact) {
           setIsEditContactConfirmationModalOpen(true);
@@ -386,7 +389,7 @@ export function ContactModal({
                         const clientName = clients.find((client) => client.id === parseInt(value))?.name;
                         if (clientName) {
                           setSelectedClientName(clientName);
-                        }else{
+                        } else {
                           setSelectedClientName('Sin cliente');
                         }
                       }}
@@ -514,7 +517,7 @@ export function ContactModal({
           }
         }
         title="Confirmar la edición del contacto"
-        description="Revise que los datos sean correctos y confirme el registro."
+        description="Revise que los datos sean correctos y confirme la edición."
         className="sm:max-w-fit"
       >
         <EditContactConfirmationModal

@@ -105,6 +105,38 @@ export async function createAccess(acc: AccessFormValues, pathToRevalidate: stri
   }
 }
 
+export async function updateAccess(acc: AccessFormValues, pathToRevalidate: string | undefined) {
+  let success = false;
+  try {
+    if (!acc.id) {
+      throw new Error("El ID del acceso no está definido.");
+  }
+    const parsed = await accessFormSchema.parseAsync(acc);
+    if (!parsed) {
+      throw new Error("Error de validación del formulario de acceso.");
+    }
+    const { encrypted, iv } = encrypt(parsed.password);
+
+    const newAccess: AccessInsert = {
+      username: parsed.username,
+      password: `${encrypted}:${iv}`,
+      providerId: parseInt(parsed.provider.id),
+      clientId: parsed.client && parsed.client.id ? parseInt(parsed.client.id) : null,
+      notes: parsed.notes ?? null
+    };
+
+    await setUserId()
+    await db.update(access).set(newAccess).where(eq(access.id, acc.id));
+    success = true
+  } catch (error) {
+    console.error("Error al editar el acceso", error);
+    throw error;
+  }
+  if (success && pathToRevalidate) {
+    revalidatePath(`${pathToRevalidate}`);
+  }
+}
+
 
 export async function deleteAccess(id: number) {
   let success = false;
@@ -122,11 +154,11 @@ export async function deleteAccess(id: number) {
 }
 
 
-export const validateAccess = async (username: string, providerId: number, oldUsername: string | undefined, oldProviderId: string | undefined) => {
+export const validateAccess = async (username: string, providerId: number, oldUsername: string | undefined, oldProviderId: number | undefined | null) => {
   try {
     const errorList: { field: "username"; message: string }[] = [];
     const usernameIsValid = await validateUsername(username, providerId);
-    if (!usernameIsValid && username !== oldUsername) {
+    if (!usernameIsValid && username !== oldUsername && providerId !== oldProviderId) {
       errorList.push({
         field: "username",
         message: "El usuario o email ya está registrado en el sistema para el proveedor seleccionado.",

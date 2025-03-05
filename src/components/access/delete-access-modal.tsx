@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Globe, Trash } from "lucide-react";
 import { deleteAccess } from "@/actions/accesses-actions";
-import { AccessWithRelations, domainAccess } from "@/db/schema";
+import { AccessWithRelations} from "@/db/schema";
 import { toast } from "sonner";
 import { AccessInfoCard } from "@/app/(root)/clients/_components/access-info-card";
 import { ResponsiveDialog } from "../responsive-dialog";
-import { Card, CardContent, CardTitle } from "../ui/card";
+import { Card, CardContent, CardDescription } from "../ui/card";
 interface DeleteAccessModalProps {
   access: Omit<AccessWithRelations, "client">;
 }
@@ -63,21 +63,24 @@ export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
           <AccessInfoCard access={access} provider={access.provider?.name} index={1} readOnly />
           {
             access.domainAccess.length > 0 &&
-            <Card className="shadow-sm hover:shadow-md">
-              <h4 className="px-4 py-2 font-medium">Dominios asociados a este acceso:</h4>
-              <CardContent>
-                <ul className="">
-                  {access.domainAccess.map((a) => (
-                    <li key={a.id}>
-                      <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4"/>
-                        {a.domain?.name}
+            <>
+              <h4 className="font-medium">Dominios asociados a este acceso.</h4>
+              <Card className="shadow-sm hover:shadow-md">
+                <CardDescription className="p-4">Los siguientes dominios dejarán de tener el acceso asociado:</CardDescription>
+                <CardContent>
+                  <ul>
+                    {access.domainAccess.map((a) => (
+                      <li key={a.id}>
+                        <div className="flex items-center gap-2">
+                          <Globe className="w-4 h-4" />
+                          {a.domain?.name}
                         </div>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </>
           }
           <div className="flex gap-2">
             <Button
@@ -100,6 +103,7 @@ export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
       </ResponsiveDialog>
       <ResponsiveDialog
         title="¿Seguro que quieres eliminar este acceso? "
+        description="Confirme la eliminación del acceso."
         open={isConfirmationModalOpen}
         onOpenChange={() => setIsConfirmationModalOpen(false)}
       >

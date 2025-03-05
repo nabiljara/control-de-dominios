@@ -9,8 +9,8 @@ import {
   KeySquare,
 } from "lucide-react"
 
-import { AccessWithRelations, Provider } from "@/db/schema"
-import { CreateAccessModal } from "@/components/create-access-modal"
+  import { AccessWithRelations } from "@/db/schema"
+import { AccessModal } from "@/components/access-modal"
 import { Button } from "@/components/ui/button"
 import Plus from "@/components/plus"
 import { DataTable } from "@/components/data-table"
@@ -19,14 +19,12 @@ import { DataTableToolbar } from "./client-access-data-table-toolbar"
 
 export function ClientAccessTable({
   access,
-  providers,
   client,
   filterProviders
 }: {
-  access: Omit<AccessWithRelations, 'client'>[];
-  providers: Provider[];
+  access: AccessWithRelations[];
   client: { id: number, name: string }
-  filterProviders: Array<string> // Los proveedores para realizar el filtrado
+  filterProviders: Array<string>
 }) {
 
   return (
@@ -44,8 +42,7 @@ export function ClientAccessTable({
               Información de los accesos del cliente
             </CardDescription>
           </div>
-          <CreateAccessModal
-            providers={providers}
+          <AccessModal
             client={client}
             pathToRevalidate={`/clients/${client.id}`}
           >
@@ -59,11 +56,16 @@ export function ClientAccessTable({
               </div>
               Nuevo acceso
             </Button>
-          </CreateAccessModal>
+          </AccessModal>
         </div>
       </CardHeader>
       <CardContent>
-        <DataTable data={access} columns={columns} ToolbarComponent={DataTableToolbar} filterProviders={filterProviders} />
+        <DataTable
+          data={access}
+          columns={columns}
+          ToolbarComponent={DataTableToolbar}
+          filterProviders={filterProviders}
+        />
       </CardContent>
     </Card>
   )

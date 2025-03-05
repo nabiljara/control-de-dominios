@@ -22,7 +22,7 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-2">
         <div className="relative w-[250px]">
           <Input
-            id="filter-contacts"
+            id="filter-access"
             placeholder="Filtrar por nombre de usuario o email"
             value={(table.getColumn("username")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>

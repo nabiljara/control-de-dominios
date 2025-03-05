@@ -1,14 +1,15 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Access, AccessWithRelations } from "@/db/schema";
+import { AccessWithRelations } from "@/db/schema";
 import { DataTableColumnHeader } from "@/components/data-table-column-header";
-import { AtSign, Box, KeySquare, Pointer, StickyNote, } from "lucide-react";
+import { AtSign, Box, KeySquare, Pencil, Pointer, StickyNote, } from "lucide-react";
 import { PasswordCell } from "../../password-cell";
 import { DeleteAccessModal } from "@/components/access/delete-access-modal"
-import { CreateAccessModal } from "@/components/create-access-modal";
+import { AccessModal } from "@/components/access-modal";
+import { Button } from "@/components/ui/button";
 
-export const columns: ColumnDef<Omit<AccessWithRelations, "client">>[] = [
+export const columns: ColumnDef<AccessWithRelations>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -76,10 +77,23 @@ export const columns: ColumnDef<Omit<AccessWithRelations, "client">>[] = [
       const access = row.original
 
       return (
-      <div className="flex items-center gap-2">
-        <DeleteAccessModal access={access} />
-        {/* <CreateAccessModal /> */}
-      </div>
+        <div className="flex items-center gap-2">
+          <AccessModal
+            provider={{id:access.providerId ?? undefined, name:access.provider?.name ?? ''}}
+            client={{ id: access.clientId ?? undefined, name: access.client?.name ?? '' }}
+            pathToRevalidate={`/clients/${access.clientId}`}
+            access={access}
+            key={access.id}
+          >
+            <Button
+              variant="outline"
+              className="gap-3 px-2 lg:px-3 h-8"
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          </AccessModal>
+          <DeleteAccessModal access={access} />
+        </div>
       )
     }
   }

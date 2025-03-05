@@ -82,7 +82,7 @@ import { AccessInfoCard } from "@/app/(root)/clients/_components/access-info-car
 import { es } from "date-fns/locale"
 import { CreateDomainConfirmationModal } from "./create-domain-confirmation-modal"
 import { insertDomain, updateDomain, validateDomain } from "@/actions/domains-actions"
-import { CreateAccessModal } from "@/components/create-access-modal"
+import { AccessModal } from "@/components/access-modal"
 import { EditDomainConfirmationModal } from "./edit-domain.confirmation-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
 import { DropdownNavProps, DropdownProps } from "react-day-picker";
@@ -962,10 +962,9 @@ export default function CreateDomainForm({
               {form.watch("isClientAccess") && (
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    <CreateAccessModal
+                    <AccessModal
                       notification={setNewClientAccessCreated}
                       client={{ id: parseInt(form.getValues('client').id), name: form.getValues('client').name }}
-                      providers={providers}
                       provider={{ id: parseInt(form.getValues('provider').id), name: form.getValues('provider').name }}
                     >
                       <Button
@@ -976,7 +975,7 @@ export default function CreateDomainForm({
                       >
                         <Plus className="text-gray-700" />
                       </Button>
-                    </CreateAccessModal>
+                    </AccessModal>
                     {clientAccess.length > 0 &&
                       clientAccess.map((access, index) => (
                         <AccessInfoCard
@@ -1045,10 +1044,9 @@ export default function CreateDomainForm({
               {form.watch("isKernelAccess") && (
                 <>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    <CreateAccessModal
+                    <AccessModal
                       notification={setNewKernelAccessCreated}
                       client={{ id: 1, name: 'Kernel' }}
-                      providers={providers}
                       provider={{ id: parseInt(form.getValues('provider').id), name: form.getValues('provider').name }}
                     >
                       <Button
@@ -1059,7 +1057,7 @@ export default function CreateDomainForm({
                       >
                         <Plus className="text-gray-700" />
                       </Button>
-                    </CreateAccessModal>
+                    </AccessModal>
                     {kernelAccess.length > 0 &&
                       kernelAccess.map((access, index) => (
                         <AccessInfoCard

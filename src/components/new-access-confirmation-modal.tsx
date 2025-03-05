@@ -1,6 +1,6 @@
 'use client'
 import { Card, CardContent } from '@/components/ui/card'
-import { Mail, Loader2, Handshake, Box, StickyNote, KeySquare, EyeOff, Eye, } from "lucide-react"
+import { Loader2, Handshake, Box, StickyNote, KeySquare, EyeOff, Eye, AtSign, } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { AccessFormValues, } from "@/validators/client-validator";
 import { useState } from 'react';
@@ -48,7 +48,7 @@ export function NewAccessConfirmationModal(
                 </span>
               </div>
               <div className='flex items-center gap-2'>
-                <Mail className="w-4 h-4" />
+                <AtSign className="w-4 h-4" />
                 <span className="overflow-hidden text-neutral-500 text-sm">
                   {access.username}
                 </span>

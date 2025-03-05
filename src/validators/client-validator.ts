@@ -47,6 +47,7 @@ export const contactFormSchema = z.object({
 
 
 export const accessFormSchema = z.object({
+  id: z.number().optional(),
   provider: z.object({
     id: z.string({ message: "El proveedor es requerido." }),
     name: z.string({ message: "El proveedor es requerido." }),

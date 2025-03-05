@@ -47,7 +47,7 @@ import {
   contactFormSchema,
   ContactFormValues
 } from "@/validators/client-validator"
-import { CreateAccessModal } from "@/components/create-access-modal"
+import { AccessModal } from "@/components/access-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
 import { clientSizes, clientStatus, sizeConfig, statusConfig } from "@/constants"
 
@@ -372,10 +372,9 @@ export function CreateClientForm({
                 </div>
                 <FormControl>
                   <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
-                    <CreateAccessModal
+                    <AccessModal
                       accessArray={accessArray}
                       setAccess={setAccessArray}
-                      providers={providers}
                       accessFormSchema={getAccessSchema(null)}
                     >
                       <Button
@@ -386,7 +385,7 @@ export function CreateClientForm({
                       >
                         <Plus className="text-gray-700" />
                       </Button>
-                    </CreateAccessModal>
+                    </AccessModal>
                     {accessArray.map((access, index) => (
                       <Access
                         key={index}
