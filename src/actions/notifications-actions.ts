@@ -1,6 +1,6 @@
 "use server"
 import { auth } from "@/auth";
-import { NotificationStatus } from "@/constants";
+import { NotificationType } from "@/constants";
 import db from "@/db";
 import { NotificationInsert, notifications, UserNotification, usersNotifications } from "@/db/schema";
 import { and, count, desc, eq, ilike } from "drizzle-orm";
@@ -101,7 +101,7 @@ export async function getUserReadNotifications(page: number = 1, limit: number =
   }
 };
 
-export async function getUserReadNotificationsFiltered(domainName: string, type: NotificationStatus | 'all') {
+export async function getUserReadNotificationsFiltered(domainName: string, type: NotificationType | 'all') {
   try {
     const session = await auth();
     const id = session?.user?.id;
@@ -116,7 +116,7 @@ export async function getUserReadNotificationsFiltered(domainName: string, type:
     ];
 
     if (type !== 'all') {
-      conditions.push(eq(notifications.status, type));
+      conditions.push(eq(notifications.type, type));
     }
 
 

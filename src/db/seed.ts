@@ -23,14 +23,18 @@ async function main() {
     schema.providers,
     schema.localities,
     schema.clients,
+    schema.contacts,
     schema.users,
+    schema.domains,
   ]) {
     await resetTable(db, table);
   }
   await seeds.providers(db);
   await seeds.localities(db);
   await seeds.clients(db);
+  await seeds.contacts(db);
   await seeds.users(db);
+  await seeds.domains(db);
 }
 
 main()

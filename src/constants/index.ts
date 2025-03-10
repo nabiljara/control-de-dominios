@@ -125,14 +125,14 @@ export const notificationStatusConfig = {
     text: "text-red-700",
     border: "border-red-200",
   },
-  'Vence en 7 días': {
+  'Vence en una semana': {
     icon: AlertCircle,
     iconClassName: "w-5 h-5 text-yellow-500",
     badge: "bg-yellow-100 text-yellow-700",
     text: "text-yellow-700",
     border: "border-yellow-200",
   },
-  'Vence en 30 días': {
+  'Vence en un mes': {
     icon: CalendarClock,
     iconClassName: "w-5 h-5 text-blue-500",
     badge: "bg-blue-100 text-blue-700",
@@ -186,8 +186,8 @@ export const contactTypes = [
   "Ventas",
 ] as const;
 export const contactStatus = ["Activo", "Inactivo"] as const
-export const notificationStatus = ["Vence hoy", "Vence en 7 días", "Vence en 30 días", "Vencido", "Email no entregado", 'Simple'] as const
-export type NotificationStatus = (typeof notificationStatus)[number];
+export const notificationType = ["Vence hoy", "Vence en una semana", "Vence en un mes", "Vencido", "Email no entregado", 'Simple'] as const
+export type NotificationType = (typeof notificationType)[number];
 export const auditActions = ["Agregar", "Actualizar", "Eliminar"]
 
 export const auditEntities = [

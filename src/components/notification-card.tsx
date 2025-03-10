@@ -16,10 +16,10 @@ export function NotificationCard(
       isUnread: boolean
     }
 ) {
-  const { domainId, message, status, createdAt } = notification;
-  const { border, badge, iconClassName, text, icon } = notificationStatusConfig[status];
+  const { domainId, message, type, createdAt } = notification;
+  const { border, badge, iconClassName, text, icon } = notificationStatusConfig[type];
   return (
-    notification.status !== 'Simple' ? (
+    notification.type !== 'Simple' ? (
       <Link
         href={`/domains/${domainId}`}
         className={`group block bg-background hover:bg-muted hover:shadow-md p-4 border rounded-lg transition-all mb-3 ${border}`}
@@ -30,11 +30,11 @@ export function NotificationCard(
           <div className="flex items-center gap-2 mb-1.5 w-full">
             {React.createElement(icon, { className: iconClassName })}
             <Badge variant="outline" className={badge}>
-              {status}
+              {type}
             </Badge>
             <span className="flex-1 justify-end text-muted-foreground text-sm text-end">{formatDate(createdAt)}</span>
           </div>
-          <p className={`text-sm font-medium ${text} mb-1`}>{message} {`Id de notificación: ${notification.id}`}</p>
+          <p className={`text-sm font-medium ${text} mb-1`}>{message}</p>
         </div>
       </Link>
     ) : (
@@ -45,7 +45,7 @@ export function NotificationCard(
           <div className="flex items-center gap-2 mb-1.5 w-full">
             {React.createElement(icon, { className: iconClassName })}
             <Badge variant="outline" className={badge}>
-              {status}
+              {type}
             </Badge>
             <span className="flex-1 justify-end text-muted-foreground text-sm text-end">{formatDate(createdAt)}</span>
           </div>

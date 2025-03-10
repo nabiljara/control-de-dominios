@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel, relations, sql, SQL } from "drizzle-orm"
-import { clientSizes, clientStatus, contactStatus, contactTypes, domainStatus, notificationStatus} from "@/constants";
+import { clientSizes, clientStatus, contactStatus, contactTypes, domainStatus, notificationType} from "@/constants";
 
 import {
   boolean,
@@ -27,7 +27,7 @@ export const clientStatusEnum = pgEnum("client_status", clientStatus)
 export const domainStatusEnum = pgEnum("domain_status", domainStatus)
 export const contactTypeEnum = pgEnum("contact_type", contactTypes)
 export const contactStatusEnum = pgEnum("contact_status", contactStatus )
-export const notificationStatusEnum = pgEnum("notification_status", notificationStatus)
+export const notificationTypeEnum = pgEnum("notification_status", notificationType)
 export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts", "providers"]) //TODO: CAMBIAR A CONSTANTES
 
 export const localities = pgTable("localities", {
@@ -196,7 +196,7 @@ export const domainHistoryRelations = relations(domainHistory, ({ one }) => ({
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
   message: text("message").notNull(),
-  status: notificationStatusEnum("status").notNull().default('Simple'),
+  type: notificationTypeEnum("type").notNull().default('Simple'),
   domainId: integer('domain_id'),
   domainName: varchar('domain_name', {length:255}),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),

@@ -1,4 +1,4 @@
-import { domainStatus, NotificationStatus } from '@/constants'
+import { domainStatus, NotificationType } from '@/constants'
 import { getExpiringDomains, updateDomainCron } from '@/actions/domains-actions';
 import { NotificationInsert } from '@/db/schema';
 import { NextRequest, NextResponse } from "next/server";
@@ -44,18 +44,18 @@ export async function GET(request: NextRequest) {
     })
 
     //Creación de notificación para cada dominio
-    async function createNotificationForDomain(doms: typeof expiringDomains, status: NotificationStatus, message?:string) {
+    async function createNotificationForDomain(doms: typeof expiringDomains, type: NotificationType, message?:string) {
         for (const dom of doms) {
             let messageComplete = `El dominio ${dom.name} `;
-            switch (status) {
+            switch (type) {
             case 'Vence hoy':
             messageComplete += `vence hoy ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
             break;
-            case 'Vence en 7 días':
-            messageComplete += `vencerá en 7 días el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+            case 'Vence en una semana':
+            messageComplete += `vencerá en una semana el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
             break;
-            case 'Vence en 30 días':
-            messageComplete += `vencerá en 30 días el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+            case 'Vence en un mes':
+            messageComplete += `vencerá en un mes el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
             break;
             case 'Vencido':
             messageComplete += `venció el ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 
             const notification: NotificationInsert = {
             message: messageComplete,
-            status,
+            type,
             domainId: dom.id,
             domainName: dom.name,
             };
@@ -112,10 +112,10 @@ export async function GET(request: NextRequest) {
         await createNotificationForDomain(domainsByExpiration.expiringToday, 'Vence hoy')
     }
     if (domainsByExpiration.expiring7days.length > 0) {
-        await createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en 7 días')
+        await createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en una semana')
     }
     if (domainsByExpiration.expiring30days.length > 0) {
-        await createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en 30 días')
+        await createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en un mes')
     }
     //Cambio los estados de los dominios ya vencidos
     await updateDomainsState(expiredDomains);

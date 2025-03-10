@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bell, Search, Loader2, ChevronUp, Database, X, Check, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { NotificationStatus, notificationStatus, notificationStatusConfig } from "@/constants";
+import { NotificationType, notificationType, notificationStatusConfig } from "@/constants";
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getUserReadNotifications, getUserReadNotificationsFiltered, getUserUnreadNotifications, markNotificationsAsRead } from "@/actions/notifications-actions";
@@ -83,10 +83,10 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
       if (open) {
         try {
           setIsLoadingUnread(true)
-          console.log('Notificaciones no leídas ejecutado');
           const notifications = await getUserUnreadNotifications();
           setErrorUnread(false)
           setUnreadNotifications(notifications);
+          setUnreadCount(notifications.length)
         } catch (error) {
           setErrorUnread(true)
         } finally {
@@ -101,7 +101,7 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
   const handleFetchDBData = async () => {
     setIsLoadingRead(true);
     try {
-      const notifications = await getUserReadNotificationsFiltered(searchQuery, typeFilter as NotificationStatus);
+      const notifications = await getUserReadNotificationsFiltered(searchQuery, typeFilter as NotificationType);
       setReadNotifications(notifications.map(n => ({
         ...n.users_notifications,
         notification: n.notifications
@@ -120,7 +120,7 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
     return unreadNotifications && unreadNotifications.filter((n) => {
       return (
         (!searchQuery || (n.notification.domainName && n.notification.domainName.toLowerCase().includes(searchQuery.toLowerCase()))) &&
-        (typeFilter === "all" || n.notification.status === typeFilter)
+        (typeFilter === "all" || n.notification.type === typeFilter)
       );
     });
   }, [unreadNotifications, searchQuery, typeFilter]);
@@ -130,7 +130,7 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
     return readNotifications && readNotifications.filter((n) => {
       return (
         (!searchQuery || (n.notification.domainName && n.notification.domainName.toLowerCase().includes(searchQuery.toLowerCase()))) &&
-        (typeFilter === "all" || n.notification.status === typeFilter)
+        (typeFilter === "all" || n.notification.type === typeFilter)
       );
     });
   }, [readNotifications, searchQuery, typeFilter]);
@@ -204,7 +204,7 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
               <SelectItem value="all">
                 <Badge variant="outline">Todas</Badge>
               </SelectItem>
-              {notificationStatus.map((notification) => (
+              {notificationType.map((notification) => (
                 <SelectItem value={notification} key={notification}>
                   <Badge variant="outline" className={notificationStatusConfig[notification].badge}>
                     {notification}
@@ -272,7 +272,7 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
               if (!tabSelectedOnce) setTabSelectedOnce(true)
             }}
             >
-              Todas
+              Leídas
             </TabsTrigger>
           </TabsList>
           <TabsContent value="unread" className="w-full">
