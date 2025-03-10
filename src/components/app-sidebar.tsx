@@ -3,7 +3,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -13,23 +12,13 @@ import {
 import Link from "next/link"
 import Image from "next/image"
 import AppSidebarFooter from "./app-sidebar-footer"
-
-
 import { auth } from "@/auth";
-
 import AppSidebarMenu from "./app-sidebar-menu"
 
 export async function AppSidebar() {
-// TODO: CAMBIAR ESTO
   const session = await auth();
   const user = session?.user
-  let name = ""
-  let email = ""
-  if (user && user.name && user && user.email) {
-    name = user.name
-    email = user.email
-  } 
-  
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -60,7 +49,7 @@ export async function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <AppSidebarFooter name={name} email={email} />
+        <AppSidebarFooter name={user?.name?? ''} email={user?.email ?? ''} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

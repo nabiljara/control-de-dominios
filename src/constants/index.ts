@@ -13,7 +13,13 @@ import {
   AlertTriangle,
   Ban,
   Slash,
-  LucidePauseCircle
+  LucidePauseCircle,
+  CalendarArrowDown,
+  AlertCircle,
+  CalendarClock,
+  Mail,
+  MailX,
+  Bell
 } from "lucide-react"
 
 export const NAV_MAIN = [
@@ -104,6 +110,51 @@ export const sizeConfig = {
 } as const;
 
 
+export const notificationStatusConfig = {
+  Vencido: {
+    icon: CalendarArrowDown,
+    iconClassName: "w-5 h-5 text-gray-500",
+    badge: "bg-gray-100 text-gray-700",
+    text: "text-gray-700",
+    border: "border-gray-200",
+  },
+  'Vence hoy': {
+    icon: AlertTriangle,
+    iconClassName: "w-5 h-5 text-red-500",
+    badge: "bg-red-100 text-red-700",
+    text: "text-red-700",
+    border: "border-red-200",
+  },
+  'Vence en 7 días': {
+    icon: AlertCircle,
+    iconClassName: "w-5 h-5 text-yellow-500",
+    badge: "bg-yellow-100 text-yellow-700",
+    text: "text-yellow-700",
+    border: "border-yellow-200",
+  },
+  'Vence en 30 días': {
+    icon: CalendarClock,
+    iconClassName: "w-5 h-5 text-blue-500",
+    badge: "bg-blue-100 text-blue-700",
+    text: "text-blue-700",
+    border: "border-blue-200",
+  },
+  'Email no entregado': {
+    icon: MailX,
+    iconClassName: "w-5 h-5 text-orange-500",
+    badge: "bg-orange-100 text-orange-700",
+    text: "text-orange-700",
+    border: "border-orange-200",
+  },
+  'Simple': {
+    icon: Bell,
+    iconClassName: "w-5 h-5 text-gray-500",
+    badge: "bg-green-100 text-gray-700",
+    text: "text-gray-700",
+    border: "border-gray-200",
+  }
+}
+
 export const domainStatus = ["Activo", "Vencido", "Dejar vencer", "Baja permanente"] as const
 export const clientSizes = ["Chico", "Mediano", "Grande"] as const
 export const clientStatus = ["Activo", "Inactivo", "Suspendido"] as const
@@ -135,7 +186,8 @@ export const contactTypes = [
   "Ventas",
 ] as const;
 export const contactStatus = ["Activo", "Inactivo"] as const
-
+export const notificationStatus = ["Vence hoy", "Vence en 7 días", "Vence en 30 días", "Vencido", "Email no entregado", 'Simple'] as const
+export type NotificationStatus = (typeof notificationStatus)[number];
 export const auditActions = ["Agregar", "Actualizar", "Eliminar"]
 
 export const auditEntities = [

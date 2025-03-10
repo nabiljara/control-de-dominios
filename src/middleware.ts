@@ -7,39 +7,39 @@ type NextAuthRequest = NextRequest & { auth: Session | null };
 const auth = NextAuth(authConfig).auth;
 
 export default auth((request: NextAuthRequest) => {
-  const publicRoutes = ["/signin", "/signup", "/maintenance"];
-  const protectedRoutesPrefixes = ["/profile", "/domains", "/providers", "/clients"];
+  const publicRoutes = new Set(["/signin", "/signup", "/maintenance"]);
+  const protectedRoutesPrefixes = ["/audits", "/domains", "/providers", "/clients", "/contacts"];
   
   const { auth, nextUrl } = request;
   const isLoggedIn = !!auth?.user;
   const currentPath = nextUrl.pathname;
-
-  // Verificar si el sitio está en modo mantenimiento
-  const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
-
-  // Si está en modo mantenimiento y no es la página de mantenimiento, redirigir a mantenimiento
-  if (isMaintenanceMode && currentPath !== '/maintenance') {
-    return NextResponse.redirect(new URL("/maintenance", nextUrl));
-  }
-
-  // Si la ruta es pública y el usuario está logeado, redirigir a la página principal
-  if (publicRoutes.includes(currentPath) && isLoggedIn && !isMaintenanceMode) {
-    return NextResponse.redirect(new URL("/", nextUrl));
-  }
-
-  // Verificar si la ruta es protegida por prefijo o si es la raíz ("/")
+  const maintenanceUrl = new URL("/maintenance", nextUrl);
+  const signinUrl = new URL("/signin", nextUrl);
+  const homeUrl = new URL("/", nextUrl);
+  const notFoundUrl = new URL("/not-found", nextUrl);
+  
+  const isMaintenanceMode = process.env.MAINTENANCE_MODE === "true";
+  const isPublicRoute = publicRoutes.has(currentPath);
   const isProtectedRoute = currentPath === "/" || protectedRoutesPrefixes.some(prefix => currentPath.startsWith(prefix));
 
-  // Si la ruta es protegida y el usuario NO está logeado, redirigir a "signin"
-  if (isProtectedRoute && !isLoggedIn && !isMaintenanceMode) {
-    if (currentPath !== "/signin") {
-      return NextResponse.redirect(new URL("/signin", nextUrl));
-    }
+  // Redirigir a /maintenance si está en modo mantenimiento y no está ya en /maintenance
+  if (isMaintenanceMode && currentPath !== "/maintenance") {
+    return NextResponse.redirect(maintenanceUrl);
   }
 
-  // Si está autenticado y la ruta es protegida, permitir acceso
-  if (isLoggedIn || !isProtectedRoute) {
-    return NextResponse.next();
+  // Si el sitio NO está en mantenimiento y el usuario intenta acceder a /maintenance, redirigir a not-found
+  if (currentPath === "/maintenance" && !isMaintenanceMode) {
+    return NextResponse.rewrite(notFoundUrl);
+  }
+
+  // Si el usuario está autenticado y la ruta es pública, redirigir a la página principal
+  if (isLoggedIn && isPublicRoute) {
+    return NextResponse.redirect(homeUrl);
+  }
+
+  // Si la ruta es protegida y el usuario no está autenticado, redirigir a /signin
+  if (!isLoggedIn && isProtectedRoute) {
+    return NextResponse.redirect(signinUrl);
   }
 
   return NextResponse.next();

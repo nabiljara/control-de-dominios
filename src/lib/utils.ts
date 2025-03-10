@@ -1,7 +1,8 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { formatDate as formatUtil } from "date-fns"
+import { format, formatDate as formatUtil } from "date-fns"
 import crypto from "crypto"
+import { es } from "date-fns/locale";
 const SECRET_KEY = process.env.SECRET_KEY || '';
 
 export function cn(...inputs: ClassValue[]) {
@@ -27,3 +28,7 @@ export const encrypt = (text: string): { encrypted: string; iv: string } => {
     throw new Error(`Error al cifrar: ${error}`);
   }
 };
+
+export const formatTextDate = (date: string) => {
+  return format(date, "d 'de' MMMM 'del' yyyy", { locale: es })
+}
