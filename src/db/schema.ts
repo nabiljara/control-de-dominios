@@ -27,7 +27,7 @@ export const clientStatusEnum = pgEnum("client_status", clientStatus)
 export const domainStatusEnum = pgEnum("domain_status", domainStatus)
 export const contactTypeEnum = pgEnum("contact_type", contactTypes)
 export const contactStatusEnum = pgEnum("contact_status", contactStatus )
-export const notificationTypeEnum = pgEnum("notification_status", notificationType)
+export const notificationTypeEnum = pgEnum("notification_type", notificationType)
 export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts", "providers"]) //TODO: CAMBIAR A CONSTANTES
 
 export const localities = pgTable("localities", {
