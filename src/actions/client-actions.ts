@@ -68,6 +68,20 @@ export async function getClient(id: number) {
   }
 };
 
+export async function getClientName(id: number) {
+  try {
+    const name = await db.query.clients.findFirst({
+      where: eq(clients.id, id),
+      columns: { name: true }
+    });
+    return name;
+  }
+  catch (error) {
+    console.error("Error al obtener el nombre del cliente:", error);
+    throw error;
+  }
+};
+
 export async function getAuditClient(id: number) {
   try {
     if (!id) {
@@ -122,7 +136,7 @@ export async function updateClientAndDomains(client: ClientUpdateValues) {
   try {
     const parsed = await clientUpdateFormSchema.parseAsync(client);
     await db.transaction(async (tx) => {
-      
+
       if (!parsed.id) {
         throw new Error("El ID del cliente no está definido.");
       }
@@ -140,7 +154,7 @@ export async function updateClientAndDomains(client: ClientUpdateValues) {
             ...domain,
             expirationDate: format(domain.expirationDate, "yyyy-MM-dd HH:mm"),
           };
-          
+
           const modifiedDomain: DomainInsert = {
             name: data.name,
             clientId: parseInt(data.client.id),
@@ -150,7 +164,7 @@ export async function updateClientAndDomains(client: ClientUpdateValues) {
             id: data.id,
             status: data.status,
           };
-          
+
           if (!modifiedDomain.id) {
             throw new Error("El ID del cliente no está definido.");
           }
@@ -178,7 +192,7 @@ export async function createClient(client: ClientFormValues) {
     if (!parsed) {
       throw new Error("Error de validación del formulario de cliente.");
     }
-    
+
     await db.transaction(async (tx) => {
       await setUserId(tx)
       const response = await tx.insert(clients)

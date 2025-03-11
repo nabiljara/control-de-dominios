@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel, relations, sql, SQL } from "drizzle-orm"
-import { clientSizes, clientStatus, contactStatus, contactTypes, domainStatus, notificationType} from "@/constants";
+import { clientSizes, clientStatus, contactStatus, contactTypes, domainStatus, notificationType } from "@/constants";
 
 import {
   boolean,
@@ -26,7 +26,7 @@ export const clientSizeEnum = pgEnum("client_size", clientSizes)
 export const clientStatusEnum = pgEnum("client_status", clientStatus)
 export const domainStatusEnum = pgEnum("domain_status", domainStatus)
 export const contactTypeEnum = pgEnum("contact_type", contactTypes)
-export const contactStatusEnum = pgEnum("contact_status", contactStatus )
+export const contactStatusEnum = pgEnum("contact_status", contactStatus)
 export const notificationTypeEnum = pgEnum("notification_type", notificationType)
 export const domainHistoryEntityEnum = pgEnum("domain_history_entity_enum", ["clients", "contacts", "providers"]) //TODO: CAMBIAR A CONSTANTES
 
@@ -198,7 +198,7 @@ export const notifications = pgTable("notifications", {
   message: text("message").notNull(),
   type: notificationTypeEnum("type").notNull().default('Simple'),
   domainId: integer('domain_id'),
-  domainName: varchar('domain_name', {length:255}),
+  domainName: varchar('domain_name', { length: 255 }),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 })
 
@@ -470,6 +470,25 @@ export type UserNotification = InferSelectModel<typeof usersNotifications>
 export type UserNotificationWithRelations = UserNotification & {
   notification: Notification
 }
+
+//DOMINIOS PRÓXIMOS A VENCER
+
+export type ExpiringDomains = {
+  id: number;
+  name: string
+  clientId: number;
+  expirationDate: string;
+  client: {
+    id: number;
+    name: string;
+  };
+}
+
+export type DomainsByExpiration = {
+  expiringToday: ExpiringDomains[];
+  expiring7days: ExpiringDomains[];
+  expiring30days: ExpiringDomains[];
+};
 
 
 

@@ -7,6 +7,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
 import { auth } from "@/auth";
+import { domainStatus } from "@/constants";
+import { columns } from "@/app/(root)/audits/_components/columns";
 
 
 export async function getDomains() {
@@ -79,7 +81,7 @@ export async function getAuditDomain(id: number) {
     const domain = await db.query.domains.findFirst({
       where: eq(domains.id, id),
       columns: {
-        id:true,
+        id: true,
         name: true,
         expirationDate: true,
         status: true,
@@ -87,9 +89,9 @@ export async function getAuditDomain(id: number) {
       },
       with:
       {
-        client: {columns: {name: true}},
-        contact: {columns: {name: true, email: true}},
-        provider: {columns: {name: true}},
+        client: { columns: { name: true } },
+        contact: { columns: { name: true, email: true } },
+        provider: { columns: { name: true } },
       }
     });
     return domain;
@@ -140,13 +142,13 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
   try {
     // await setUserId()
     await db.transaction(async (tx) => {
-      
+
       await setUserId(tx)
-      
+
       if (!domain.id) {
         throw new Error("El ID del dominio no está definido.");
       }
-      
+
       await tx.update(domains)
         .set(domain)
         .where(eq(domains.id, domain.id))
@@ -156,14 +158,14 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
 
       //Si tiene acceso asociado y no se seleccionó un acceso, elimino la asociación
       if (response && !accessId) {
-        
+
         await tx.delete(domainAccess)
           .where(eq(domainAccess.domainId, domain.id));
       }
       //Si no tiene acceso asociado y se seleccionó un acceso, creo la asociación
-      else if (accessId) { 
+      else if (accessId) {
         if (!response) {
-          
+
           await tx.insert(domainAccess)
             .values({
               domainId: domain.id,
@@ -172,7 +174,7 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
         }
         //Si tiene acceso asociado, se seleccionó un acceso y este es diferente al que ya tiene, actualizo la asociación
         else if (response.accessId !== accessId) {
-          
+
           await tx.update(domainAccess)
             .set({
               domainId: domain.id,
@@ -194,35 +196,31 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
 };
 
 
-export async function updateDomainCron(domain: DomainInsert) {
-  let success = false;
+export async function updateDomainCron(id: number) {
   try {
     //Para el cron job, se setea el userId del usuario SISTEMA (desde seed)
     await db.transaction(async (tx) => {
       await setUserSystem(tx)
-      if (!domain.id) {
+      if (!id) {
         throw new Error("El ID del dominio no está definido.");
       }
-      //Solo módifico el dominio, no toca ni modifica nada de las relaciones 
       await tx.update(domains)
-        .set(domain)
-        .where(eq(domains.id, domain.id))
+        .set({ status: 'Vencido' })
+        .where(eq(domains.id, id))
     });
-    success = true;
   }
   catch (error) {
-    console.error("Error al modificar el dominio:", error);
+    console.error("Error al modificar el estado del dominio por CronJob: ", error);
     throw error;
   }
-  return success;
 };
 
-export async function getAccessDomain(domainId: number){
-  try{
+export async function getAccessDomain(domainId: number) {
+  try {
     const response = await db.query.domainAccess.findFirst({ where: eq(domainAccess.domainId, domainId) })
     return response
   }
-  catch(error){
+  catch (error) {
     console.log("Hubo un error al obtener el acceso del dominio: ", error)
 
   }
@@ -307,43 +305,44 @@ export async function getDomainHistory(history: DomainHistory[]) {
   }
 }
 
-export async function getExpiringDomains(){
+export async function getExpiringDomains() {
   const today = Date.now();
-  try{
+  try {
     const data = await db.query.domains.findMany({
-      where: 
+      columns: { expirationDate: true, id: true, clientId: true, name:true },
+      where:
         eq(domains.status, 'Activo'),
-        with: {
-          provider: true,
-          client: true,
-        }
+      with: {
+        client: { columns: { id: true, name: true } },
+      }
     });
 
     const expiringDomains = data.filter((domain) => {
       const expirationDate = new Date(domain.expirationDate);
-      expirationDate.setHours(0, 0, 0, 0);      
+      expirationDate.setHours(0, 0, 0, 0);
       const diffInMs = expirationDate.getTime() - today.valueOf();
       const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-      return daysRemaining >= 0 ;
-    }).sort((a, b)=> new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+      return daysRemaining >= 0;
+    }).sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+
     const expiredDomains = data.filter((domain) => {
       const expirationDate = new Date(domain.expirationDate);
-      expirationDate.setHours(0, 0, 0, 0);      
+      expirationDate.setHours(0, 0, 0, 0);
       const diffInMs = expirationDate.getTime() - today.valueOf();
       const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-      return daysRemaining < 0 ;
+      return daysRemaining < 0;
     });
-    
-    return {expiringDomains, expiredDomains};
+
+    return { expiringDomains, expiredDomains };
   }
   catch (error) {
-    console.error("Error al obtener los dominios:", error);
+    console.error("Error al obtener los dominios próximos a vencer y vencidos: ", error);
     throw error;
   }
 }
 
-export async function getDashboardData(){
-  try{
+export async function getDashboardData() {
+  try {
     const result = await Promise.all([
       db.select({ count: count() }).from(domains),
       db.select({ count: count() }).from(domains).where(eq(domains.status, "Activo")),
@@ -365,7 +364,7 @@ export async function getDashboardData(){
     let growthPercentage = 0;
     if (registeredPerMonth.length > 1) {
       const lastMonth = registeredPerMonth[0]?.count ?? 0;
-      const previousMonth = registeredPerMonth[1]?.count ?? 1; 
+      const previousMonth = registeredPerMonth[1]?.count ?? 1;
       growthPercentage = ((lastMonth - previousMonth) / previousMonth) * 100;
     }
     return {
@@ -373,7 +372,7 @@ export async function getDashboardData(){
       active: totalActive,
       expired: totalExpired,
       registeredPerMonth,
-      growthPercentage: Math.round(growthPercentage * 100) / 100, 
+      growthPercentage: Math.round(growthPercentage * 100) / 100,
     };
   }
   catch (error) {

@@ -5,19 +5,20 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Search, Loader2, ChevronUp, Database, X, Check, RefreshCw } from "lucide-react";
+import { Bell, Search, Loader2, ChevronUp, Database, Check, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { NotificationType, notificationType, notificationStatusConfig } from "@/constants";
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getUserReadNotifications, getUserReadNotificationsFiltered, getUserUnreadNotifications, markNotificationsAsRead } from "@/actions/notifications-actions";
+import { getUnreadNotificationsCount, getUserReadNotifications, getUserReadNotificationsFiltered, getUserUnreadNotifications, markNotificationsAsRead } from "@/actions/notifications-actions";
 import NotificationSkeleton from "./notification-skeleton";
 import { NotificationCard } from "./notification-card";
 import { UserNotificationWithRelations } from "@/db/schema";
+import { toast } from "sonner";
 
 
-export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotificationsCount: number }) {
+export function NotificationsSheet() {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -28,7 +29,7 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
   const [hasMore, setHasMore] = useState(true);
   const [errorRead, setErrorRead] = useState(false);
   const [errorUnread, setErrorUnread] = useState(false);
-  const [unreadCount, setUnreadCount] = useState<number>(unreadNotificationsCount);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const [page, setPage] = useState(1);
   const [tabSelectedOnce, setTabSelectedOnce] = useState(false);
   const [tabSelected, setTabSelected] = useState('unread');
@@ -38,13 +39,26 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
   const limit = 30;
   const sheetContentRef = useRef<HTMLDivElement>(null);
 
-
   const scrollToTop = () => {
     if (sheetContentRef.current) {
       sheetContentRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
+  useEffect(() => {
+    const fetchUnreadNotificationsCount = async () => {
+      try {
+        const count = await getUnreadNotificationsCount();
+        setUnreadCount(count);
+      } catch (error) {
+        toast.error('No se pudo actualizar correctamente las notificaciones. Refrescar manualmente.')
+      }
+    }
+    fetchUnreadNotificationsCount();
+
+  }, []);
+
+  ;
   //Buscar las notificaciones leídas
   useEffect(() => {
 
@@ -74,8 +88,6 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
     fetchReadNotifications();
 
   }, [page, tabSelectedOnce]);
-
-
 
   //Buscar las notificaciones no leídas
   useEffect(() => {
@@ -254,7 +266,7 @@ export function NotificationsSheet({ unreadNotificationsCount }: { unreadNotific
                 ) : (
                   <>
                     <RefreshCw />
-                    {`Treaer últimas ${limit}`}
+                    {`Traer últimas ${limit}`}
                   </>
                 )}
               </Button>
