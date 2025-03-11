@@ -5,20 +5,20 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendMail(domain:string, client:string, days:string, expirationDate:string) { 
+export async function sendMail(domain:string, expirationDate:string, title:string, primaryColor:string, expire:string) { 
   
   try {
-    // const response = await sendEmailToClient(domain, client, days, expirationDate);
+    // const response = await sendEmailToClient(domain, expirationDate,title, primaryColor,expire);
 
     // if (response.success) {
-    //   const responseClient = await sendEmailToClient(data);
-    //   if (responseClient.success){
+      // const responseClient = await sendEmailToClient(data);
+      // if (responseClient.success){
         return { success: true };
-    //   }else{
-    //     throw new Error("Error inesperado al enviar el correo al cliente");  
-    //   }
+      // }else{
+      //   throw new Error("Error inesperado al enviar el correo al cliente");  
+      // }
     // } else {
-      // throw new Error("Error inesperado al enviar el correo");
+    //   throw new Error("Error inesperado al enviar el correo");
     // }
   } catch (error) {
     console.error("Error al envíar el correo:", error);
@@ -31,7 +31,7 @@ export async function sendMail(domain:string, client:string, days:string, expira
 }
 
 
-const sendEmailToClient = async (domain:string, client:string, days:string, expirationDate:string) => {
+const sendEmailToClient = async (domain:string, expirationDate:string, title:string, primaryColor:string, expire:string) => {
   const managementEmail = 'luccamansilla01@gmail.com'
   try {
     const data = await resend.emails.send({
@@ -39,10 +39,11 @@ const sendEmailToClient = async (domain:string, client:string, days:string, expi
       to: [managementEmail],
       subject: 'Vencimiento de Dominio',
       react: ClientEmail({
-          client,
         domain,
-        days,
-        expirationDate
+        expirationDate,
+        title,
+        primaryColor,
+        expire,
       }) as React.ReactElement,
     });
     if (!data.error) {

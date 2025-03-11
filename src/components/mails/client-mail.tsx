@@ -1,129 +1,237 @@
 import {
   Body,
+  Button,
+  Column,
+  Container,
+  Font,
   Head,
   Html,
   Img,
-  Text,
   Link,
-  Section,
-  Container,
-  Font,
+  Preview,
   Row,
-  Column,
-  Hr,
+  Section,
+  Text,
 } from "@react-email/components";
+
 interface ClientEmailProps {
-  client: string;
   domain: string;
-  days: string;
   expirationDate: string;
+  title: string;
+  expire?: string;
+  primaryColor: string;
 }
 
-const baseUrl = process.env.SICOM_URL ? `https://${process.env.SICOM_URL}` : "";
-
 export default function ClientEmail({
-  client,
-  domain,
-  days,
-  expirationDate,
+  domain = "dominio.com",
+  expirationDate = "DD-MM-YYYY",
+  title = "Titulo vencimiento",
+  // primaryColor = "#60C9A1",
+  primaryColor = "#FF5B5B",
+  expire = "",
 }: ClientEmailProps) {
   return (
     <Html>
       <Head>
         <Font
-          fontFamily="Manrope"
+          fontFamily="Inter"
           fallbackFontFamily="Arial"
           webFont={{
-            url: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",
+            url: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap",
             format: "woff2",
           }}
           fontWeight={400}
           fontStyle="normal"
         />
+        <style>
+          {`
+      @media screen and (max-width: 600px) {
+        .container {
+          width: 90% !important;
+          min-width: unset !important;
+        }
+        .container-footer {
+          width: 90% !important;
+          min-width: unset !important;
+        }
+        .button {
+          display: block !important;
+          width: 100% !important;
+          text-align: center !important;
+          padding: 16px 0 !important;
+        }
+        .header-row {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+        }
+        .header-column {
+          text-align: left !important;
+          width: 100% !important;
+        }
+      }
+    `}
+        </style>
       </Head>
+      <Preview>Tu dominio {domain}</Preview>
       <Body style={main}>
-        <Container style={container}>
-          <div style={subContainer}>
-            <Section style={headerContainer}>
-              <Row>
-                <Column style={headerColumn}>
-                  <Img
-                    src={`https://kerneltech.dev/images/kernel-black.svg`}
-                    alt="Kernel Logo"
-                    height={41}
-                    width={110}
-                  />
-                </Column>
-                <Column style={headerColumn}>
-                  <Text style={headerText}></Text>
-                </Column>
-              </Row>
-            </Section>
-            <Section style={content}>
-              <Text style={textContent}>
-                ¡Hola <strong style={bold}>{client}</strong>!
-              </Text>
-              <Text style={textContent}>
-                Le informamos que el dominio asociado a su cuenta{" "}
-                <strong style={bold}>{domain}</strong>{" "}
-                <span style={{ textDecoration: "underline" }}>{days}</span>.
-                Para evitar interrupciones en su servicio, le recomendamos
-                ponerse en contacto con la administración de Kernel a la
-                brevedad para gestionar su renovación.
-              </Text>
-              <Text style={textContent}>
-                En caso de no realizar la renovación, el dominio expirará
-                automáticamente en la fecha de vencimiento establecida (
-                <strong style={bold}>{expirationDate}</strong>). Si necesita
-                asistencia, no dude en comunicarse con nosotros.
-              </Text>
-            </Section>
-            <Hr style={divider} />
-            <Section>
-              <Row>
-                <Column align="left" style={{ paddingRight: "10px" }}>
-                  <Text style={footerText}>
-                    <strong style={boldInter}>Kernel SAS</strong>
-                  </Text>
-                  <Text style={footerText}>Tu partner Tecnológico</Text>
-                </Column>
-                <Column align="right">
-                  <Row align="right">
-                    <Column>
-                      <Link
-                        href="https://wathsapp.com"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <Img
-                          alt="WhatsApp"
-                          height="20"
-                          width="20"
-                          src={`${baseUrl}/email/whatsapp.png`}
-                          style={socialLink}
-                        />
-                      </Link>
-                    </Column>
-                    <Column>
-                      <Link
-                        href="https://www.instagram.com/kerneltechs/"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <Img
-                          alt="Instagram"
-                          height="20"
-                          width="20"
-                          src={`${baseUrl}/email/instagram.png`}
-                          style={socialLink}
-                        />
-                      </Link>
-                    </Column>
-                  </Row>
-                </Column>
-              </Row>
-            </Section>
-          </div>
+        {/* CONTAINER CON EL GRADIENTE, USADO COMO BORDE */}
+        <Container
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minWidth: "600px",
+            maxWidth: "600px",
+            borderRadius: "15px",
+            padding: "2px",
+            background: `linear-gradient(to top, ${primaryColor} -10%, transparent 100%)`,
+          }}
+          className="container"
+        >
+          <table
+            role="presentation"
+            width="100%"
+            cellPadding="0"
+            cellSpacing="0"
+          >
+            <tbody>
+              <tr>
+                <td>
+                  <Container
+                    style={{
+                      margin: "0",
+                      marginTop: "10px",
+                      borderRadius: "15px",
+                      backgroundColor: "#ffffff",
+                      padding: "2px",
+                      width: "100%",
+                      maxWidth: "100%",
+                      height: "100%",
+                      minHeight: "100%",
+                    }}
+                  >
+                    {/* CONTAINER CON FONDO BLANCO */}
+                    <Section style={headerStyle}>
+                      <Row className="header-row">
+                        <Column
+                          className="header-column"
+                          style={logoColumnStyle}
+                        >
+                          <Img
+                            src={
+                              expire === "expired" || expire === "today"
+                                ? "https://kerneltech.dev/images/kernel-color.png"
+                                : "https://kerneltech.dev/images/kernel-black.svg"
+                            }
+                            width="120"
+                            height="24"
+                            alt="Kernel"
+                          />
+                        </Column>
+                        <Column
+                          className="header-column"
+                          style={partnerColumnStyle}
+                        >
+                          <Text style={partnerText(primaryColor)}>
+                            TU PARTNER TECNOLÓGICO
+                          </Text>
+                        </Column>
+                      </Row>
+                    </Section>
+
+                    <Section>
+                      <Row>
+                        <Column
+                          style={{
+                            width: "100%",
+                            padding: "24px 32px",
+                          }}
+                        >
+                          <Text style={titleStyle(primaryColor)}>
+                            Tu dominio {title}
+                          </Text>
+                          <Text style={paragraph}>
+                            Tu dominio <strong style={bold}>{domain}</strong>{" "}
+                            {expire === "today" ? (
+                              "caduca el día de hoy"
+                            ) : expire === "expired" ? (
+                              <>
+                                caducó el{" "}
+                                <strong style={bold}>{expirationDate}</strong>
+                              </>
+                            ) : (
+                              <>
+                                caduca el{" "}
+                                <strong style={bold}>{expirationDate}</strong>
+                              </>
+                            )}
+                          </Text>
+                          <Text style={paragraph}>
+                            {expire === "expired" ? (
+                              <>
+                                Lamentamos que tus servicios hayan dejado de
+                                funcionar, respondé este correo o contactate con
+                                nuestra área administrativa para activarlos. Te
+                                ayudaremos con el proceso de recuperación.
+                              </>
+                            ) : (
+                              <>
+                                Para mantener tu sitio web en funcionamiento,
+                                respondé este correo o contactate con nuestra
+                                área administrativa. Te ayudaremos con el
+                                proceso de renovación.
+                              </>
+                            )}
+                          </Text>
+                          <Text style={paragraph}>
+                            <strong style={bold}>Importante:</strong> Si querés
+                            conservar tu dominio, es necesario renovarlo. Si no
+                            lo hacés a tiempo, podrían aplicarse tarifas
+                            adicionales
+                            {expire === "expired" || expire === "today"
+                              ? " o podrías perderlo"
+                              : ""}
+                            .
+                          </Text>
+                          <Button
+                            href={
+                              expire === "expired"
+                                ? "https://wa.me/542974269067?text=Hola%21%20Necesito%20recuperar%20mi%20dominio."
+                                : "https://wa.me/542974269067?text=Hola%21%20Necesito%20hacer%20la%20renovaci%C3%B3n%20de%20mi%20dominio."
+                            }
+                            style={buttonStyle(primaryColor)}
+                            className="button"
+                          >
+                            {expire === "expired" ? (
+                              <>Recuperar ahora</>
+                            ) : (
+                              <>Renovar ahora</>
+                            )}
+                          </Button>
+                        </Column>
+                      </Row>
+                    </Section>
+                  </Container>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          {/* GRADIENTE */}
+        </Container>
+        <Container style={containerFooter} className="container-footer">
+          <Section style={footerStyle}>
+            <Row>
+              <Column style={textLeftFooter}>
+                <Text style={footerText}>© 2025 Kernel S.A.S.</Text>
+              </Column>
+              <Column style={textRightFooter}>
+                <Link href="https://kerneltech.dev/legales" style={privacyLink}>
+                  Política de privacidad
+                </Link>
+              </Column>
+            </Row>
+          </Section>
         </Container>
       </Body>
     </Html>
@@ -131,67 +239,99 @@ export default function ClientEmail({
 }
 
 const main = {
-  backgroundColor: "#ffffff",
-  fontFamily: "Manrope, Arial, sans-serif",
+  backgroundColor: "#F2F2F2",
+  fontFamily: "Inter, Arial, sans-serif",
+  width: "100%",
+  marginTop: "10px",
+  marginBottom: "10px",
 };
 
-const container = {
-  margin: "0 auto",
-  width: "600px",
-};
-const subContainer = {
-  padding: "8px",
-};
-
-const headerContainer = {
-  background: "linear-gradient(to right, #7FC7B3, #4B529E, #7FC7B3)",
-  borderRadius: "20px",
-  marginBottom: "20px",
+const containerFooter = {
+  margin: "10px auto",
+  maxWidth: "600px",
+  overflow: "hidden",
+  border: "none",
+  backgroundColor: "#F2F2F2",
 };
 
-const headerColumn = {
-  padding: "24px 32px",
+const headerStyle = {
+  width: "100%",
+  padding: "0",
+  marginTop: "20px",
 };
-
-const headerText = {
-  color: "#FFFFFF",
+const partnerText = (color: string) => ({
+  color: `${color === "#FF5B5B" ? "#131E3C" : "#38BC89"}`,
   fontSize: "14px",
   lineHeight: "20px",
+  fontWeight: "700",
   margin: "0",
+  textAlign: "right" as const,
+});
+const logoColumnStyle = {
+  padding: "24px 32px",
+  textAlign: "left" as const,
+};
+const partnerColumnStyle = {
+  padding: "24px 32px",
+  textAlign: "right" as const,
+};
+const textLeftFooter = {
+  padding: "24px 32px",
+  textAlign: "left" as const,
+};
+const textRightFooter = {
+  padding: "24px 32px",
   textAlign: "right" as const,
 };
 
-const content = {
-  margin: "0 0 25px",
-};
+const titleStyle = (titleColor: string) => ({
+  fontSize: "25px",
+  fontWeight: "700",
+  color: `${titleColor === "#FF5B5B" ? "#FF5B5B" : "#131E3C"}`,
+  marginBottom: "20px",
+  marginTop: "10px",
+  lineHeight: "28px",
+});
 
-const textContent = {
-  fontSize: "16px",
-  lineHeight: "24px",
-  marginBottom: "24px",
-};
-const divider = {
-  borderColor: "#E1E1E1",
-  margin: "0 0 24px",
-};
-
-const footerText = {
-  color: "#1E1E1E",
-  fontSize: "14px",
-  lineHeight: "20px",
-  margin: "0 0 0",
-  fontFamily: "Inter, Manrope, arial",
-};
-
-const socialLink = {
-  marginLeft: 10,
-  marginRight: 10,
+const paragraph = {
+  fontSize: "18px",
+  fontWeight: "300",
+  lineHeight: "28px",
+  color: "#131E3C",
+  marginBottom: "16px",
 };
 
 const bold = {
-  fontWeight: "bold",
+  fontWeight: "700",
 };
-const boldInter = {
-  fontWeight: "bold",
-  fontFamily: "Inter, Manrope, Arial",
+
+const buttonStyle = (backgroundColor: string) => ({
+  backgroundColor: `${backgroundColor === "#FF5B5B" ? "#FF5B5B" : "#38BC89"}`,
+  borderRadius: "6px",
+  color: "#fff",
+  fontSize: "16px",
+  fontWeight: "600",
+  textDecoration: "none",
+  textAlign: "center" as const,
+  display: "inline-block",
+  marginTop: "10px",
+  marginBottom: "40px",
+  padding: "14px 55px",
+});
+
+const footerStyle = {
+  width: "100%",
+  padding: "0",
+};
+
+const footerText = {
+  fontSize: "14px",
+  color: "#1E1E1E",
+  margin: "0",
+};
+
+const privacyLink = {
+  fontSize: "14px",
+  color: "#1E1E1E",
+  textDecoration: "underline",
 };
