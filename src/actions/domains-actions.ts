@@ -1,14 +1,11 @@
 "use server"
 import db from "@/db";
 import { clients, contacts, domainAccess, DomainHistory, DomainInsert, domains, DomainWithRelations, providers } from "@/db/schema";
-import { asc, desc, eq, or, sql, count, lt } from "drizzle-orm";
+import { asc, desc, eq, sql, count, lt } from "drizzle-orm";
 import { setUserId, setUserSystem } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
-import { auth } from "@/auth";
-import { domainStatus } from "@/constants";
-import { columns } from "@/app/(root)/audits/_components/columns";
 
 
 export async function getDomains() {

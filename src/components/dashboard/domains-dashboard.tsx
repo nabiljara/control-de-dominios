@@ -45,7 +45,7 @@ export function DomainsDashboard() {
           }),
           count: item.count,
         }));
-        setExpiringDomains(expiredDomains);
+        // setExpiringDomains(expiredDomains);
         setRegisteredByMonth(sortedDomainsPerMonth);
         setDashData(dashboardData);
       } catch (error) {
@@ -59,94 +59,94 @@ export function DomainsDashboard() {
   }, []);
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">
               Dominios Totales
             </CardTitle>
-            <Globe2 className="h-4 w-4 text-muted-foreground" />
+            <Globe2 className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {dashData?.total !== undefined ? (
                 dashData.total
               ) : (
-                <Skeleton className="h-8 w-10" />
+                <Skeleton className="w-10 h-8" />
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {/* TODO: SACAR PORCENTAJE */}
               +180.1% desde el mes pasado
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">
               Dominios Activos
             </CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Activity className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {dashData?.active !== undefined ? (
                 dashData.active
               ) : (
-                <Skeleton className="h-8 w-10" />
+                <Skeleton className="w-10 h-8" />
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {/* TODO: SACAR DIFF CANTIDAD */}
               +201 desde la última semana
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">
               Dominios Vencidos
             </CardTitle>
-            <Minus className="h-4 w-4 text-muted-foreground" />
+            <Minus className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {dashData?.expired !== undefined ? (
                 dashData.expired
               ) : (
-                <Skeleton className="h-8 w-10" />
+                <Skeleton className="w-10 h-8" />
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {/* TODO: SACAR DIFF */}
               +20 nuevos este mes
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+            <CardTitle className="font-medium text-sm">
               Crecimiento Mensual
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {/* TODO: HACER PRUEBAS */}
               {dashData?.growthPercentage !== undefined ? (
                 dashData.growthPercentage + "%"
               ) : (
-                <Skeleton className="h-8 w-10" />
+                <Skeleton className="w-10 h-8" />
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {/* TODO: COMPARAR CON MES PASADO */}
               +2.1% desde el mes pasado
             </p>
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+      <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-8">
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Dominios por Mes</CardTitle>
