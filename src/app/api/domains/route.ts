@@ -6,8 +6,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { formatTextDate } from '@/lib/utils';
 import { NotificationType } from '@/constants';
 
-export const runtime = 'nodejs';
-
 export async function GET(request: NextRequest) {
     // const authHeader = request.headers.get('authorization');
     // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -103,13 +101,16 @@ export async function GET(request: NextRequest) {
         try{
             await Promise.allSettled([
                 domainsByExpiration.expiring30days.length > 0 
-                ? createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en un mes') 
+                ? console.log("Acción creación notificaciones para dominios que vencen en un mes")
+                // ? createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en un mes') 
                 : null,
                 domainsByExpiration.expiring7days.length > 0 
-                ? createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en una semana') 
+                ? console.log("Acción creación notificaciones para dominios que vencen en una semana")
+                // ? createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en una semana') 
                 : null,
                 domainsByExpiration.expiringToday.length > 0 
-                ? createNotificationForDomain(domainsByExpiration.expiringToday, 'Vence hoy') 
+                ? console.log("Acción creación notificaciones para dominios que vencen hoy")
+                // ? createNotificationForDomain(domainsByExpiration.expiringToday, 'Vence hoy') 
                 : null,
                 expiredDomains.length > 0 ? updateDomainsState(expiredDomains) : null
             ].filter(Boolean))
@@ -137,13 +138,16 @@ export async function GET(request: NextRequest) {
             { headers: { 'Cache-Control': 'no-store' } }
         );
     } catch (error) {
-        console.error('Error en la ejecución del cron job:', error);
+        console.log('Error en la ejecución del cron job:', error);
         if (error instanceof Error) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
         return NextResponse.json({ success: false, error: 'Unknown error' }, { status: 500 });
     }
 }
+export const config = {
+    runtime: 'edge',
+};
 
 
 
