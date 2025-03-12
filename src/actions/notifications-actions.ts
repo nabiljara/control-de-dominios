@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { NotificationType } from "@/constants";
 import db from "@/db";
 import { NotificationInsert, notifications, UserNotification, usersNotifications } from "@/db/schema";
-import { and, count, desc, eq, ilike } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, or } from "drizzle-orm";
 
 
 export async function insertNotification(notification: NotificationInsert, userId: string) {
@@ -61,11 +61,11 @@ export async function getUnreadNotificationsCount() {
     if (!id) {
       throw new Error(`El id del usuario no está definido.`);
     }
-    
+
     const result = await db
-    .select({ count: count() })
-    .from(usersNotifications)
-    .where(and(eq(usersNotifications.userId, id), eq(usersNotifications.readed, false)));
+      .select({ count: count() })
+      .from(usersNotifications)
+      .where(and(eq(usersNotifications.userId, id), eq(usersNotifications.readed, false)));
     return result[0]?.count || 0;
   }
   catch (error) {
@@ -112,7 +112,7 @@ export async function getUserReadNotificationsFiltered(domainName: string, type:
     const conditions = [
       eq(usersNotifications.userId, id),
       eq(usersNotifications.readed, true),
-      ilike(notifications.domainName, `%${domainName}%`)
+      ilike(notifications.domainName, `%${domainName}%`),
     ];
 
     if (type !== 'all') {
@@ -124,7 +124,7 @@ export async function getUserReadNotificationsFiltered(domainName: string, type:
       .select()
       .from(usersNotifications)
       .innerJoin(notifications, eq(usersNotifications.notificationId, notifications.id))
-      .where(and(...conditions))
+      .where(or(and(...conditions), isNull(notifications.domainName)))
       .orderBy(desc(usersNotifications.notificationId));
 
     return data;

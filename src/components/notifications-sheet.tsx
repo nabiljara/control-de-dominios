@@ -352,7 +352,7 @@ export function NotificationsSheet() {
               ) : (
                 filteredUnreadNotifications && filteredUnreadNotifications.map((n) => {
                   return (
-                    <NotificationCard key={n.notification.id} notification={n.notification} setOpen={setOpen} isUnread={n.readed} />
+                    <NotificationCard key={n.notification.id} notification={n.notification} isUnread={n.readed} />
                   );
                 })
               )}
@@ -380,7 +380,7 @@ export function NotificationsSheet() {
               ) : (
                 filteredReadNotifications && filteredReadNotifications.map((n) => {
                   return (
-                    <NotificationCard key={n.notification.id} notification={n.notification} setOpen={setOpen} isUnread={n.readed} />
+                    <NotificationCard key={n.notification.id} notification={n.notification} isUnread={n.readed} />
                   )
                 })
               )}
