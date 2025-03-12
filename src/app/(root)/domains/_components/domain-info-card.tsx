@@ -2,17 +2,31 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientHistory, ContactHistory, DomainWithRelations, ProviderHistory } from "@/db/schema";
-import { BarChart2, Box, CalendarArrowDown, CalendarDays, CheckCircle, Clock, Contact, ExternalLink, ExternalLinkIcon, Eye, Globe, Handshake, History, KeySquare, Mail, Phone, Tag, User } from "lucide-react";
+import {
+  BarChart2,
+  Box,
+  CalendarArrowDown,
+  CheckCircle,
+  Contact,
+  ExternalLink,
+  ExternalLinkIcon,
+  Eye,
+  FileText,
+  Handshake,
+  History,
+  KeySquare,
+  Mail,
+  Phone,
+  Tag,
+  User
+} from "lucide-react";
 import { formatDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { Key, FileText } from 'lucide-react'
 import Link from "next/link";
 import { UsernameCopy } from "@/app/(root)/clients/_components/username-copy";
 import { PasswordCell } from "@/app/(root)/clients/_components/password-cell";
-import { getDomainHistory } from "@/actions/domains-actions";
-import { useEffect, useState } from "react";
 import { sizeConfig, statusConfig } from "@/constants";
 
 
@@ -74,10 +88,6 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
           <CalendarArrowDown className="mr-2" />
           <span>Expira: {formatDate(domain.expirationDate)}</span>
         </div>
-        {/* <div className="flex items-center text-muted-foreground">
-          <Clock className="mr-2" />
-          <span>Actualizado: {formatDate(domain.updatedAt)}</span>
-        </div> */}
         <Badge
           variant='outline'
           className={`${statusConfig[domain.status].color} w-min truncate`}
@@ -88,10 +98,10 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
       <CardContent>
         <Separator className="my-6" />
 
-        <div className={`gap-4 grid grid-cols-1 lg:${domain.accessData ? 'grid-cols-2' : ''} xl:${domain.accessData ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
+        <div className={`gap-4 grid grid-cols-1 lg:${domain.accessData ? 'grid-cols-2' : 'grid-cols-1'} xl:${domain.accessData ? 'grid-cols-2' : 'grid-cols-3'} mb-6`}>
           <Section title="Cliente" icon={<Handshake />} href={`/clients/${domain.clientId}`}>
             <div className="flex flex-col space-y-2">
-              <p className="font-medium">{domain.client.name}</p>
+              <p className="font-medium truncate">{domain.client.name}</p>
               <div className="flex">
                 <BarChart2 className="mr-2" />
                 <Badge variant='outline' className={sizeConfig[domain.client.size].color}>
@@ -109,19 +119,20 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
 
           <Section title="Contacto" icon={<Contact className="mr-2" />} href={`/contacts/${domain.contactId}`}>
             <div className="space-y-2">
-              <p className="font-medium">{domain.contact.name}</p>
+              <p className="font-medium truncate">{domain.contact.name}</p>
               <p className="flex items-center">
-                <Mail className="mr-2" />
-                <a href={`mailto:${domain.contact.email}`} className="text-blue-500 hover:underline">
+                <Mail className="mr-2 shrink-0" />
+                <a href={`mailto:${domain.contact.email}`} className="text-blue-500 hover:underline truncate">
                   {domain.contact.email}
                 </a>
               </p>
-              <p className="flex items-center">
-                <Phone className="mr-2" />
-                <Link href={`tel:${domain.contact.phone}`} className="text-blue-500 hover:underline">
-                  {domain.contact.phone}
-                </Link>
-              </p>
+              {
+                domain.contact.phone && <p className="flex items-center">
+                  <Phone className="mr-2" />
+                  <Link href={`tel:${domain.contact.phone}`} className="text-blue-500 hover:underline truncate">
+                    {domain.contact.phone}
+                  </Link>
+                </p>}
               <div className='flex items-center gap-2'>
                 <Tag />
                 <Badge variant='outline'>
@@ -134,8 +145,8 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
           <Section title="Proveedor" icon={<Box className="mr-2" />}>
             <div className="space-y-2">
               <p className="font-medium">{domain.provider.name}</p>
-              <Link href={domain.provider.url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
-                <ExternalLink className="mr-2" />
+              <Link href={domain.provider.url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline truncate">
+                <ExternalLink className="mr-2 shrink-0" />
                 {domain.provider.url}
               </Link>
             </div>

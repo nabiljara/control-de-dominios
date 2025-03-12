@@ -95,7 +95,7 @@ export function ContactModal({
       if (isValid) {
         const errorList = contact ?
 
-          await validateContact(form.getValues('phone'), form.getValues('email'), contact.phone ? contact.phone : undefined, contact.email) // para Editar
+          await validateContact(form.getValues('phone'), form.getValues('email'), contact.phone ?? undefined, contact.email) // para Editar
           :
           await validateContact(form.getValues('phone'), form.getValues('email'), undefined, undefined); // Para un nuevo registro
 

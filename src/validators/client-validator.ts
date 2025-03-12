@@ -29,7 +29,8 @@ export const contactFormSchema = z.object({
   email: z
     .string()
     .trim()
-    .email({ message: "El email no es válido." }).max(50, { message: "El email debe contener como máximo 50 caracteres." }),
+    .email({ message: "El email no es válido." }).max(50, { message: "El email debe contener como máximo 50 caracteres." })
+    .transform((val) => val.toLowerCase()),
 
   phone: z
     .string()

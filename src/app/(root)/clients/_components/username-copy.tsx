@@ -18,8 +18,8 @@ export function UsernameCopy({ username }: UsernameCopyProps) {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span>{username}</span>
+    <div className="flex items-center gap-2 truncate">
+      <span className='overflow-hidden'>{username}</span>
       <Button
         variant="ghost"
         size="icon"

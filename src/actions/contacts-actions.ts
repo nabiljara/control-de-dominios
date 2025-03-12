@@ -40,7 +40,7 @@ export async function createContact(contact: ContactFormValues, pathToRevalidate
         };
         await db.transaction(async (tx) => {
             await setUserId(tx)
-      
+
             await tx.insert(contacts).values(newContact);
             success = true;
         });
@@ -63,21 +63,22 @@ export async function updateContact(contact: ContactFormValues, pathToRevalidate
         if (!parsed) {
             throw new Error("Error de validación del formulario de contacto.");
         }
+
         await db.transaction(async (tx) => {
             await setUserId(tx)
-      
+
             await tx
-            .update(contacts)
-            .set({
-                name: parsed.name,
-                email: parsed.email,
-                phone: contact.phone,
-                type: contact.type,
-                status: contact.status,
-                clientId: contact.clientId ? contact.clientId : null ,
-                updatedAt: sql`NOW()`
-            })
-            .where(eq(contacts.id, Number(contact.id)))
+                .update(contacts)
+                .set({
+                    name: parsed.name,
+                    email: parsed.email,
+                    phone: parsed.phone ?? null,
+                    type: parsed.type,
+                    status: parsed.status,
+                    clientId: parsed.clientId ?? null,
+                    updatedAt: sql`NOW()`
+                })
+                .where(eq(contacts.id, Number(contact.id)))
             success = true;
         });
     }
@@ -99,9 +100,13 @@ export async function getContact(id: number) {
                 domains: {
                     where: eq(domains.status, 'Activo'),
                     with: {
-                        client: { with: { contacts: {
-                            where: eq(contacts.status, 'Activo')
-                        } } },
+                        client: {
+                            with: {
+                                contacts: {
+                                    where: eq(contacts.status, 'Activo')
+                                }
+                            }
+                        },
                         contact: true
                     }
                 },

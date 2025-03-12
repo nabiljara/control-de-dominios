@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, ArrowRight, Globe, Calendar, Box, User, Contact2, Shield } from "lucide-react"
+import { CheckCircle, ArrowRight, Globe, Calendar, Box, User, Contact2, Shield, KeySquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DomainFormValues } from "@/validators/client-validator"
 import { UseFormReturn } from "react-hook-form"
@@ -55,16 +55,16 @@ export function EditDomainConfirmationModal({
           <span className="font-medium">{label}</span>
         </div>
         <div className="items-center gap-4 grid grid-cols-[1fr,auto,1fr]">
-          <span className="text-muted-foreground text-sm">{oldValue}</span>
+          <span className="text-muted-foreground text-sm text-center">{oldValue}</span>
           <ArrowRight className="w-4 h-4 text-muted-foreground" />
-          <span className="font-medium text-primary text-sm">{newValue}</span>
+          <span className="font-medium text-primary text-sm text-center">{newValue}</span>
         </div>
       </div>
     )
   }
 
   return (
-    <Card>
+    <Card className="border-none">
       <CardContent className="space-y-4 p-0">
         {renderField(
           <Globe className="w-4 h-4 text-primary" />,
@@ -96,14 +96,14 @@ export function EditDomainConfirmationModal({
             <div className="items-center gap-4 grid grid-cols-[1fr,auto,1fr]">
               <Badge
                 variant='outline'
-                className={`${statusConfig[oldDomain?.status].color}`}
+                className={`${statusConfig[oldDomain.status].color} justify-self-center w-fit`}
               >
-                {oldDomain?.status}
+                {oldDomain.status}
               </Badge>
               <ArrowRight className="w-4 h-4 text-muted-foreground" />
               <Badge
                 variant='outline'
-                className={`${statusConfig[status].color}`}
+                className={`${statusConfig[status].color} justify-self-center w-fit`}
               >
                 {status}
               </Badge>
@@ -113,7 +113,7 @@ export function EditDomainConfirmationModal({
         {renderField(
           <Calendar className="w-4 h-4 text-primary" />,
           "Fecha de vencimiento",
-          oldDomain?.expirationDate,
+          formatDate(oldDomain?.expirationDate.toString() ?? ''),
           formatDate(expirationDate.toDateString()),
           expirationDateState.isDirty
         )}
@@ -139,7 +139,7 @@ export function EditDomainConfirmationModal({
         {accessState.isDirty && (
           <div className="bg-muted p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-primary" />
+              <KeySquare className="w-4 h-4 text-primary" />
               <span className="font-medium">Acceso</span>
             </div>
             <div className="items-center gap-4 grid grid-cols-[1fr,auto,1fr]">

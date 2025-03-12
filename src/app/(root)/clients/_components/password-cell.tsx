@@ -21,8 +21,8 @@ export function PasswordCell({ password, show }: PasswordCellProps) {
   }
 
   return (
-    <div className="flex justify-start items-center gap-2">
-      <span className={cn('font-mono', password === 'Contraseña mal generada' ? 'text-red-500' : '')}>
+    <div className="flex justify-start items-center gap-2 truncate">
+      <span className={cn('', password === 'Contraseña mal generada' ? 'text-red-500' : '')}>
         {showPassword ? password : "•".repeat(8)}
       </span>
       <div className="flex gap-1">

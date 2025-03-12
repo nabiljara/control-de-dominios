@@ -60,8 +60,8 @@ export function CreateDomainConfirmationModal(
             </CardContent>
           </Card>
         </div>
-        <div className="gap-4 grid sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
+        <div className="flex sm:flex-row flex-col gap-4">
+          <div className="flex flex-col gap-2 w-full">
             <h4 className="font-medium">Contacto</h4>
             <div className="gap-2 grid">
               {
@@ -70,7 +70,7 @@ export function CreateDomainConfirmationModal(
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 w-full">
             <h4 className="font-medium">Acceso</h4>
             <div className="gap-2 grid">
               {selectedAccess ? (

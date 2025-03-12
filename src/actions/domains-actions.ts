@@ -7,6 +7,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
 import { createNotificationForDomain } from "./notifications-actions";
+import { domainFormSchema, DomainFormValues } from "@/validators/client-validator";
+import { format } from "date-fns";
+
 
 
 export async function getDomains() {
@@ -135,30 +138,45 @@ export async function updateDomainContact(selectedContacts: Record<number, numbe
   }
 };
 
-export async function updateDomain(domain: DomainInsert, accessId: number | undefined) {
+export async function updateDomain(domain: DomainFormValues, accessId: number | undefined) {
   let success = false;
   try {
+
+    const parsed = await domainFormSchema.parseAsync(domain);
+
+    if (!parsed) {
+      throw new Error("Error de validación del formulario del dominio.");
+    }
+
+    const domainUpdate: DomainInsert = {
+      name: parsed.name.toLowerCase(),
+      providerId: parseInt(parsed.provider.id),
+      clientId: parseInt(parsed.client.id),
+      contactId: parseInt(parsed.contactId),
+      expirationDate: format(parsed.expirationDate, "yyyy-MM-dd HH:mm"),
+      status: parsed.status,
+    }
     // await setUserId()
     await db.transaction(async (tx) => {
 
       await setUserId(tx)
 
-      if (!domain.id) {
+      if (!parsed.id) {
         throw new Error("El ID del dominio no está definido.");
       }
 
       await tx.update(domains)
-        .set(domain)
-        .where(eq(domains.id, domain.id))
+        .set(domainUpdate)
+        .where(eq(domains.id, parsed.id))
 
       //Busco si el dominio tiene un acceso asociado
-      const response = await db.query.domainAccess.findFirst({ where: eq(domainAccess.domainId, domain.id) })
+      const response = await db.query.domainAccess.findFirst({ where: eq(domainAccess.domainId, parsed.id) })
 
       //Si tiene acceso asociado y no se seleccionó un acceso, elimino la asociación
       if (response && !accessId) {
 
         await tx.delete(domainAccess)
-          .where(eq(domainAccess.domainId, domain.id));
+          .where(eq(domainAccess.domainId, parsed.id));
       }
       //Si no tiene acceso asociado y se seleccionó un acceso, creo la asociación
       else if (accessId) {
@@ -166,7 +184,7 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
 
           await tx.insert(domainAccess)
             .values({
-              domainId: domain.id,
+              domainId: parsed.id,
               accessId
             });
         }
@@ -175,10 +193,10 @@ export async function updateDomain(domain: DomainInsert, accessId: number | unde
 
           await tx.update(domainAccess)
             .set({
-              domainId: domain.id,
+              domainId: parsed.id,
               accessId
             })
-            .where(eq(domainAccess.domainId, domain.id));
+            .where(eq(domainAccess.domainId, parsed.id));
         }
       }
     });
@@ -223,21 +241,30 @@ export async function getAccessDomain(domainId: number) {
 
   }
 }
-export async function insertDomain(domain: DomainInsert, accessId: number | undefined) {
+export async function insertDomain(domain: DomainFormValues, accessId: number | undefined) {
   let success = false;
   try {
-    await setUserId()
+    const parsed = await domainFormSchema.parseAsync(domain);
+
+    if (!parsed) {
+      throw new Error("Error de validación del formulario del dominio.");
+    }
+
+    const domainInsert: DomainInsert = {
+      name: parsed.name.toLowerCase(),
+      providerId: parseInt(parsed.provider.id),
+      clientId: parseInt(parsed.client.id),
+      contactId: parseInt(parsed.contactId),
+      expirationDate: format(parsed.expirationDate, "yyyy-MM-dd HH:mm"),
+      status: parsed.status,
+    }
+
     await db.transaction(async (tx) => {
+      await setUserId(tx)
       const response = await tx.insert(domains)
-        .values({
-          name: domain.name,
-          expirationDate: domain.expirationDate,
-          status: domain.status,
-          clientId: domain.clientId,
-          providerId: domain.providerId,
-          contactId: domain.contactId,
-        })
+        .values(domainInsert)
         .returning({ insertedId: domains.id });
+
       if (accessId) {
         await tx.insert(domainAccess)
           .values({

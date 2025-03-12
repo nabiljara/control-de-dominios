@@ -4,7 +4,7 @@ import { useState, useEffect, Dispatch, SetStateAction } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { addDays, addYears, format } from "date-fns"
+import { addDays, addYears } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -63,7 +63,6 @@ import {
   Access,
   Provider,
   AccessWithRelations,
-  DomainInsert,
   DomainWithRelations,
 } from "@/db/schema"
 import {
@@ -211,75 +210,37 @@ export default function CreateDomainForm({
 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true)
-    const data = {
-      ...form.getValues(),
-      expirationDate: format(
-        form.getValues("expirationDate"),
-        "yyyy-MM-dd HH:mm"
-      )
-    }
-    const domainInsert: DomainInsert = {
-      id: form.getValues("id"),
-      name: data.name,
-      providerId: parseInt(data.provider.id),
-      clientId: parseInt(data.client.id),
-      contactId: parseInt(data.contactId),
-      expirationDate: data.expirationDate,
-      status: data.status
-    }
 
-    if (domain) {
-      toast.promise(
-        new Promise<void>(async (resolve, reject) => {
-          try {
-            const accessId = form.getValues("isClientAccess") || form.getValues("isKernelAccess") ? form.getValues("accessId") : undefined
-            await updateDomain(
-              domainInsert,
-              accessId
-            )
-            resolve()
+    toast.promise(
+      new Promise<void>(async (resolve, reject) => {
+        try {
+          const accessId = form.getValues("isClientAccess") || form.getValues("isKernelAccess") ? form.getValues("accessId") : undefined
+          if (domain) {
+            await updateDomain(form.getValues(), accessId)
             setIsEditConfirmationDomainModalOpen(false)
             if (setIsEditing) {
               setIsEditing(false)
             }
-          } catch (error) {
-            console.error(error)
-            reject(error)
-          } finally {
-            setIsSubmitting(false)
-          }
-        }),
-        {
-          loading: "Editando dominio",
-          success: "Dominio editado satisfactoriamente",
-          error: "No se pudo editar el dominio correctamente, por favor intente nuevamente."
-        }
-      )
-    } else {
-      toast.promise(
-        new Promise<void>(async (resolve, reject) => {
-          try {
-            const accessId = form.getValues("isClientAccess") || form.getValues("isKernelAccess") ? form.getValues("accessId") : undefined
-            await insertDomain(
-              domainInsert,
-              accessId
-            )
-            resolve()
+          } else {
+            await insertDomain(form.getValues(), accessId)
             setIsConfirmationDomainModalOpen(false)
-          } catch (error) {
-            console.error(error)
-            reject(error)
-          } finally {
-            setIsSubmitting(false)
           }
-        }),
-        {
-          loading: "Registrando dominio",
-          success: "Dominio registrado satisfactoriamente",
-          error: "No se pudo registrar el dominio correctamente, por favor intente nuevamente."
+          resolve()
+        } catch (error) {
+          console.error(error)
+          reject(error)
+        } finally {
+          setIsSubmitting(false)
         }
-      )
-    }
+      }),
+      {
+        loading: domain ? 'Editando dominio' : 'Registrando dominio',
+        success: domain ? 'Dominio editado satisfactoriamente' : 'Dominio registrado satisfactoriamente',
+        error: domain ? 'No se pudo editar el dominio correctamente, por favor intente nuevamente.' : 'No se pudo registrar el dominio correctamente, por favor intente nuevamente.'
+      }
+    )
+
+
   }
 
   const getDomainSchema = () => {
@@ -297,22 +258,23 @@ export default function CreateDomainForm({
 
   const newDomainSchema = getDomainSchema()
 
-  const diffFromUndefined = domain?.contact.clientId !== undefined && domain?.clientId !== undefined
+  const diffFromUndefinedContact = domain?.contact.clientId !== undefined && domain?.clientId !== undefined
+  const diffFromUndefinedAccess = domain?.accessData?.access.clientId !== undefined && domain?.clientId !== undefined
 
   const form = useForm<DomainFormValues>({
     resolver: zodResolver(newDomainSchema),
     defaultValues: {
       id: domain?.id,
-      name: domain?.name ? domain?.name : "",
-      provider: { id: domain?.provider.id.toString() ? domain?.provider.id.toString() : undefined, name: domain?.provider.name ? domain?.provider.name : undefined },
+      name: domain?.name ?? "",
+      provider: { id: domain?.provider.id.toString(), name: domain?.provider.name},
       client: { id: domain?.client.id.toString(), name: domain?.client.name },
-      contactId: domain?.contactId.toString() ? domain?.contactId.toString() : '',
+      contactId: domain?.contactId.toString(),
       accessId: domain?.accessData?.access.id,
-      isClientContact: diffFromUndefined && domain?.contact.clientId === domain?.clientId,
-      isKernelContact: diffFromUndefined && domain?.contact.clientId === 1,
-      isIndividualContact: diffFromUndefined && domain?.contact.clientId !== domain?.clientId && domain?.contact.clientId !== 1,
-      isClientAccess: domain?.accessData?.access.clientId !== undefined && domain?.clientId !== undefined && domain?.accessData?.access.clientId === domain?.clientId,
-      isKernelAccess: domain?.accessData?.access.clientId !== undefined && domain?.clientId !== undefined && domain?.accessData?.access.clientId !== domain?.clientId,
+      isClientContact: diffFromUndefinedContact && domain?.contact.clientId === domain?.clientId && domain?.clientId !== 1, // Es contacto del cliente pero diferente de Kernel para no repetir IsKernelContact
+      isKernelContact: diffFromUndefinedContact && domain?.contact.clientId === 1 ,
+      isIndividualContact: diffFromUndefinedContact && domain?.contact.clientId !== domain?.clientId && domain?.contact.clientId !== 1,
+      isClientAccess: diffFromUndefinedAccess && domain?.accessData?.access.clientId !== 1 ,
+      isKernelAccess: diffFromUndefinedAccess && domain?.accessData?.access.clientId === 1,
       status: domain?.status,
       expirationDate: domain?.expirationDate ? new Date(domain.expirationDate) : undefined,
     },
@@ -591,9 +553,9 @@ export default function CreateDomainForm({
                       <SelectContent>
                         {domainStatus.map((status) => (
                           <SelectItem key={status} value={status}>
-                              <Badge variant='outline' className={statusConfig[status].color}>
-                                {status}
-                              </Badge>
+                            <Badge variant='outline' className={statusConfig[status].color}>
+                              {status}
+                            </Badge>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1154,7 +1116,7 @@ export default function CreateDomainForm({
         onOpenChange={() => setIsConfirmationDomainModalOpen(false)}
         title="Confirmar registro"
         description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[700px]"
+        className="md:max-w-fit"
       >
         <CreateDomainConfirmationModal
           handleSubmit={handleFinalSubmit}

@@ -49,7 +49,7 @@ export function ContactInfoCard({
       }}
     >
       <CardContent className='flex flex-col justify-between items-start gap-3 p-0'>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2 w-full'>
           <User className="w-4 h-4" />
           <h2 className="font-bold text-md truncate">
             {contact?.name}

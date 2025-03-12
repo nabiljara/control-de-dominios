@@ -8,6 +8,7 @@ import { PasswordCell } from "../../password-cell";
 import { DeleteAccessModal } from "@/components/access/delete-access-modal"
 import { AccessModal } from "@/components/access-modal";
 import { Button } from "@/components/ui/button";
+import { UsernameCopy } from "../../username-copy";
 
 export const columns: ColumnDef<AccessWithRelations>[] = [
   {
@@ -45,7 +46,7 @@ export const columns: ColumnDef<AccessWithRelations>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Usuario / Email" icon={<AtSign className="w-4 h-4" />} />
     ),
-    cell: ({ row }) => <span>{row.getValue("username")}</span>,
+    cell: ({ row }) => <UsernameCopy username={row.getValue('username')}/>,
     enableSorting: false,
     enableHiding: true,
   },
@@ -79,7 +80,7 @@ export const columns: ColumnDef<AccessWithRelations>[] = [
       return (
         <div className="flex items-center gap-2">
           <AccessModal
-            provider={{id:access.providerId ?? undefined, name:access.provider?.name ?? ''}}
+            provider={{ id: access.providerId ?? undefined, name: access.provider?.name ?? '' }}
             client={{ id: access.clientId ?? undefined, name: access.client?.name ?? '' }}
             pathToRevalidate={`/clients/${access.clientId}`}
             access={access}
