@@ -87,7 +87,9 @@ export async function GET(request: NextRequest) {
         }
 
         console.log('Cron Job ejecutado correctamente:', new Date().toLocaleString());
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true },
+            { headers: { 'Cache-Control': 'no-store' } }
+        );
     } catch (error) {
         console.error('Error en la ejecución del cron job:', error);
         if (error instanceof Error) {
