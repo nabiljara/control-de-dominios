@@ -46,30 +46,39 @@ export async function GET(request: NextRequest) {
         });
         //creación de notificaciones
         try{
-            await Promise.all([
-                domainsByExpiration.expiring30days.length 
-                    ? createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en un mes') 
-                    : null,
-                domainsByExpiration.expiring7days.length 
-                    ? createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en una semana') 
-                    : null,
-                domainsByExpiration.expiringToday.length 
-                    ? createNotificationForDomain(domainsByExpiration.expiringToday, 'Vence hoy') 
-                    : null
-            ].filter(Boolean)); 
-            // if (domainsByExpiration.expiring30days.length) {
-            //     await createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en un mes');
-            // }
-            // if (domainsByExpiration.expiring7days.length) {
-            //     await createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en una semana');
-            // }
-            // if (domainsByExpiration.expiringToday.length) {
-            //     await createNotificationForDomain(domainsByExpiration.expiringToday, 'Vence hoy');
-            // }
+            // await Promise.all([
+            //     domainsByExpiration.expiring30days.length 
+            //         ? createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en un mes') 
+            //         : null,
+            //     domainsByExpiration.expiring7days.length 
+            //         ? createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en una semana') 
+            //         : null,
+            //     domainsByExpiration.expiringToday.length 
+            //         ? createNotificationForDomain(domainsByExpiration.expiringToday, 'Vence hoy') 
+            //         : null
+            // ].filter(Boolean)); 
+            if (domainsByExpiration.expiring30days.length) {
+                await createNotificationForDomain(domainsByExpiration.expiring30days, 'Vence en un mes');
+            }
+            else{
+                console.log("No hay dominios que venzan en un mes")
+            }
+            if (domainsByExpiration.expiring7days.length) {
+                await createNotificationForDomain(domainsByExpiration.expiring7days, 'Vence en una semana');
+            }
+            else{
+                console.log("No hay dominios que venzan en 7 días")
+            }
+            if (domainsByExpiration.expiringToday.length) {
+                await createNotificationForDomain(domainsByExpiration.expiringToday, 'Vence hoy');
+            }
+            else{
+                console.log("No hay dominios que venzan en el día de hoy")
+            }
+            console.log("Notificaciones creadas correctamente")
         }catch(error){
             console.error('Error al crear notificaciones:', error);
         }
-        //actualización de dominios
         try{
             await updateDomainsState(expiredDomains);
             console.log("Dominios actualizados correctamente")
