@@ -145,10 +145,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Unknown error' }, { status: 500 });
     }
 }
-export const config = {
-    runtime: 'edge',
-};
-
 
 
 
