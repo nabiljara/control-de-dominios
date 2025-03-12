@@ -16,9 +16,11 @@ export async function GET(request: NextRequest) {
     //     status: 401,
     //   });
     // }
+    console.log("Endpoint api/domains ejecutandose")
     try {
         const today = Date.now();
         const { expiringDomains, expiredDomains } = await getExpiringDomains();
+        console.log("dominios obtenidos " + expiringDomains.length, expiredDomains.length)
             
 
         const domainsByExpiration: DomainsByExpiration = {
