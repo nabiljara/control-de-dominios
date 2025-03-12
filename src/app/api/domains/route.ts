@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { formatTextDate } from '@/lib/utils';
 import { NotificationType } from '@/constants';
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
     // const authHeader = request.headers.get('authorization');
     // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     //   return new Response('Unauthorized', {
@@ -196,9 +196,7 @@ export async function GET(request: NextRequest) {
         // }
 
         console.log('Cron Job ejecutado correctamente:', new Date().toLocaleString());
-        return NextResponse.json({ success: true },
-            { headers: { 'Cache-Control': 'no-store' } }
-        );
+        return NextResponse.json({ success: true });
     } catch (error) {
         console.log('Error en la ejecución del cron job:', error);
         if (error instanceof Error) {
