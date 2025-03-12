@@ -1,14 +1,13 @@
 import { NotificationType } from '@/constants';
-import { getExpiringDomains, updateDomainCron } from '@/actions/domains-actions';
+import { getExpiringDomains, updateDomainCron, updateDomainsState } from '@/actions/domains-actions';
 import { DomainsByExpiration, ExpiringDomains, NotificationInsert } from '@/db/schema';
 import { NextRequest, NextResponse } from 'next/server';
 import { insertNotification } from '@/actions/notifications-actions';
 // import { getClientName } from '@/actions/client-actions';
 // import { sendMail } from '@/actions/mail-actions';
 import { getUsers } from '@/actions/user-action/user-actions';
+import { createNotificationForDomain } from '@/actions/notifications-actions';
 import { formatTextDate } from '@/lib/utils';
-
-export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
     // const authHeader = request.headers.get('authorization');
@@ -67,61 +66,15 @@ export async function GET(request: NextRequest) {
 }
 
 
-async function createNotificationForDomain(doms: ExpiringDomains[], type: NotificationType, message?: string) {
-    for (const dom of doms) {
-        try {
-            let messageComplete = `El dominio ${dom.name} `;
-            switch (type) {
-                case 'Vence hoy':
-                    messageComplete += `vence hoy ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
-                    break;
-                case 'Vence en una semana':
-                    messageComplete += `vencerá en una semana el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
-                    break;
-                case 'Vence en un mes':
-                    messageComplete += `vencerá en un mes el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
-                    break;
-                case 'Vencido':
-                    messageComplete += `venció el ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
-                    break;
-                case 'Simple':
-                    if (!message) throw new Error("Para notificaciones de tipo 'Simple', se debe proporcionar un mensaje.");
-                    messageComplete = message;
-            }
 
-            const notification: NotificationInsert = {
-                message: messageComplete,
-                type,
-                domainId: dom.id,
-                domainName: dom.name,
-            };
 
-            const users = await getUsers();
-            for (const user of users) {
-                await insertNotification(notification, user.id);
-            }
-
-            // const expDate = new Date(dom.expirationDate).toLocaleDateString("es-ES", {
-            //     day: "2-digit",
-            //     month: "2-digit",
-            //     year: "numeric",
-            // });
-
-            // const client = await getClientName(dom.clientId);
-            // await sendMail(dom.name, client?.name || 'Cliente', messageComplete, expDate);
-        } catch (error) {
-            console.error(`Error al insertar notificación para ${dom.name}:`, error);
-        }
-    }
-}
-
-async function updateDomainsState(doms: ExpiringDomains[]) {
-    for (const dom of doms) {
-        try {
-            await updateDomainCron(dom.id);
-        } catch (error) {
-            console.error(`Error al modificar el estado del dominio ${dom.name}:`, error);
-        }
-    }
-    await createNotificationForDomain(doms, 'Vencido');
-}
+// async function updateDomainsState(doms: ExpiringDomains[]) {
+//     for (const dom of doms) {
+//         try {
+//             await updateDomainCron(dom.id);
+//         } catch (error) {
+//             console.error(`Error al modificar el estado del dominio ${dom.name}:`, error);
+//         }
+//     }
+//     await createNotificationForDomain(doms, 'Vencido');
+// }

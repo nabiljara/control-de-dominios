@@ -26,7 +26,18 @@ import {
 import { Button } from "../ui/button";
 
 interface ExpiringDomainsProps {
-  domains: Omit<DomainWithRelations, "contact" | "accessData" | "history">[];
+  domains: Omit<
+    DomainWithRelations,
+    | "contact"
+    | "accessData"
+    | "history"
+    | "provider"
+    | "createdAt"
+    | "updatedAt"
+    | "status"
+    | "providerId"
+    | "contactId"
+  >[];
   loading: boolean;
 }
 

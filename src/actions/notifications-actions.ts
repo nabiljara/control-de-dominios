@@ -2,8 +2,10 @@
 import { auth } from "@/auth";
 import { NotificationType } from "@/constants";
 import db from "@/db";
-import { NotificationInsert, notifications, UserNotification, usersNotifications } from "@/db/schema";
+import { ExpiringDomains, NotificationInsert, notifications, UserNotification, usersNotifications } from "@/db/schema";
 import { and, count, desc, eq, ilike, isNull, or } from "drizzle-orm";
+import { formatTextDate } from '@/lib/utils';
+import { getUsers } from '@/actions/user-action/user-actions';
 
 
 export async function insertNotification(notification: NotificationInsert, userId: string) {
@@ -148,3 +150,51 @@ export async function markNotificationsAsRead(userNotifications: UserNotificatio
     throw error;
   }
 };
+
+export async function createNotificationForDomain(doms: ExpiringDomains[], type: NotificationType, message?: string) {
+  for (const dom of doms) {
+      try {
+          let messageComplete = `El dominio ${dom.name} `;
+          switch (type) {
+              case 'Vence hoy':
+                  messageComplete += `vence hoy ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
+                  break;
+              case 'Vence en una semana':
+                  messageComplete += `vencerá en una semana el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+                  break;
+              case 'Vence en un mes':
+                  messageComplete += `vencerá en un mes el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+                  break;
+              case 'Vencido':
+                  messageComplete += `venció el ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
+                  break;
+              case 'Simple':
+                  if (!message) throw new Error("Para notificaciones de tipo 'Simple', se debe proporcionar un mensaje.");
+                  messageComplete = message;
+          }
+
+          const notification: NotificationInsert = {
+              message: messageComplete,
+              type,
+              domainId: dom.id,
+              domainName: dom.name,
+          };
+
+          const users = await getUsers();
+          for (const user of users) {
+              await insertNotification(notification, user.id);
+          }
+
+          // const expDate = new Date(dom.expirationDate).toLocaleDateString("es-ES", {
+          //     day: "2-digit",
+          //     month: "2-digit",
+          //     year: "numeric",
+          // });
+
+          // const client = await getClientName(dom.clientId);
+          // await sendMail(dom.name, client?.name || 'Cliente', messageComplete, expDate);
+      } catch (error) {
+          console.error(`Error al insertar notificación para ${dom.name}:`, error);
+      }
+  }
+}

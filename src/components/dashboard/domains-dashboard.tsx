@@ -20,7 +20,18 @@ type DashboardData = {
 export function DomainsDashboard() {
   const [dashData, setDashData] = useState<DashboardData | null>(null);
   const [expiringDomains, setExpiringDomains] = useState<
-    Omit<DomainWithRelations, "contact" | "accessData" | "history">[]
+    Omit<
+      DomainWithRelations,
+      | "contact"
+      | "accessData"
+      | "history"
+      | "provider"
+      | "createdAt"
+      | "updatedAt"
+      | "status"
+      | "providerId"
+      | "contactId"
+    >[]
   >([]);
   const [registeredByMonth, setRegisteredByMonth] = useState<
     { month: string; count: number }[]
@@ -31,7 +42,7 @@ export function DomainsDashboard() {
     async function getDomainData() {
       try {
         const dashboardData: DashboardData = await getDashboardData();
-        const { expiredDomains } = await getExpiringDomains();
+        const { expiringDomains } = await getExpiringDomains();
         const formattedData = dashboardData.registeredPerMonth
           .map((item) => ({
             month: new Date(item.month as string),
@@ -45,7 +56,7 @@ export function DomainsDashboard() {
           }),
           count: item.count,
         }));
-        // setExpiringDomains(expiredDomains);
+        setExpiringDomains(expiringDomains);
         setRegisteredByMonth(sortedDomainsPerMonth);
         setDashData(dashboardData);
       } catch (error) {
@@ -59,94 +70,94 @@ export function DomainsDashboard() {
   }, []);
   return (
     <>
-      <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Dominios Totales
             </CardTitle>
-            <Globe2 className="w-4 h-4 text-muted-foreground" />
+            <Globe2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">
+            <div className="text-2xl font-bold">
               {dashData?.total !== undefined ? (
                 dashData.total
               ) : (
-                <Skeleton className="w-10 h-8" />
+                <Skeleton className="h-8 w-10" />
               )}
             </div>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {/* TODO: SACAR PORCENTAJE */}
               +180.1% desde el mes pasado
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Dominios Activos
             </CardTitle>
-            <Activity className="w-4 h-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">
+            <div className="text-2xl font-bold">
               {dashData?.active !== undefined ? (
                 dashData.active
               ) : (
-                <Skeleton className="w-10 h-8" />
+                <Skeleton className="h-8 w-10" />
               )}
             </div>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {/* TODO: SACAR DIFF CANTIDAD */}
               +201 desde la última semana
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Dominios Vencidos
             </CardTitle>
-            <Minus className="w-4 h-4 text-muted-foreground" />
+            <Minus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">
+            <div className="text-2xl font-bold">
               {dashData?.expired !== undefined ? (
                 dashData.expired
               ) : (
-                <Skeleton className="w-10 h-8" />
+                <Skeleton className="h-8 w-10" />
               )}
             </div>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {/* TODO: SACAR DIFF */}
               +20 nuevos este mes
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Crecimiento Mensual
             </CardTitle>
-            <TrendingUp className="w-4 h-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">
+            <div className="text-2xl font-bold">
               {/* TODO: HACER PRUEBAS */}
               {dashData?.growthPercentage !== undefined ? (
                 dashData.growthPercentage + "%"
               ) : (
-                <Skeleton className="w-10 h-8" />
+                <Skeleton className="h-8 w-10" />
               )}
             </div>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {/* TODO: COMPARAR CON MES PASADO */}
               +2.1% desde el mes pasado
             </p>
           </CardContent>
         </Card>
       </div>
-      <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Dominios por Mes</CardTitle>
