@@ -6,6 +6,7 @@ import { setUserId, setUserSystem } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
+import { createNotificationForDomain } from "./notifications-actions";
 
 
 export async function getDomains() {
@@ -413,3 +414,18 @@ async function validateDomainName(name: string) {
     console.error("Error al validar el email")
   }
 }
+export async function updateDomainsState(doms: ExpiringDomains[]) {
+        try {
+            await Promise.all(doms.map(async (dom) => {
+                try {
+                    await updateDomainCron(dom.id);
+                } catch (error) {
+                    console.error(`Error al modificar el estado del dominio ${dom.name}:`, error);
+                }
+            }));
+            await createNotificationForDomain(doms, 'Vencido');
+            return "Dominios vencidos actualizados correctamente";
+        } catch (error) {
+            console.error('Error al actualizar el estado de los dominios:', error);
+        }
+    }
