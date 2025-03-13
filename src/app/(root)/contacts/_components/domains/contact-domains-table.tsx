@@ -10,18 +10,20 @@ import { DomainWithRelations } from "@/db/schema"
 import {
   Globe,
 } from "lucide-react"
-import { columns } from "./client-domains-columns"
-import { DataTableToolbar } from "./client-domains-data-table-toolbar"
+import { columns } from "./contact-domains-columns"
+import { DataTableToolbar } from "./contact-domains-data-table-toolbar"
 import { Button } from "@/components/ui/button"
 import Plus from "@/components/plus"
 import Link from "next/link"
 
-export async function ClientDomainsTable({
+export async function ContactDomainsTable({
   domains,
-  filterProviders
+  filterProviders,
+  filterClients
 }: {
   domains: DomainWithRelations[]
   filterProviders?: Array<string>
+  filterClients?: Array<string>
 }) {
   return (
     <Card>
@@ -53,7 +55,7 @@ export async function ClientDomainsTable({
         </div>
       </CardHeader>
       <CardContent>
-        <DataTable data={domains} columns={columns} ToolbarComponent={DataTableToolbar} from="domains" filterProviders={filterProviders} />
+        <DataTable data={domains} columns={columns} ToolbarComponent={DataTableToolbar} from="domains" filterProviders={filterProviders} filterClients={filterClients} />
       </CardContent>
     </Card>
   )

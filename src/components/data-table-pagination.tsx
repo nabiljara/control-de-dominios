@@ -23,14 +23,10 @@ export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex justify-end items-center px-2">
-      {/* <div className="flex-1 text-muted-foreground text-sm">
-        {table.getFilteredSelectedRowModel().rows.length} de{" "}
-        {table.getFilteredRowModel().rows.length} fila(s) seleccionadas.
-      </div> */}
-      <div className="flex items-center space-x-6 lg:space-x-8">
+    <div className="flex lg:justify-end items-center px-2">
+      <div className="flex lg:flex-row flex-col items-start lg:items-center gap-2 lg:gap-8">
         <div className="flex items-center space-x-2">
-          <p className="font-medium text-sm">Registros por página</p>
+          <p className="font-medium text-sm">Registros por p&aacute;gina</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
@@ -42,15 +38,15 @@ export function DataTablePagination<TData>({
             </SelectTrigger>
             <SelectContent side="top">
               {[10, 20, 30, 40, 50].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
+                <SelectItem key={pageSize} value={`${pageSize}`} className="hover:bg-muted cursor-pointer">
                   {pageSize}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <div className="flex justify-center items-center w-[100px] font-medium text-sm">
-          Página {table.getState().pagination.pageIndex + 1} de{" "}
+        <div className="flex lg:justify-center items-center w-[100px] font-medium text-sm">
+          P&aacute;gina {table.getState().pagination.pageIndex + 1} de{" "}
           {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">

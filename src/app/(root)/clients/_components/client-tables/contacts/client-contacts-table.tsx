@@ -24,7 +24,7 @@ export function ClientContactsTable({ contacts, client }: ContactsTableProps) {
   return (
     <Card>
       <CardHeader className="flex">
-        <div className="flex justify-between items-center">
+        <div className="flex sm:flex-row flex-col justify-between items-start gap-3 overflow-hidden">
           <div className="flex flex-col gap-2">
             <CardTitle className="flex items-center gap-2">
               <div className="flex justify-center items-center bg-primary/10 rounded-full w-10 h-10">

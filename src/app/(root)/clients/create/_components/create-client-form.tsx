@@ -142,12 +142,10 @@ export function CreateClientForm({
 
   const isDirty = Object.keys(form.formState.dirtyFields).length !== 0 || contacts.length !== 0 || accessArray.length !== 0
 
-  
-
   const handleFinalSubmit = async () => {
     setIsSubmitting(true)
     const client = { ...form.getValues(), contacts, access: accessArray }
-    
+
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
@@ -162,8 +160,8 @@ export function CreateClientForm({
         }
       }),
       {
-        loading: "Registrando cliente",
-        success: "Cliente registrado satisfactoriamente",
+        loading: "Registrando cliente...",
+        success: "Cliente registrado satisfactoriamente.",
         error: "No se pudo registrar el cliente correctamente."
       }
     )
@@ -184,145 +182,149 @@ export function CreateClientForm({
             marcados con <span className="text-red-500">*</span> son obligatorios.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="md:flex-row space-y-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="flex gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>
-                        Nombre <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ingrese el nombre del cliente"
-                          autoComplete="name"
-                          {...field}
-                          autoFocus
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="size"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>
-                        Tamaño <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        name="size"
-                      >
+              <div className="flex flex-col gap-6">
+                <div className="flex md:flex-row flex-col gap-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>
+                          Nombre <span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccione el tamaño" />
-                          </SelectTrigger>
+                          <Input
+                            placeholder="Ingrese el nombre del cliente"
+                            autoComplete="name"
+                            {...field}
+                            autoFocus
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {clientSizes.map((size) => (
-                            <SelectItem key={size} value={size}>
-                              <div className="flex items-center gap-2">
-                                <Badge variant='outline' className={sizeConfig[size].color}>
-                                  {size}
-                                </Badge>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="size"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>
+                          Tamaño <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          name="size"
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccione el tamaño" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {clientSizes.map((size) => (
+                              <SelectItem key={size} value={size} className="hover:bg-muted cursor-pointer">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant='outline' className={sizeConfig[size].color}>
+                                    {size}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex md:flex-row flex-col gap-6">
+                  <FormField
+                    control={form.control}
+                    name="locality.id"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>
+                          Localidad <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value)
+                            const selectedLocality = localities.find(
+                              (locality) => locality.id.toString() === value
+                            )
+                            if (selectedLocality) {
+                              form.setValue("locality.name", selectedLocality.name)
+                            }
+                          }}
+                          defaultValue={field.value}
+                          name="locality"
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccione la localidad" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {localities.map((locality) => (
+                              <SelectItem
+                                key={locality.name}
+                                value={locality.id.toString()}
+                                className="hover:bg-muted cursor-pointer"
+                              >
+                                {locality.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>
+                          Estado <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          name="state"
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccione un estado" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {clientStatus.map((status) => (
+                              <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className={statusConfig[status].color}>
+                                    {status}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
-              <div className="flex gap-6">
-                <FormField
-                  control={form.control}
-                  name="locality.id"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>
-                        Localidad <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value)
-                          const selectedLocality = localities.find(
-                            (locality) => locality.id.toString() === value
-                          )
-                          if (selectedLocality) {
-                            form.setValue("locality.name", selectedLocality.name)
-                          }
-                        }}
-                        defaultValue={field.value}
-                        name="locality"
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccione la localidad" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {localities.map((locality) => (
-                            <SelectItem
-                              key={locality.name}
-                              value={locality.id.toString()}
-                            >
-                              {locality.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>
-                        Estado <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        name="state"
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccione un estado" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {clientStatus.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className={statusConfig[status].color}>
-                                  {status}
-                                </Badge>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
 
               {/* CONTACTOS */}
 

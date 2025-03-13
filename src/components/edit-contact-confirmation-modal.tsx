@@ -71,7 +71,7 @@ export function EditContactConfirmationModal(
     ) as Record<number, number>;
 
     handleSubmit()
-    await updateDomainContact(filteredContacts);
+    await updateDomainContact(filteredContacts, oldContact.id);
   }
 
   return (
@@ -181,7 +181,7 @@ export function EditContactConfirmationModal(
                                     <SelectItem
                                       key={contact.id}
                                       value={contact.id.toString()}
-                                      className='hover:bg-muted hover:cursor-pointer'
+                                      className="hover:bg-muted cursor-pointer"
                                     >
                                       <div>
                                         <p className="font-medium text-sm text-left">{contact.name}</p>
@@ -215,7 +215,7 @@ export function EditContactConfirmationModal(
                                       <SelectItem
                                         key={contact.id}
                                         value={contact.id.toString()}
-                                        className='hover:bg-muted hover:cursor-pointer'
+                                        className="hover:bg-muted cursor-pointer"
                                       >
                                         <div>
                                           <p className="font-medium text-sm text-left">{contact.name}</p>
@@ -247,7 +247,7 @@ export function EditContactConfirmationModal(
                                   <SelectItem
                                     key={contact.id}
                                     value={contact.id.toString()}
-                                    className='hover:bg-muted hover:cursor-pointer'
+                                    className="hover:bg-muted cursor-pointer"
                                   >
                                     <div>
                                       <p className="font-medium text-sm text-left">{contact.name}</p>

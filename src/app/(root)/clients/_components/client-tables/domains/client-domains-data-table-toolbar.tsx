@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { Globe } from "lucide-react"
-import Link from "next/link"
-import Plus from "@/components/plus"
 import { CommandShortcut } from "@/components/ui/command"
 import { domainStatus } from "@/constants"
 
@@ -24,9 +21,9 @@ export function DataTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex flex-1 items-center space-x-2">
-        <div className="relative w-[250px]">
+    <div className="flex lg:flex-row flex-col justify-between items-start lg:items-center gap-2">
+      <div className="flex lg:flex-row flex-col flex-1 items-start lg:items-center gap-2 w-full">
+        <div className="relative w-2/3 lg:w-[250px]">
           <Input
             id="filter-domains"
             placeholder="Filtrar dominios por nombre"
@@ -35,11 +32,8 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
-            className="mr-3 w-full h-8"
+            className="h-8"
           />
-          <div className="right-2 -bottom-[7px] absolute text-gray-400 -translate-y-1/2">
-            <CommandShortcut>⌘F</CommandShortcut>
-          </div>
         </div>
         {table.getColumn("status") && (
           <DataTableFacetedFilter

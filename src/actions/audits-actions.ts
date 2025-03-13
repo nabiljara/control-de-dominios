@@ -4,7 +4,7 @@ import db from "@/db";
 import { audits, AuditWithRelations } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { getAuditProvider } from "./provider-actions";
-import { getContact } from "./contacts-actions";
+import { getAuditContact } from "./contacts-actions";
 import { getAuditDomain } from "./domains-actions";
 import { getAuditClient } from "./client-actions";
 import { getUser } from "./user-action/user-actions";
@@ -69,7 +69,7 @@ async function getEntityDetails(entity: keyof typeof entityMap, entityId: string
         result = getAuditProvider(Number(entityId));
         break;
       case 'contacts':
-        result = getContact(Number(entityId)); //TODO: CAMBIAR A GetAuditContact Para no traer los dominios
+        result = getAuditContact(Number(entityId));
         break;
       case 'domains':
         result = getAuditDomain(Number(entityId));

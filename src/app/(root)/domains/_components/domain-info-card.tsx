@@ -75,17 +75,17 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
 
   return (
     <Card className="w-full">
-      <CardHeader className="xl:flex-row xl:justify-between xl:items-center gap-4 space-y-6 lg:space-y-0 pb-0">
+      <CardHeader className="xl:flex-row xl:justify-between xl:items-center gap-4 lg:space-y-0 pb-0">
         <CardTitle>
           <Link href={domain.name} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
-            <span className="flex items-center text-2xl">
-              <ExternalLinkIcon className="mr-2" />
+            <p className="flex items-center text-base md:text-2xl truncate">
+              <ExternalLinkIcon className="mr-2 w-5 md:w-8 h-5 md:h-8 shrink-0" />
               {domain.name}
-            </span>
+            </p>
           </Link>
         </CardTitle>
-        <div className="flex items-center text-muted-foreground">
-          <CalendarArrowDown className="mr-2" />
+        <div className="flex items-center text-muted-foreground text-base md:text-2xl truncate">
+          <CalendarArrowDown className="mr-2 w-5 md:w-8 h-5 md:h-8 shrink-0" />
           <span>Expira: {formatDate(domain.expirationDate)}</span>
         </div>
         <Badge
@@ -97,7 +97,6 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
       </CardHeader>
       <CardContent>
         <Separator className="my-6" />
-
         <div className={`gap-4 grid grid-cols-1 lg:${domain.accessData ? 'grid-cols-2' : 'grid-cols-1'} xl:${domain.accessData ? 'grid-cols-2' : 'grid-cols-3'} mb-6`}>
           <Section title="Cliente" icon={<Handshake />} href={`/clients/${domain.clientId}`}>
             <div className="flex flex-col space-y-2">

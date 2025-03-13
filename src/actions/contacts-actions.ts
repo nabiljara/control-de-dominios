@@ -98,7 +98,6 @@ export async function getContact(id: number) {
             with: {
                 client: true,
                 domains: {
-                    where: eq(domains.status, 'Activo'),
                     with: {
                         client: {
                             with: {
@@ -107,9 +106,26 @@ export async function getContact(id: number) {
                                 }
                             }
                         },
+                        provider:true,
                         contact: true
                     }
                 },
+            }
+        });
+        return data;
+    }
+    catch (error) {
+        console.error("Error al obtener el contacto:", error);
+        throw error;
+    }
+};
+
+export async function getAuditContact(id: number) {
+    try {
+        const data = await db.query.contacts.findFirst({
+            where: eq(contacts.id, id),
+            with: {
+                client: true,
             }
         });
         return data;

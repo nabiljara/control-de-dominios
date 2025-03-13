@@ -123,7 +123,8 @@ export async function getDomainsByContact(idContact: number) {
 };
 
 
-export async function updateDomainContact(selectedContacts: Record<number, number>) {
+export async function updateDomainContact(selectedContacts: Record<number, number>, contactId:number) {
+  let success = false;
   try {
     Object.entries(selectedContacts).map(async ([domainId, contactId]) => {
       await setUserId()
@@ -131,10 +132,15 @@ export async function updateDomainContact(selectedContacts: Record<number, numbe
         .set({ contactId: contactId })
         .where(eq(domains.id, Number(domainId)))
     })
+    success = true;
   }
   catch (error) {
     console.error("Error al actualizar el o los contactos del dominios:", error);
     throw error;
+  }
+  if (success) {
+    revalidatePath(`/contacts/${contactId}`);
+    redirect(`/contacts/${contactId}`);
   }
 };
 

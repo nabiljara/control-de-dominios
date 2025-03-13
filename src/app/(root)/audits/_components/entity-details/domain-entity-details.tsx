@@ -44,11 +44,11 @@ export function DomainEntityDetails(audit: AuditWithRelations) {
     <Link href={`/domains/${audit.entityDetails && 'id' in audit.entityDetails ? audit.entityDetails.id.toString() : "#"}`} className="w-fit">
       <Card className="flex flex-col gap-2 hover:shadow-md transition-all duration-200">
         <CardHeader className="p-3">
-          <CardTitle className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 p-0 text-xl">
-            <span className="flex items-center gap-2">
+          <CardTitle className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 p-0 text-xs sm:text-base truncate">
+            <div className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-muted-foreground" />
               {audit.entityDetails && 'name' in audit.entityDetails ? audit.entityDetails.name : ""}
-            </span>
+            </div>
             {audit.entityDetails && 'status' in audit.entityDetails && (
               <Badge
                 variant='outline'

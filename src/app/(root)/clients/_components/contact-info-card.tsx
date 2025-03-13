@@ -48,9 +48,9 @@ export function ContactInfoCard({
         }
       }}
     >
-      <CardContent className='flex flex-col justify-between items-start gap-3 p-0'>
-        <div className='flex items-center gap-2 w-full'>
-          <User className="w-4 h-4" />
+      <CardContent className='flex flex-col justify-between items-start gap-3 p-0 overflow-hidden'>
+        <div className='flex items-center gap-2 w-full overflow-hidden'>
+          <User className="w-4 h-4 shrink-0" />
           <h2 className="font-bold text-md truncate">
             {contact?.name}
           </h2>
@@ -62,21 +62,21 @@ export function ContactInfoCard({
           </Badge>
         </div>
         <div className='flex items-center gap-2'>
-          <Mail className="w-4 h-4" />
-          <span className="overflow-hidden text-neutral-500 text-sm">
+          <Mail className="w-4 h-4 shrink-0" />
+          <span className="text-neutral-500 text-sm">
             {contact?.email}
           </span>
         </div>
         {contact?.phone && (
           <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4" />
+            <Phone className="w-4 h-4 shrink-0" />
             <span className="text-neutral-500 text-sm">
               {contact?.phone}
             </span>
           </div>
         )}
         <div className='flex items-center gap-2'>
-          <Tag className="w-4 h-4" />
+          <Tag className="w-4 h-4 shrink-0" />
           <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
             {contact?.type}
           </span>

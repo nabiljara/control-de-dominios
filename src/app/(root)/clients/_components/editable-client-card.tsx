@@ -28,7 +28,7 @@ import {
   FormLabel,
   FormMessage
 } from "@/components/ui/form"
-import {  SubmitHandler, useForm } from "react-hook-form"
+import { SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   clientUpdateFormSchema,
@@ -180,9 +180,9 @@ export function EditableClientCard({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
-            <CardHeader className="flex flex-row justify-between items-center">
+            <CardHeader className="flex sm:flex-row flex-col justify-between gap-4 overflow-hidden">
               <div className="flex flex-row items-center gap-2">
-                <div className="flex justify-center items-center bg-primary/10 rounded-full w-10 h-10">
+                <div className="flex justify-center items-center bg-primary/10 rounded-full w-10 h-10 shrink-0">
                   <Handshake className="w-6 h-6 text-primary" />
                 </div>
                 <FormField
@@ -200,7 +200,7 @@ export function EditableClientCard({
                           />
                         </FormControl>
                       ) : (
-                        <CardTitle className="font-bold text-3xl">
+                        <CardTitle className="font-bold text-xl md:text-3xl">
                           {client.name}
                         </CardTitle>
                       )}
@@ -220,7 +220,7 @@ export function EditableClientCard({
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="flex flex-row justify-between items-start gap-3">
+              <div className="flex md:flex-row flex-col justify-between items-start gap-3 overflow-auto">
                 <FormField
                   control={form.control}
                   name="status"
@@ -241,7 +241,7 @@ export function EditableClientCard({
                           </FormControl>
                           <SelectContent>
                             {clientStatus.map((status) => (
-                              <SelectItem key={status} value={status}>
+                              <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer">
                                 <div className="flex items-center gap-2">
                                   <Badge variant='outline' className={statusConfig[status].color}>
                                     {status}
@@ -258,43 +258,6 @@ export function EditableClientCard({
                         >
                           {client.status}
                         </Badge>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="size"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col items-start gap-2">
-                      <FormLabel className="text-muted-foreground text-lg">
-                        Tamaño
-                      </FormLabel>
-                      {isEditing ? (
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {clientSizes.map((size) => (
-                              <SelectItem key={size} value={size}>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant='outline' className={sizeConfig[size].color}>
-                                    {size}
-                                  </Badge>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Badge variant='outline' className={sizeConfig[client.size].color}>{client.size}</Badge>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -336,6 +299,7 @@ export function EditableClientCard({
                                 <SelectItem
                                   key={locality.name}
                                   value={locality.id.toString()}
+                                  className="hover:bg-muted cursor-pointer"
                                 >
                                   {locality.name}
                                 </SelectItem>
@@ -345,28 +309,49 @@ export function EditableClientCard({
                           <FormMessage />
                         </>
                       ) : (
-                        <span>{client.locality.name}</span>
+                        <span className="font-semibold text-muted-foreground">{client.locality.name}</span>
                       )}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="flex flex-col justify-between gap-2 text-start">
-                  <span className="font-medium text-muted-foreground text-lg">
-                    Fecha de registro
-                  </span>
-                  <span>
-                    {formatDate(client.createdAt)}
-                  </span>
-                </div>
-                <div className="flex flex-col justify-between gap-2 text-start">
-                  <span className="font-medium text-muted-foreground text-lg">
-                    Última actualización
-                  </span>
-                  <span>
-                    {formatDate(client.updatedAt)}
-                  </span>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="size"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start gap-2">
+                      <FormLabel className="text-muted-foreground text-lg">
+                        Tamaño
+                      </FormLabel>
+                      {isEditing ? (
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {clientSizes.map((size) => (
+                              <SelectItem key={size} value={size} className="hover:bg-muted cursor-pointer">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant='outline' className={sizeConfig[size].color}>
+                                    {size}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge variant='outline' className={sizeConfig[client.size].color}>{client.size}</Badge>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               {isEditing && form.formState.isDirty && (
                 <div className="flex justify-end gap-2 mt-4">

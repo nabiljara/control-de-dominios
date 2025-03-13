@@ -133,7 +133,7 @@ export function UpdateDomain({
                           </FormControl>
                           <SelectContent>
                             {domainStatus.map((status) => (
-                              <SelectItem key={status} value={status}>
+                              <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer">
                                 <Badge 
                                 variant='outline'
                                 className={statusConfig[status].color}
@@ -184,7 +184,7 @@ export function UpdateDomain({
                               <SelectItem
                                 key={cl.id}
                                 value={cl.id.toString()}
-                                className="hover:bg-gray-100"
+                                className="hover:bg-muted cursor-pointer"
                               >
                                 {cl.name}
                               </SelectItem>
@@ -230,7 +230,7 @@ export function UpdateDomain({
                                       <SelectItem
                                         key={contact.id}
                                         value={contact.id.toString()}
-                                        className='hover:bg-muted hover:cursor-pointer'
+                                        className="hover:bg-muted cursor-pointer"
                                       >
                                         <div>
                                           <p className="font-medium text-sm text-left">{contact.name}</p>
@@ -260,7 +260,7 @@ export function UpdateDomain({
                                       <SelectItem
                                         key={contact.id}
                                         value={contact.id.toString()}
-                                        className='hover:bg-muted hover:cursor-pointer'
+                                        className="hover:bg-muted cursor-pointer"
                                       >
                                         <div>
                                           <p className="font-medium text-sm text-left">{contact.name}</p>

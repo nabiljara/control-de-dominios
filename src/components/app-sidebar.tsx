@@ -20,7 +20,7 @@ export async function AppSidebar() {
   const user = session?.user
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

@@ -339,7 +339,7 @@ export function ContactModal({
                     <SelectContent>
                       {
                         contactTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                          <SelectItem key={type} value={type} className="hover:bg-muted cursor-pointer">{type}</SelectItem>
                         ))
                       }
                     </SelectContent>
@@ -362,7 +362,7 @@ export function ContactModal({
                     </FormControl>
                     <SelectContent>
                       {contactStatus.map((status) => (
-                        <SelectItem key={status} value={status}>
+                        <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer">
                           <div className="flex items-center gap-2">
                             <Badge variant='outline' className={statusConfig[status].color}>
                               {status}
@@ -411,6 +411,7 @@ export function ContactModal({
                           <SelectItem
                             key={client.id}
                             value={client.id ? client.id.toString() : ""}
+                            className="hover:bg-muted cursor-pointer"
                           >
                             {client.name}
                           </SelectItem>

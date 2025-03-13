@@ -237,7 +237,7 @@ export function AccessModal({
                           <SelectItem
                             key={provider.url}
                             value={provider.id.toString()}
-                            className='hover:bg-muted hover:cursor-pointer'
+                            className="hover:bg-muted cursor-pointer"
                           >
                             {provider.name}
                           </SelectItem>

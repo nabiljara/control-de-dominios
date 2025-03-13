@@ -21,7 +21,7 @@ export default async function ClientPage({
     <EntityNotFound
       icon={<User className="w-12 h-12 text-gray-400" />}
       title="Cliente no encontrado"
-      description="Lo sentimos, no pudimos encontrar el cliente que estás buscando. Es posible que la URL proporcionada no sea válida o que el cliente haya sido eliminado."
+      description="Lo sentimos, no pudimos encontrar el cliente que est&aacute;s buscando. Es posible que la URL proporcionada no sea v&aacute;lida o que el cliente haya sido eliminado."
       href="/clients"
       linkText="Volver al listado de clientes"
     />
@@ -66,23 +66,22 @@ export default async function ClientPage({
   })
 
   return (
-    <div className="space-y-4 p-8">
+    <div className="space-y-6 p-8">
       <EditableClientCard
         client={clientWithoutRelationsTyped}
         localities={localities}
         contacts={contacts}
       />
-      <div className="gap-6 grid md:grid-rows">
-        {/* DOMAIN TABLE  */}
-        <ClientDomainsTable domains={domainsWithRelations} filterProviders={filterProviders} />
 
-        {/* CONTACTS TABLE */}
-        <ClientContactsTable contacts={contacts} client={{ id: clientId, name: client.name }} />
+      {/* DOMAIN TABLE  */}
+      <ClientDomainsTable domains={domainsWithRelations} filterProviders={filterProviders} />
 
-        {/* ACCESS TABLE */}
-        <ClientAccessTable access={accessWithRelations} client={{ id: clientId, name: client.name }} filterProviders={filterProviders} />
+      {/* CONTACTS TABLE */}
+      <ClientContactsTable contacts={contacts} client={{ id: clientId, name: client.name }} />
 
-      </div>
+      {/* ACCESS TABLE */}
+      <ClientAccessTable access={accessWithRelations} client={{ id: clientId, name: client.name }} filterProviders={filterProviders} />
+
     </div>
   )
 }

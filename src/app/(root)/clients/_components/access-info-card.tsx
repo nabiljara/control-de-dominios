@@ -52,7 +52,7 @@ export function AccessInfoCard({
         }
       }}
     >
-      <CardContent className="flex flex-col justify-between items-start gap-2 p-0 h-full">
+      <CardContent className="flex flex-col justify-between items-start gap-2 p-0 h-full overflow-hidden">
         <div className="flex items-center gap-2">
           <Box className="w-4 h-4" />
           <h2 className="font-bold text-md">{provider}</h2>

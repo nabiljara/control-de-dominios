@@ -18,9 +18,9 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex flex-1 items-center space-x-2">
-        <div className="relative w-[250px]">
+    <div className="flex lg:flex-row flex-col justify-between items-start lg:items-center gap-2">
+      <div className="flex lg:flex-row flex-col flex-1 items-start lg:items-center gap-2 w-full">
+        <div className="relative w-2/3 lg:w-[250px]">
           <Input
             id="filter-access"
             placeholder="Filtrar por nombre de usuario o email"

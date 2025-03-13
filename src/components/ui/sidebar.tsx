@@ -77,16 +77,15 @@ const SidebarProvider = React.forwardRef<
     const open = openProp ?? _open
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
+        const openState = typeof value === "function" ? value(open) : value
         if (setOpenProp) {
-          return setOpenProp?.(
-            typeof value === "function" ? value(open) : value
-          )
+          setOpenProp(openState)
+        } else {
+          _setOpen(openState)
         }
-
-        _setOpen(value)
-
+     
         // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
       [setOpenProp, open]
     )
@@ -223,7 +222,7 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className="md:block hidden group peer"
+        className="group peer hidden md:block"
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
@@ -256,7 +255,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex flex-col group-data-[variant=floating]:border-sidebar-border bg-sidebar group-data-[variant=floating]:shadow group-data-[variant=floating]:border group-data-[variant=floating]:rounded-lg w-full h-full"
+            className="flex flex-col bg-sidebar group-data-[variant=floating]:shadow group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:rounded-lg w-full h-full"
           >
             {children}
           </div>

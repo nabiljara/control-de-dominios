@@ -1,6 +1,6 @@
 'use client'
 import { NAV_MAIN } from "@/constants";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar, } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -77,6 +77,11 @@ export default function AppSidebarMenu() {
     return () => document.removeEventListener("keydown", down)
   }, [router])
 
+  const {
+    setOpenMobile
+  } = useSidebar()
+  
+
   return (
     <SidebarMenu>
       {NAV_MAIN.map((item) => {
@@ -85,8 +90,14 @@ export default function AppSidebarMenu() {
           : pathname.startsWith(item.href);
         return (
           <SidebarMenuItem key={item.label}>
-            <SidebarMenuButton asChild isActive={isActive}>
-              <Link href={item.href}>
+            <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+              <Link
+                href={item.href}
+                onClick={() => {
+                  setOpenMobile(false)
+                }
+                }
+              >
                 <item.icon />
                 <span>{item.label}</span>
                 <CommandShortcut>⌘{item.command}</CommandShortcut>

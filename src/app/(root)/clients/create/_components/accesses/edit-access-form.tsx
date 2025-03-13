@@ -80,7 +80,7 @@ export function EditAccessForm({
                 <SelectContent>
                   {
                     providers.map((provider) => (
-                      <SelectItem key={provider.url} value={provider.id.toString()}>{provider.name}</SelectItem>
+                      <SelectItem key={provider.url} value={provider.id.toString()} className="hover:bg-muted cursor-pointer">{provider.name}</SelectItem>
                     ))
                   }
                 </SelectContent>

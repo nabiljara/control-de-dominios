@@ -33,30 +33,32 @@ export function ResponsiveDialog({
 
   if (isDesktop) {
     return (
-          <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent
-              className={cn("sm:max-w-[425px]", className)}
-              onEscapeKeyDown={(e) => {
-                e.preventDefault()
-              }}
-              onPointerDownOutside={(e) => {
-                e.preventDefault()
-              }}
-            >
-              <DialogHeader>
-                <DialogTitle>{title}</DialogTitle>
-                {description && (
-                  <DialogDescription>{description}</DialogDescription>
-                )}
-              </DialogHeader>
-              {children}
-            </DialogContent>
-          </Dialog>
+      <Dialog open={open} onOpenChange={onOpenChange} aria-hidden={false}
+      >
+        <DialogContent
+          className={cn("sm:max-w-[425px]", className)}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault()
+          }}
+          onPointerDownOutside={(e) => {
+            e.preventDefault()
+          }}
+
+        >
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
+          </DialogHeader>
+          {children}
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} aria-hidden={false}>
       <DrawerContent className={cn("p-6", className)}>
         <DrawerHeader className="px-0 text-left">
           <DrawerTitle>{title}</DrawerTitle>

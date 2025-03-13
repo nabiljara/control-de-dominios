@@ -7,6 +7,7 @@ import { DataTableToolbar } from "./_components/data-table-toolbar"
 import { Handshake } from "lucide-react"
 import { getLocalities } from "@/actions/locality-actions"
 import { Client } from "@/db/schema"
+import HeaderPage from "@/components/header-page"
 
 export const metadata: Metadata = {
   title: "Clientes",
@@ -33,28 +34,18 @@ export default async function ClientsPage() {
   }
 
   return (
-    <>
-      <div className="md:flex flex-col flex-1 space-y-8 p-8 h-full">
-        <div className="flex justify-between items-center space-y-2">
-          <div>
-            <h2 className="flex flex-row items-center gap-2 font-bold text-2xl tracking-tight">
-              <div className="flex justify-center items-center bg-primary/10 rounded-full w-10 h-10">
-                <Handshake className="w-6 h-6 text-primary" />
-              </div>
-              Clientes
-            </h2>
-            <p className="text-muted-foreground">
-              Listado de todos tus clientes
-            </p>
-          </div>
-        </div>
-        <DataTable
-          data={clients}
-          columns={columns}
-          ToolbarComponent={DataTableToolbar}
-          filterLocalities={newLocalities}
-          from="clients" />
-      </div>
-    </>
+    <div className="flex flex-col space-y-8 p-8">
+      <HeaderPage
+        icon={<Handshake className="shrink-0" />}
+        title="Clientes"
+        description="Listado de todos tus clientes"
+      />
+      <DataTable
+        data={clients}
+        columns={columns}
+        ToolbarComponent={DataTableToolbar}
+        filterLocalities={newLocalities}
+        from="clients" />
+    </div>
   )
 }

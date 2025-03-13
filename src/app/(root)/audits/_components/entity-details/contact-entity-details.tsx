@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { statusConfig } from "@/constants";
 import { AuditWithRelations } from "@/db/schema";
-import { Building, Contact2, Handshake, Mail, MapPin, Phone, User } from "lucide-react";
+import { Contact2, Handshake, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 
 export function ContactEntityDetails(audit: AuditWithRelations) {

@@ -8,6 +8,7 @@ import { Globe } from "lucide-react"
 import { Domain } from "@/db/schema"
 import { getProviders } from "@/actions/provider-actions"
 import { getClients } from "@/actions/client-actions"
+import HeaderPage from "@/components/header-page"
 
 export const metadata: Metadata = {
   title: "Dominios",
@@ -38,7 +39,7 @@ export default async function DomainPage() {
   try {
     const clients = await getClients();
     clients.map((client) => {
-      const newFilterClient: string =  client.name
+      const newFilterClient: string = client.name
       filterClients.push(newFilterClient)
     })
   } catch (error) {
@@ -46,27 +47,19 @@ export default async function DomainPage() {
   }
 
   return (
-    <>
-      <div className="md:flex flex-col flex-1 space-y-8 p-8 h-full">
-        <div className="flex justify-between items-center space-y-2">
-          <div>
-            <h2 className="flex flex-row items-center gap-2 font-bold text-2xl tracking-tight">
-              <Globe />
-              Dominios
-            </h2>
-            <p className="text-muted-foreground">
-              Listado de todos tus dominios
-            </p>
-          </div>
-        </div>
-        <DataTable
-          data={domains}
-          columns={columns}
-          ToolbarComponent={DataTableToolbar}
-          from="domains"
-          filterClients={filterClients}
-          filterProviders={filterProviders} />
-      </div>
-    </>
+    <div className="flex flex-col space-y-8 p-8">
+      <HeaderPage
+        icon={<Globe className="shrink-0" />}
+        title="Dominios"
+        description="Listado de todos tus dominios"
+      />
+      <DataTable
+        data={domains}
+        columns={columns}
+        ToolbarComponent={DataTableToolbar}
+        from="domains"
+        filterClients={filterClients}
+        filterProviders={filterProviders} />
+    </div>
   )
 }

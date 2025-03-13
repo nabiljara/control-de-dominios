@@ -51,9 +51,9 @@ export function DataTableToolbar<TData>({
   }, [])
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex flex-1 items-center space-x-2">
-        <div className="relative w-[250px]">
+    <div className="flex lg:flex-row flex-col justify-between items-start lg:items-center gap-2">
+      <div className="flex lg:flex-row flex-col flex-1 items-start lg:items-center gap-2 w-full">
+        <div className="relative w-2/3 lg:w-[250px]">
           <Input
             id="filter"
             placeholder="Filtrar dominios por nombre"
@@ -62,9 +62,9 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
-            className="mr-3 w-full h-8"
+            className="h-8"
           />
-          <div className="right-2 -bottom-[7px] absolute text-gray-400 -translate-y-1/2">
+          <div className="hidden md:block right-2 -bottom-[7px] absolute text-gray-400 -translate-y-1/2">
             <CommandShortcut>⌘F</CommandShortcut>
           </div>
         </div>
@@ -100,11 +100,11 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <div className="flex space-x-2">
+      <div className="flex flex-row gap-2 w-full">
         <DataTableViewOptions table={table} />
         <Button
           variant="outline"
-          className="px-2 lg:px-3 h-8"
+          className="px-2 lg:px-3 w-2/3 lg:w-auto h-8"
           asChild
         >
           <Link href="/domains/create" className="relative gap-3">

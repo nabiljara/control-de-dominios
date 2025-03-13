@@ -187,7 +187,7 @@ export function NotificationsSheet() {
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="flex flex-col gap-4 w-full sm:max-w-lg min-h-screen overflow-y-scroll" ref={sheetContentRef}>
+      <SheetContent side="right" className="flex flex-col gap-4 w-full sm:max-w-md min-h-screen overflow-y-scroll" ref={sheetContentRef}>
 
         <SheetHeader className="px-4 py-3">
           <SheetTitle className="font-semibold text-lg">Notificaciones</SheetTitle>
@@ -213,11 +213,11 @@ export function NotificationsSheet() {
               <SelectValue placeholder="Todos los tipos" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">
+              <SelectItem value="all" className="hover:bg-muted cursor-pointer">
                 <Badge variant="outline">Todas</Badge>
               </SelectItem>
               {notificationType.map((notification) => (
-                <SelectItem value={notification} key={notification}>
+                <SelectItem value={notification} key={notification} className="hover:bg-muted cursor-pointer">
                   <Badge variant="outline" className={notificationStatusConfig[notification].badge}>
                     {notification}
                   </Badge>
@@ -229,7 +229,7 @@ export function NotificationsSheet() {
         {
           tabSelected === 'read' &&
           <div className="flex flex-col items-start gap-2 px-4">
-            <div className="flex justify-between items-center gap-2 w-full">
+            <div className="flex sm:flex-row flex-col justify-between items-center gap-2 w-full">
               <Button
                 className="w-full"
                 size='sm'
@@ -271,20 +271,20 @@ export function NotificationsSheet() {
                 )}
               </Button>
             </div>
-            <span className="text-muted-foreground text-xs">Presiona luego de elegir los filtros para realizar el filtrado por base de datos, de no ser así se realizará con las notificaciones actuales.</span>
+            <span className="text-muted-foreground text-xs">Presiona luego de elegir los filtros para realizar el filtrado por base de datos, de no ser as&iacute; se realizará con las notificaciones actuales.</span>
           </div>
         }
 
 
         <Tabs defaultValue="unread" className="flex flex-col items-center gap-2 w-full">
           <TabsList className="w-[94%]">
-            <TabsTrigger value="unread" className="w-full" onClick={() => setTabSelected('unread')}>No leídas</TabsTrigger>
+            <TabsTrigger value="unread" className="w-full" onClick={() => setTabSelected('unread')}>No le&iacute;das</TabsTrigger>
             <TabsTrigger value="read" className="w-full" onClick={() => {
               setTabSelected('read')
               if (!tabSelectedOnce) setTabSelectedOnce(true)
             }}
             >
-              Leídas
+              Le&iacute;das
             </TabsTrigger>
           </TabsList>
           <TabsContent value="unread" className="w-full">
@@ -305,12 +305,12 @@ export function NotificationsSheet() {
                     >
                       {isMarkNotificationLoading ? (
                         <div className="flex items-center gap-2">
-                          <Loader2 className="animate-spin" /> Marcando como leídas...
+                          <Loader2 className="animate-spin" /> Marcando como le&iacute;das...
                         </div>
                       ) : (
                         <>
                           <Check />
-                          Marcar como leídas
+                          Marcar como le&iacute;das
                         </>
                       )}
                     </Button>
@@ -411,7 +411,7 @@ export function NotificationsSheet() {
                 filteredReadNotifications.length > 10 &&
                 <Button
                   onClick={scrollToTop}
-                  className="right-4 bottom-6 z-50 fixed w-8 h-9"
+                  className="right-1 sm:right-4 bottom-6 z-50 fixed w-8 h-9"
                   size='sm'
                 >
                   <ChevronUp />

@@ -1,30 +1,37 @@
 "use client"
+
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { Table } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { contactStatus, contactTypes } from "@/constants"
+import { domainStatus } from "@/constants"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+  filterProviders?: Array<string> // Los proveedores para realizar el filtrado
+  filterClients?: Array<string> // Los proveedores para realizar el filtrado
 }
 
 export function DataTableToolbar<TData>({
-  table
+  table,
+  filterProviders,
+  filterClients
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
+
   return (
     <div className="flex lg:flex-row flex-col justify-between items-start lg:items-center gap-2">
       <div className="flex lg:flex-row flex-col flex-1 items-start lg:items-center gap-2 w-full">
         <div className="relative w-2/3 lg:w-[250px]">
           <Input
-            id="filter-contacts"
-            placeholder="Filtrar por nombre o email"
-            value={(table.getColumn("combinedFilter")?.getFilterValue() as string) ?? ""}
+            id="filter-domains"
+            placeholder="Filtrar dominios por nombre"
+            autoFocus
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("combinedFilter")?.setFilterValue(event.target.value)
+              table.getColumn("name")?.setFilterValue(event.target.value)
             }
             className="h-8"
           />
@@ -33,14 +40,21 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Estado"
-            options={contactStatus.slice()}
+            options={domainStatus.slice()}
           />
         )}
-        {table.getColumn("type") && (
+        {table.getColumn("provider") && (
           <DataTableFacetedFilter
-            column={table.getColumn("type")}
-            title="Tipo"
-            options={contactTypes.slice()}
+            column={table.getColumn("provider")}
+            title="Proveedor"
+            options={filterProviders ?? []}
+          />
+        )}
+        {filterClients && filterClients.length  > 0 && table.getColumn("client") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("client")}
+            title="Cliente"
+            options={filterClients ?? []}
           />
         )}
         {isFiltered && (
@@ -54,7 +68,7 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-        <DataTableViewOptions table={table} />
+      <DataTableViewOptions table={table} />
     </div>
   )
 }

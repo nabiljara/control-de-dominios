@@ -519,6 +519,7 @@ export default function CreateDomainForm({
                           <SelectItem
                             key={provider.url}
                             value={provider.id.toString()}
+                            className="hover:bg-muted cursor-pointer"
                           >
                             {provider.name}
                           </SelectItem>
@@ -552,7 +553,7 @@ export default function CreateDomainForm({
                       </FormControl>
                       <SelectContent>
                         {domainStatus.map((status) => (
-                          <SelectItem key={status} value={status}>
+                          <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer">
                             <Badge variant='outline' className={statusConfig[status].color}>
                               {status}
                             </Badge>
@@ -619,6 +620,7 @@ export default function CreateDomainForm({
                                   key={option.value}
                                   value={String(option.value)}
                                   disabled={option.disabled}
+                                  className="hover:bg-muted cursor-pointer"
                                 >
                                   {option.label}
                                 </SelectItem>
