@@ -14,22 +14,13 @@ import {
   Text,
 } from "@react-email/components";
 
-interface ClientEmailProps {
-  domain: string;
-  expirationDate: string;
-  title: string;
-  expire?: string;
-  primaryColor: string;
+interface BouncedEmailProps {
+  emailTo: string;
+  contactId: number | null;
 }
 const baseUrl = process.env.BASE_URL ? process.env.BASE_URL : "";
-export default function ClientEmail({
-  domain = "dominio.com",
-  expirationDate = "DD-MM-YYYY",
-  title = "Titulo vencimiento",
-  // primaryColor = "#60C9A1",
-  primaryColor = "#FF5B5B",
-  expire = "",
-}: ClientEmailProps) {
+
+export default function BouncedMail({ emailTo, contactId }: BouncedEmailProps) {
   return (
     <Html>
       <Head>
@@ -37,7 +28,7 @@ export default function ClientEmail({
           fontFamily="Inter"
           fallbackFontFamily="Arial"
           webFont={{
-            url: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap",
+            url: "https://fonets.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap",
             format: "woff2",
           }}
           fontWeight={400}
@@ -73,7 +64,7 @@ export default function ClientEmail({
     `}
         </style>
       </Head>
-      <Preview>Tu dominio {domain}</Preview>
+      <Preview>Email no enviado.</Preview>
       <Body style={main}>
         {/* CONTAINER CON EL GRADIENTE, USADO COMO BORDE */}
         <Container
@@ -85,7 +76,8 @@ export default function ClientEmail({
             maxWidth: "600px",
             borderRadius: "15px",
             padding: "2px",
-            background: `linear-gradient(to top, ${primaryColor} -10%, transparent 100%)`,
+            background:
+              "linear-gradient(to top, #FF5B5B -10%, transparent 100%)",
           }}
           className="container"
         >
@@ -119,11 +111,7 @@ export default function ClientEmail({
                           style={logoColumnStyle}
                         >
                           <Img
-                            src={
-                              expire === "expired" || expire === "today"
-                                ? `${baseUrl}/images/kernel-black.png`
-                                : `${baseUrl}/images/kernel-color.png`
-                            }
+                            src={`${baseUrl}/images/kernel-black.png`}
                             alt="Kernel"
                             className="h-[24px] w-[120px]"
                           />
@@ -132,7 +120,7 @@ export default function ClientEmail({
                           className="header-column"
                           style={partnerColumnStyle}
                         >
-                          <Text style={partnerText(primaryColor)}>
+                          <Text style={partnerText}>
                             TU PARTNER TECNOLÓGICO
                           </Text>
                         </Column>
@@ -147,66 +135,32 @@ export default function ClientEmail({
                             padding: "24px 32px",
                           }}
                         >
-                          <Text style={titleStyle(primaryColor)}>
-                            Tu dominio {title}
+                          <Text style={titleStyle}>
+                            Email no enviado correctamente
                           </Text>
                           <Text style={paragraph}>
-                            Tu dominio <strong style={bold}>{domain}</strong>{" "}
-                            {expire === "today" ? (
-                              "caduca el día de hoy"
-                            ) : expire === "expired" ? (
-                              <>
-                                caducó el{" "}
-                                <strong style={bold}>{expirationDate}</strong>
-                              </>
-                            ) : (
-                              <>
-                                caduca el{" "}
-                                <strong style={bold}>{expirationDate}</strong>
-                              </>
-                            )}
+                            No se pudo entregar correctamente el correo de
+                            vencimiento a{" "}
+                            <strong style={bold}>{emailTo}</strong>, revise este{" "}
+                            <a href={`${baseUrl}/contacts/${contactId}`}>
+                              <strong
+                                style={{
+                                  fontWeight: "700",
+                                  textEmphasisStyle: "underline",
+                                }}
+                              >
+                                contacto
+                              </strong>
+                            </a>{" "}
+                            y sus dominios asociados.
                           </Text>
-                          <Text style={paragraph}>
-                            {expire === "expired" ? (
-                              <>
-                                Lamentamos que tus servicios hayan dejado de
-                                funcionar, respondé este correo o contactate con
-                                nuestra área administrativa para activarlos. Te
-                                ayudaremos con el proceso de recuperación.
-                              </>
-                            ) : (
-                              <>
-                                Para mantener tu sitio web en funcionamiento,
-                                respondé este correo o contactate con nuestra
-                                área administrativa. Te ayudaremos con el
-                                proceso de renovación.
-                              </>
-                            )}
-                          </Text>
-                          <Text style={paragraph}>
-                            <strong style={bold}>Importante:</strong> Si querés
-                            conservar tu dominio, es necesario renovarlo. Si no
-                            lo hacés a tiempo, podrían aplicarse tarifas
-                            adicionales
-                            {expire === "expired" || expire === "today"
-                              ? " o podrías perderlo"
-                              : ""}
-                            .
-                          </Text>
+
                           <Button
-                            href={
-                              expire === "expired"
-                                ? "https://wa.me/542974269067?text=Hola%21%20Necesito%20recuperar%20mi%20dominio."
-                                : "https://wa.me/542974269067?text=Hola%21%20Necesito%20hacer%20la%20renovaci%C3%B3n%20de%20mi%20dominio."
-                            }
-                            style={buttonStyle(primaryColor)}
+                            href={"http://localhost:3000/contacts/" + contactId}
+                            style={buttonStyle}
                             className="button"
                           >
-                            {expire === "expired" ? (
-                              <>Recuperar ahora</>
-                            ) : (
-                              <>Renovar ahora</>
-                            )}
+                            Ver contacto
                           </Button>
                         </Column>
                       </Row>
@@ -258,14 +212,14 @@ const headerStyle = {
   padding: "0",
   marginTop: "20px",
 };
-const partnerText = (color: string) => ({
-  color: `${color === "#FF5B5B" ? "#131E3C" : "#38BC89"}`,
+const partnerText = {
+  color: "#FF5B5B",
   fontSize: "14px",
   lineHeight: "20px",
   fontWeight: "700",
   margin: "0",
   textAlign: "right" as const,
-});
+};
 const logoColumnStyle = {
   padding: "24px 32px",
   textAlign: "left" as const,
@@ -283,14 +237,14 @@ const textRightFooter = {
   textAlign: "right" as const,
 };
 
-const titleStyle = (titleColor: string) => ({
+const titleStyle = {
   fontSize: "25px",
   fontWeight: "700",
-  color: `${titleColor === "#FF5B5B" ? "#FF5B5B" : "#131E3C"}`,
+  color: "#131E3C",
   marginBottom: "20px",
   marginTop: "10px",
   lineHeight: "28px",
-});
+};
 
 const paragraph = {
   fontSize: "18px",
@@ -304,8 +258,8 @@ const bold = {
   fontWeight: "700",
 };
 
-const buttonStyle = (backgroundColor: string) => ({
-  backgroundColor: `${backgroundColor === "#FF5B5B" ? "#FF5B5B" : "#38BC89"}`,
+const buttonStyle = {
+  backgroundColor: `#FF5B5B`,
   borderRadius: "6px",
   color: "#fff",
   fontSize: "16px",
@@ -314,9 +268,9 @@ const buttonStyle = (backgroundColor: string) => ({
   textAlign: "center" as const,
   display: "inline-block",
   marginTop: "10px",
-  marginBottom: "40px",
+  marginBottom: "10px",
   padding: "14px 55px",
-});
+};
 
 const footerStyle = {
   width: "100%",

@@ -1,3 +1,4 @@
+import { sendMailBounced } from "@/actions/mail-actions";
 import { insertNotification } from "@/actions/notifications-actions";
 import { getUsers } from "@/actions/user-action/user-actions";
 import db from "@/db";
@@ -28,10 +29,20 @@ export async function POST(req: NextRequest) {
 
       const users = await getUsers();
       if (users.length > 0) {
-        await Promise.all(users.map((user) => insertNotification(notification, user.id)));
-        console.log("Notificaciones creadas para todos los usuarios.");
+          await Promise.all(users.map((user) => insertNotification(notification, user.id)));
+          console.log("Notificaciones creadas para todos los usuarios.");
+        }
+
+      const [emailResult] = await Promise.allSettled([
+        sendMailBounced(emailTo, contact?.id ?? null),
+      ]);
+      
+      if (emailResult.status === "fulfilled") {
+        console.log("Email enviado con éxito a gerencia");
+      } else {
+        console.error(`Error al enviar email a gerencia por mail no enviado- Motivo: ${emailResult.reason}`);
       }
-    }
+      }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error procesando webhook:", error);

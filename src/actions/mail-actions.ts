@@ -1,5 +1,6 @@
 'use server'
 
+import BouncedMail from '@/components/mails/bounced-mail';
 import ClientEmail from '@/components/mails/client-mail';
 import { Resend } from 'resend';
 
@@ -11,8 +12,6 @@ export async function sendMail(domain:string, expirationDate:string, title:strin
     // const response = await sendEmailToClient(domain, expirationDate,title, primaryColor,expire);
 
     // if (response.success) {
-      // const responseClient = await sendEmailToClient(data);
-      // if (responseClient.success){
         return { success: true };
       // }else{
       //   throw new Error("Error inesperado al enviar el correo al cliente");  
@@ -29,7 +28,6 @@ export async function sendMail(domain:string, expirationDate:string, title:strin
     }
   }
 }
-
 
 const sendEmailToClient = async (domain:string, expirationDate:string, title:string, primaryColor:string, expire:string) => {
   const managementEmail = 'luccamansilla01@gmail.com'
@@ -59,3 +57,49 @@ const sendEmailToClient = async (domain:string, expirationDate:string, title:str
     throw error;
   }
 }
+export async function sendMailBounced(emailTo:string, contactId:number | null) { 
+  
+  try {
+    const response = await sendEmailToManagement(emailTo,contactId);
+
+    if (response.success) {
+      return { success: true };
+    }else{
+        throw new Error("Error inesperado al enviar el correo al cliente");  
+      }
+    
+  } catch (error) {
+    console.error("Error al envíar el correo:", error);
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error("Error desconocido");
+    }
+  }
+}
+const sendEmailToManagement = async (emailTo:string, contactId:number | null) => {
+  const managementEmail = 'luccamansilla01@gmail.com'
+  try {
+    const data = await resend.emails.send({
+      from: 'Pruebas SICOM <noreply@pruebaslm.online>',
+      to: [managementEmail],
+      subject: 'Email no enviado.',
+      react: BouncedMail({
+        emailTo,
+        contactId
+      }) as React.ReactElement,
+    });
+    if (!data.error) {
+      return { success: true };
+    }
+    else {
+      throw new Error(
+        `Error en Resend: ${data.error.message || "Error desconocido"}`
+      );
+    }
+  } catch (error) {
+    console.error("Error al enviar correo a cliente:", error);
+    throw error;
+  }
+}
+
