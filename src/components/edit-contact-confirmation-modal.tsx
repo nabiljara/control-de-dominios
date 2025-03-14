@@ -11,7 +11,6 @@ import { changedField } from './changed-field';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { updateDomainContact } from '@/actions/domains-actions';
 import { ContactModal } from './contact-modal';
 import Plus from './plus';
 
@@ -30,7 +29,7 @@ export function EditContactConfirmationModal(
   }: {
     form: UseFormReturn<ContactFormValues>
     oldContact?: ContactWithRelations;
-    handleSubmit: () => void
+    handleSubmit: (selectedContacts?: Record<number, number | null>) => void
     isSubmitting: boolean
     setIsContactModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsEditConfirmationModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -48,30 +47,33 @@ export function EditContactConfirmationModal(
   const typeState = form.getFieldState("type")
   const phoneState = form.getFieldState("phone")
   const clientState = form.getFieldState("clientId")
-  const shouldShowInactiveWarning = statusState.isDirty && status === 'Inactivo' && oldContact && oldContact.domains.length > 0 //Si cambia a inactivo y tiene dominios activos asociados
+  const activeDomains = oldContact && oldContact.domains.filter((domain) => domain.status === 'Activo')
+  const shouldShowInactiveWarning = statusState.isDirty && status === 'Inactivo' && activeDomains && activeDomains.length > 0 //Si cambia a inactivo y tiene dominios activos asociados
 
   const [selectedContacts, setSelectedContacts] = useState<Record<number, number | null>>(() => {
     const selectedContacts: Record<number, number | null> = {};
-    oldContact?.domains.forEach((domain) => {
-      selectedContacts[domain.id] = null;
-    });
+
+    if (shouldShowInactiveWarning && activeDomains) {
+      activeDomains.forEach((domain) => {
+        selectedContacts[domain.id] = null;
+      });
+    }
     return selectedContacts;
   });
 
   if (!oldContact) return
 
   const handleConfirm = async () => {
-    const hasNullSelectedContact = Object.values(selectedContacts).some(value => value === null);
-    if (hasNullSelectedContact) {
+    if (shouldShowInactiveWarning) {
+      const hasNullSelectedContact = Object.values(selectedContacts).some(value => value === null);
+      if (hasNullSelectedContact) {
       toast.warning("Seleccione un nuevo contacto para cada dominio.");
-      return
+      return;
+      }
+      handleSubmit(selectedContacts);
+    } else {
+      handleSubmit();
     }
-    const filteredContacts = Object.fromEntries(
-      Object.entries(selectedContacts).filter(([_, value]) => value !== null)
-    ) as Record<number, number>;
-
-    handleSubmit()
-    await updateDomainContact(filteredContacts, oldContact.id);
   }
 
   return (
@@ -150,7 +152,7 @@ export function EditContactConfirmationModal(
           <CardContent className="flex flex-col gap-4 border-none">
             <ul className='space-y-4'>
               {
-                oldContact.domains.map((domain) => (
+                activeDomains.map((domain) => (
                   <li key={domain.name} className='flex justify-between items-center gap-4'>
                     <div className="flex items-center space-x-2">
                       <Globe size={18} />
@@ -305,13 +307,7 @@ export function EditContactConfirmationModal(
         </Button>
         <Button
           type="button"
-          onClick={() => {
-            if (shouldShowInactiveWarning) {
-              handleConfirm()
-            } else {
-              handleSubmit()
-            }
-          }}
+          onClick={handleConfirm}
           disabled={isSubmitting}
           className='w-full'
         >

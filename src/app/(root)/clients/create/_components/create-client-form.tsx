@@ -136,7 +136,8 @@ export function CreateClientForm({
     defaultValues: {
       name: "",
       contacts: [],
-      access: []
+      access: [],
+      status:'Activo'
     }
   })
 
@@ -168,7 +169,7 @@ export function CreateClientForm({
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 dark:from-gray-900 to-gray-100/50 dark:to-gray-800 p-4 min-h-screen">
+    <div className="p-6 min-h-screen">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-bold text-2xl">

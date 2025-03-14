@@ -49,7 +49,10 @@ export async function getClient(id: number) {
       where: eq(clients.id, id),
       with:
       {
-        domains: { with: { provider: true, accessData: true } },
+        domains: { 
+          with: { provider: true, accessData: true },
+          orderBy: asc(domains.expirationDate) 
+        },
         locality: true,
         access: {
           with: { provider: true, domainAccess: { with: { domain: true } } },

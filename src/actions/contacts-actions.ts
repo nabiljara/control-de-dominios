@@ -53,20 +53,20 @@ export async function createContact(contact: ContactFormValues, pathToRevalidate
     }
 }
 
-export async function updateContact(contact: ContactFormValues, pathToRevalidate: string | undefined) {
+export async function updateContact(contact: ContactFormValues, pathToRevalidate: string | undefined, selectedContacts?: Record<number, number | null>) {
     let success = false
     try {
-        if (!contact.id) {
-            throw new Error("El ID del contacto no está definido.");
-        }
         const parsed = await contactFormSchema.parseAsync(contact);
         if (!parsed) {
             throw new Error("Error de validación del formulario de contacto.");
         }
 
         await db.transaction(async (tx) => {
+            if (!parsed.id) {
+                throw new Error("El ID del contacto no está definido.");
+            }
             await setUserId(tx)
-
+            
             await tx
                 .update(contacts)
                 .set({
@@ -79,6 +79,16 @@ export async function updateContact(contact: ContactFormValues, pathToRevalidate
                     updatedAt: sql`NOW()`
                 })
                 .where(eq(contacts.id, Number(contact.id)))
+                
+
+            if (selectedContacts) {
+                await Promise.all(Object.entries(selectedContacts).map(async ([domainId, contactId]) => {
+                    if (!contactId) throw new Error(`El ID del contacto no está definido para el dominio con id: ${domainId}`);
+                    await tx.update(domains) 
+                        .set({ contactId: contactId})
+                        .where(eq(domains.id, Number(domainId)));
+                }));
+            }
             success = true;
         });
     }
@@ -87,7 +97,7 @@ export async function updateContact(contact: ContactFormValues, pathToRevalidate
         throw error;
     }
     if (success && pathToRevalidate) {
-        revalidatePath(`${pathToRevalidate}`, "page");
+        revalidatePath(`${pathToRevalidate}`);
     }
 };
 
@@ -106,7 +116,7 @@ export async function getContact(id: number) {
                                 }
                             }
                         },
-                        provider:true,
+                        provider: true,
                         contact: true
                     }
                 },

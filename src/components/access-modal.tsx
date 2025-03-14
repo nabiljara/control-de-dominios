@@ -1,5 +1,5 @@
 'use client'
-import React, { cloneElement, useEffect, useState } from 'react'
+import React, { cloneElement, useState } from 'react'
 import { useForm, } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -48,7 +48,7 @@ export function AccessModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedProviderName, setSelectedProviderName] = useState<undefined | string>(undefined);
   const { data: providers, error } = useSWR("providers", getProviders);
-  
+
   const form = useForm<AccessFormValues>({
     resolver: zodResolver(accessFormSchema ?? defaultAccessSchema),
     defaultValues: {
@@ -93,8 +93,8 @@ export function AccessModal({
           await validateAccess(form.getValues('username'), parseInt(form.getValues('provider.id')), access?.username, access?.providerId)
           :
           await validateAccess(form.getValues('username'), parseInt(form.getValues('provider.id')), undefined, undefined); // valido el acceso en la base de datos manualmente
-        
-          if (errorList.length > 0) {
+
+        if (errorList.length > 0) {
           errorList.forEach((error) => {
             form.setError(error.field, {
               type: "manual",
@@ -159,12 +159,17 @@ export function AccessModal({
     )
   }
 
-  const handleEditDBAccessSubmit = () => { //submit para editar el acceso en la base de datos
+  const handleEditDBAccessSubmit = (selectedProviders?: Record<number, boolean>) => { //submit para editar el acceso en la base de datos
     setIsSubmitting(true)
+    const changedAccessProvider = selectedProviders && Object.keys(selectedProviders).length > 0
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          await updateAccess(form.getValues(), pathToRevalidate)
+          if (changedAccessProvider) {
+            await updateAccess(form.getValues(), pathToRevalidate, selectedProviders)
+          } else {
+            await updateAccess(form.getValues(), pathToRevalidate)
+          }
           resolve();
           setIsAccessModalOpen(false)
           setIsEditAccessConfirmationModalOpen(false)
@@ -175,7 +180,7 @@ export function AccessModal({
             password: form.getValues('password'),
             notes: form.getValues('notes'),
             client: { id: client?.id ? client.id.toString() : '', name: client ? client.name : '' },
-            provider: { id: form.getValues('provider.id'), name: form.getValues('provider.name')}
+            provider: { id: form.getValues('provider.id'), name: form.getValues('provider.name') }
           })
         } catch (error) {
           console.error(error)
@@ -187,9 +192,9 @@ export function AccessModal({
         }
       }),
       {
-        loading: "Editando acceso...",
-        success: "Acceso editado satisfactoriamente",
-        error: "No se pudo editar el acceso correctamente."
+        loading: changedAccessProvider ? 'Editando acceso y dominios...' : 'Editando acceso...',
+        success: changedAccessProvider ? 'Acceso y dominios editados satisfactoriamente.' : 'Acceso editado correctamente.',
+        error: changedAccessProvider ? 'No se pudo editar el acceso y los dominios correctamente.' : 'No se pudo editar el acceso correctamente.'
       }
     )
   }
@@ -232,7 +237,9 @@ export function AccessModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {
+                      {error ? (
+                        <span className='p-2 text-destructive text-sm'>No se pudo recuperar correctamente los proveedores.</span>
+                      ) :
                         providers && providers.map((provider) => (
                           <SelectItem
                             key={provider.url}
@@ -393,6 +400,7 @@ export function AccessModal({
           handleSubmit={handleEditDBAccessSubmit}
           isSubmitting={isSubmitting}
           provider={selectedProviderName ?? access?.provider?.name}
+          providerId={provider?.id}
         />
       </ResponsiveDialog>
     </>

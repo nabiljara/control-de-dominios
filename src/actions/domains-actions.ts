@@ -123,27 +123,6 @@ export async function getDomainsByContact(idContact: number) {
 };
 
 
-export async function updateDomainContact(selectedContacts: Record<number, number>, contactId:number) {
-  let success = false;
-  try {
-    Object.entries(selectedContacts).map(async ([domainId, contactId]) => {
-      await setUserId()
-      await db.update(domains)
-        .set({ contactId: contactId })
-        .where(eq(domains.id, Number(domainId)))
-    })
-    success = true;
-  }
-  catch (error) {
-    console.error("Error al actualizar el o los contactos del dominios:", error);
-    throw error;
-  }
-  if (success) {
-    revalidatePath(`/contacts/${contactId}`);
-    redirect(`/contacts/${contactId}`);
-  }
-};
-
 export async function updateDomain(domain: DomainFormValues, accessId: number | undefined, justUpdateAccess: boolean) {
   let success = false;
   try {
@@ -153,16 +132,14 @@ export async function updateDomain(domain: DomainFormValues, accessId: number | 
     if (!parsed) {
       throw new Error("Error de validación del formulario del dominio.");
     }
-
-    // await setUserId()
     await db.transaction(async (tx) => {
-      
+
       await setUserId(tx)
-      
+
       if (!parsed.id) {
         throw new Error("El ID del dominio no está definido.");
       }
-      if (!justUpdateAccess){
+      if (!justUpdateAccess) {
         const domainUpdate: DomainInsert = {
           name: parsed.name.toLowerCase(),
           providerId: parseInt(parsed.provider.id),
@@ -172,10 +149,10 @@ export async function updateDomain(domain: DomainFormValues, accessId: number | 
           status: parsed.status,
         }
         await tx.update(domains)
-        .set(domainUpdate)
-        .where(eq(domains.id, parsed.id))
+          .set(domainUpdate)
+          .where(eq(domains.id, parsed.id))
       }
-        
+
       //Busco si el dominio tiene un acceso asociado
       const response = await db.query.domainAccess.findFirst({ where: eq(domainAccess.domainId, parsed.id) })
 
@@ -341,7 +318,7 @@ export async function getExpiringDomains() {
   const today = Date.now();
   try {
     const data = await db.query.domains.findMany({
-      columns: { expirationDate: true, id: true, clientId: true, name:true },
+      columns: { expirationDate: true, id: true, clientId: true, name: true },
       where:
         eq(domains.status, 'Activo'),
       with: {
@@ -449,19 +426,19 @@ async function validateDomainName(name: string) {
   }
 }
 export async function updateDomainsState(doms: ExpiringDomains[]) {
-        try {
-            await Promise.all(doms.map(async (dom) => {
-                try {
-                    await updateDomainCron(dom.id);
-                } catch (error) {
-                    console.error(`Error al modificar el estado del dominio ${dom.name}:`, error);
-                }
-            }));
-            await createNotificationForDomain(doms, 'Vencido');
-            return "Dominios vencidos actualizados correctamente";
-        } catch (error) {
-            console.error('Error al actualizar el estado de los dominios:', error);
-        }
+  try {
+    await Promise.all(doms.map(async (dom) => {
+      try {
+        await updateDomainCron(dom.id);
+      } catch (error) {
+        console.error(`Error al modificar el estado del dominio ${dom.name}:`, error);
+      }
+    }));
+    await createNotificationForDomain(doms, 'Vencido');
+    return "Dominios vencidos actualizados correctamente";
+  } catch (error) {
+    console.error('Error al actualizar el estado de los dominios:', error);
+  }
 }
 
 export async function getDomainAccessDetail(domAccId: number) {

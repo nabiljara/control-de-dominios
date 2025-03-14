@@ -157,19 +157,24 @@ export function ContactModal({
         }
       }),
       {
-        loading: "Registrando contacto",
-        success: "Contacto registrado satisfactoriamente",
+        loading: "Registrando contacto...",
+        success: "Contacto registrado satisfactoriamente.",
         error: "No se pudo registrar el contacto correctamente."
       }
     )
   }
 
-  const handleEditDBContactSubmit = () => { //submit para editar el contacto en la base de datos
+  const handleEditDBContactSubmit = (selectedContacts?: Record<number, number | null>) => { //submit para editar el contacto en la base de datos
     setIsSubmitting(true)
+    const changedDomainsContact = selectedContacts && Object.keys(selectedContacts).length > 0
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          await updateContact(form.getValues(), pathToRevalidate)
+          if (changedDomainsContact) {
+            await updateContact(form.getValues(), pathToRevalidate, selectedContacts)
+          }else {
+            await updateContact(form.getValues(), pathToRevalidate)
+          }
           resolve();
           setIsContactModalOpen(false)
           setIsEditContactConfirmationModalOpen(false)
@@ -187,9 +192,9 @@ export function ContactModal({
         }
       }),
       {
-        loading: "Editando contacto...",
-        success: "Contacto editado satisfactoriamente",
-        error: "No se pudo editar el contacto correctamente."
+        loading: changedDomainsContact ? 'Editando contacto y dominios...' : 'Editando contacto...',
+        success: changedDomainsContact ? 'Contacto y dominios editados satisfactoriamente.' : 'Contacto editado correctamente.',
+        error: changedDomainsContact ? 'No se pudo editar el contacto y los dominios correctamente.' : 'No se pudo editar el contacto correctamente.'
       }
     )
   }
@@ -525,10 +530,10 @@ export function ContactModal({
           setIsContactModalOpen={setIsContactModalOpen}
           form={form}
           setIsEditConfirmationModalOpen={setIsEditContactConfirmationModalOpen}
-          oldContact={contact ? contact : undefined}
+          oldContact={contact ?? undefined}
           handleSubmit={handleEditDBContactSubmit}
           isSubmitting={isSubmitting}
-          client={selectedClientName ? selectedClientName : client?.name}
+          client={selectedClientName ?? client?.name}
           kernelContacts={kernelContacts}
           individualContacts={individualContacts}
           clients={clients}

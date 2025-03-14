@@ -1,7 +1,7 @@
 "use server"
 
 import db from "@/db";
-import { access, AccessInsert } from "@/db/schema";
+import { access, AccessInsert, domainAccess, domains } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { accessFormSchema, AccessFormValues } from "@/validators/client-validator";
@@ -105,12 +105,9 @@ export async function createAccess(acc: AccessFormValues, pathToRevalidate: stri
   }
 }
 
-export async function updateAccess(acc: AccessFormValues, pathToRevalidate: string | undefined) {
+export async function updateAccess(acc: AccessFormValues, pathToRevalidate: string | undefined, selectedProviders?: Record<number, boolean>) {
   let success = false;
   try {
-    if (!acc.id) {
-      throw new Error("El ID del acceso no está definido.");
-  }
     const parsed = await accessFormSchema.parseAsync(acc);
     if (!parsed) {
       throw new Error("Error de validación del formulario de acceso.");
@@ -120,13 +117,30 @@ export async function updateAccess(acc: AccessFormValues, pathToRevalidate: stri
     const newAccess: AccessInsert = {
       username: parsed.username,
       password: `${encrypted}:${iv}`,
-      providerId: parseInt(parsed.provider.id),
-      clientId: parsed.client && parsed.client.id ? parseInt(parsed.client.id) : null,
+      providerId: Number(parsed.provider.id),
+      clientId: parsed.client && parsed.client.id ? Number(parsed.client.id) : null,
       notes: parsed.notes ?? null
     };
 
-    await setUserId()
-    await db.update(access).set(newAccess).where(eq(access.id, acc.id));
+    await db.transaction(async (tx) => {
+      if (!parsed.id) {
+        throw new Error("El ID del acceso no está definido.");
+      }
+      await setUserId(tx);
+      await tx.update(access).set(newAccess).where(eq(access.id, parsed.id))
+      if (selectedProviders) {
+        await Promise.all(Object.entries(selectedProviders).map(async ([domainId, updateProvider]) => {
+          if (updateProvider) {
+            await tx.update(domains)
+              .set({ providerId: Number(parsed.provider.id) })
+              .where(eq(domains.id, Number(domainId)));
+          } else {
+            await tx.delete(domainAccess)
+              .where(eq(domainAccess.domainId, Number(domainId)));
+          }
+        }));
+      }
+    })
     success = true
   } catch (error) {
     console.error("Error al editar el acceso", error);
@@ -181,7 +195,7 @@ export const decryptPassword = (password: string): string => {
     return decrypt(retrievedEncrypted, retrievedIv);
   } catch (error) {
     console.error(`Error al procesar la contraseña:`, error);
-    throw error; 
+    throw error;
   };
 }
 

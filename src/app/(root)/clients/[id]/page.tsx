@@ -21,7 +21,7 @@ export default async function ClientPage({
     <EntityNotFound
       icon={<User className="w-12 h-12 text-gray-400" />}
       title="Cliente no encontrado"
-      description="Lo sentimos, no pudimos encontrar el cliente que est&aacute;s buscando. Es posible que la URL proporcionada no sea v&aacute;lida o que el cliente haya sido eliminado."
+      description="Lo sentimos, no pudimos encontrar el cliente que estás buscando. Es posible que la URL proporcionada no sea válida o que el cliente haya sido eliminado."
       href="/clients"
       linkText="Volver al listado de clientes"
     />

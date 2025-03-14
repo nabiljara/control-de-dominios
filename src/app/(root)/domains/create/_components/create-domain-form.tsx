@@ -373,8 +373,17 @@ export default function CreateDomainForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">{domain ? ' Editar dominio' : 'Nuevo dominio'}</CardTitle>
-        <CardDescription>{domain ? ' Edite los campos del dominio' : 'Ingrese los campos del dominio'}</CardDescription>
+        <CardTitle className="flex flex-row items-center gap-2 font-bold text-2xl tracking-tight">
+          <div className="flex justify-center items-center bg-primary/10 rounded-full w-10 h-10">
+            <Globe />
+          </div>
+          {domain ? ' Editar dominio' : 'Registro de dominio'}
+        </CardTitle>
+        <CardDescription>
+
+          {domain ? <span>Edite los campos necesarios del formulario. </span> : <span>Complete el formulario para registrar un nuevo dominio. </span>}
+          <span>Los campos marcados con <span className="text-destructive">*</span> son obligatorios.</span>
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
