@@ -144,7 +144,7 @@ export async function updateDomainContact(selectedContacts: Record<number, numbe
   }
 };
 
-export async function updateDomain(domain: DomainFormValues, accessId: number | undefined) {
+export async function updateDomain(domain: DomainFormValues, accessId: number | undefined, justUpdateAccess: boolean) {
   let success = false;
   try {
 
@@ -154,27 +154,28 @@ export async function updateDomain(domain: DomainFormValues, accessId: number | 
       throw new Error("Error de validación del formulario del dominio.");
     }
 
-    const domainUpdate: DomainInsert = {
-      name: parsed.name.toLowerCase(),
-      providerId: parseInt(parsed.provider.id),
-      clientId: parseInt(parsed.client.id),
-      contactId: parseInt(parsed.contactId),
-      expirationDate: format(parsed.expirationDate, "yyyy-MM-dd HH:mm"),
-      status: parsed.status,
-    }
     // await setUserId()
     await db.transaction(async (tx) => {
-
+      
       await setUserId(tx)
-
+      
       if (!parsed.id) {
         throw new Error("El ID del dominio no está definido.");
       }
-
-      await tx.update(domains)
+      if (!justUpdateAccess){
+        const domainUpdate: DomainInsert = {
+          name: parsed.name.toLowerCase(),
+          providerId: parseInt(parsed.provider.id),
+          clientId: parseInt(parsed.client.id),
+          contactId: parseInt(parsed.contactId),
+          expirationDate: format(parsed.expirationDate, "yyyy-MM-dd HH:mm"),
+          status: parsed.status,
+        }
+        await tx.update(domains)
         .set(domainUpdate)
         .where(eq(domains.id, parsed.id))
-
+      }
+        
       //Busco si el dominio tiene un acceso asociado
       const response = await db.query.domainAccess.findFirst({ where: eq(domainAccess.domainId, parsed.id) })
 

@@ -216,7 +216,8 @@ export default function CreateDomainForm({
         try {
           const accessId = form.getValues("isClientAccess") || form.getValues("isKernelAccess") ? form.getValues("accessId") : undefined
           if (domain) {
-            await updateDomain(form.getValues(), accessId)
+            const justUpdateAccess: boolean = form.formState.dirtyFields.accessId && Object.keys(form.formState.dirtyFields).length === 1 ? true : false
+            await updateDomain(form.getValues(), accessId, justUpdateAccess)
             setIsEditConfirmationDomainModalOpen(false)
             if (setIsEditing) {
               setIsEditing(false)
@@ -266,14 +267,14 @@ export default function CreateDomainForm({
     defaultValues: {
       id: domain?.id,
       name: domain?.name ?? "",
-      provider: { id: domain?.provider.id.toString(), name: domain?.provider.name},
+      provider: { id: domain?.provider.id.toString(), name: domain?.provider.name },
       client: { id: domain?.client.id.toString(), name: domain?.client.name },
       contactId: domain?.contactId.toString(),
       accessId: domain?.accessData?.access.id,
       isClientContact: diffFromUndefinedContact && domain?.contact.clientId === domain?.clientId && domain?.clientId !== 1, // Es contacto del cliente pero diferente de Kernel para no repetir IsKernelContact
-      isKernelContact: diffFromUndefinedContact && domain?.contact.clientId === 1 ,
+      isKernelContact: diffFromUndefinedContact && domain?.contact.clientId === 1,
       isIndividualContact: diffFromUndefinedContact && domain?.contact.clientId !== domain?.clientId && domain?.contact.clientId !== 1,
-      isClientAccess: diffFromUndefinedAccess && domain?.accessData?.access.clientId !== 1 ,
+      isClientAccess: diffFromUndefinedAccess && domain?.accessData?.access.clientId !== 1,
       isKernelAccess: diffFromUndefinedAccess && domain?.accessData?.access.clientId === 1,
       status: domain?.status,
       expirationDate: domain?.expirationDate ? new Date(domain.expirationDate) : undefined,

@@ -84,7 +84,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
             </p>
           </Link>
         </CardTitle>
-        <div className="flex items-center text-muted-foreground text-base md:text-2xl truncate">
+        <div className="flex items-center text-muted-foreground text-base md:text-xl truncate">
           <CalendarArrowDown className="mr-2 w-5 md:w-8 h-5 md:h-8 shrink-0" />
           <span>Expira: {formatDate(domain.expirationDate)}</span>
         </div>
