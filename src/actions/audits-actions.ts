@@ -5,7 +5,7 @@ import { audits, AuditWithRelations } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { getAuditProvider } from "./provider-actions";
 import { getAuditContact } from "./contacts-actions";
-import { getAuditDomain } from "./domains-actions";
+import { getAuditDomain, getDomainAccessDetail } from "./domains-actions";
 import { getAuditClient } from "./client-actions";
 import { getUser } from "./user-action/user-actions";
 import { getAccess } from "./accesses-actions";
@@ -86,6 +86,10 @@ async function getEntityDetails(entity: keyof typeof entityMap, entityId: string
       case 'localities':
         result = getLocality(Number(entityId));
         break;
+      case 'domain_access': 
+        result = getDomainAccessDetail(Number(entityId));
+        break;
+
       default:
         throw new Error(`No se configuró lógica para la tabla: ${tableName}`);
     }

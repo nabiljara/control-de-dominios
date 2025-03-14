@@ -462,4 +462,29 @@ export async function updateDomainsState(doms: ExpiringDomains[]) {
         } catch (error) {
             console.error('Error al actualizar el estado de los dominios:', error);
         }
-    }
+}
+
+export async function getDomainAccessDetail(domAccId: number) {
+  try {
+    const data = await db.query.domainAccess.findFirst({
+      where: eq(domainAccess.id, domAccId),
+      with: {
+        domain: {
+          with:{
+            client:true,
+            provider:true
+          }
+        },
+        access: {
+          with:{
+            provider:true,
+            client:true
+          }
+        }
+      }
+    });
+    return data
+  } catch (error) {
+      console.error('Error al obtener el domainAccess:', error);
+  }
+}

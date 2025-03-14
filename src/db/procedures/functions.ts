@@ -278,6 +278,117 @@ export async function createFunctions() {
         END;
         $$ LANGUAGE plpgsql;
     `);
+    // PARA AUDITAR DOMAIN_ACCESS
+    //HAY UPDATE, INSERT Y DELETE DE DOMAIN_ACCESS, SE PODRIA MOSTRAR EL NOMBRE DEL DOMINIO, ID DEL ACCESO Y EL CLIENTE
+    await db.execute(`
+        CREATE OR REPLACE FUNCTION audits_domain_access()
+        RETURNS TRIGGER AS $$
+          DECLARE
+              v_user_id TEXT := NULLIF(current_setting('audit.user_id', true), '');
+              v_audit_id INT;
+              new_domain_name TEXT;
+              old_domain_name TEXT;
+              new_client_name TEXT;
+              old_client_name TEXT;
+              new_username TEXT;
+              old_username TEXT;
+              new_provider TEXT;
+              old_provider TEXT;
+          BEGIN
+            
+              IF TG_OP = 'INSERT' THEN
+  
+              INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+              VALUES (v_user_id, 'Agregar', 'Acceso del dominio', NOW(), NEW.id)
+              RETURNING id INTO v_audit_id;
+  
+              SELECT name FROM domains WHERE id = NEW.domain_id INTO new_domain_name;
+              SELECT name FROM clients INNER JOIN access on clients.id = access.client_id WHERE access.id = NEW.access_id INTO new_client_name;
+              SELECT username FROM access WHERE access.id = NEW.access_id INTO new_username;
+              SELECT name FROM providers INNER JOIN access on providers.id = access.provider_id WHERE access.id = NEW.access_id INTO new_provider;
+
+  
+              INSERT INTO audits_details (audit_id, old_value, new_value, field)
+              VALUES (v_audit_id, NULL, new_domain_name, 'Dominio'),
+              (v_audit_id, NULL, new_username, 'Usuario'),
+              (v_audit_id, NULL, new_client_name, 'Cliente del acceso'),
+              (v_audit_id, NULL, new_provider, 'Proveedor');
+    
+              ELSEIF TG_OP = 'UPDATE' THEN
+                  
+                  INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                  VALUES (v_user_id, 'Actualizar', 'Acceso del dominio', NOW(), NEW.id)
+                  RETURNING id INTO v_audit_id;
+                  
+                  IF OLD.domain_id IS DISTINCT FROM NEW.domain_id THEN
+
+                      SELECT name FROM domains WHERE id = NEW.domain_id INTO new_domain_name;
+                      SELECT name FROM domains WHERE id = OLD.domain_id INTO old_domain_name;
+
+                      INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                      VALUES (v_audit_id, old_domain_name, new_domain_name, 'Dominio');
+                  ELSE
+                      SELECT name FROM domains WHERE id = OLD.domain_id INTO old_domain_name;
+                      
+                      INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                      VALUES (v_audit_id, '', old_domain_name, 'Dominio implicado');
+                  END IF;
+  
+                  IF OLD.access_id IS DISTINCT FROM NEW.access_id THEN
+                    
+                      SELECT name FROM clients INNER JOIN access on clients.id = access.client_id WHERE access.id = NEW.access_id INTO new_client_name;
+                      SELECT name FROM clients INNER JOIN access on clients.id = access.client_id WHERE access.id = OLD.access_id INTO old_client_name;
+                      SELECT username FROM access WHERE access.id = OLD.access_id INTO old_username;
+                      SELECT username FROM access WHERE access.id = NEW.access_id INTO new_username;
+                      SELECT name FROM providers INNER JOIN access on providers.id = access.provider_id WHERE access.id = OLD.access_id INTO old_provider;
+                      SELECT name FROM providers INNER JOIN access on providers.id = access.provider_id WHERE access.id = NEW.access_id INTO new_provider;
+
+
+                      INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                      VALUES (v_audit_id, old_username, new_username, 'Usuario'),
+                      (v_audit_id, old_client_name, new_client_name, 'Cliente del acceso');
+                      
+                      IF old_provider IS DISTINCT FROM new_provider THEN
+                            INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                            VALUES (v_audit_id, old_provider, new_provider, 'Cliente del acceso');
+                      ELSE
+                            INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                            VALUES (v_audit_id, old_provider, old_provider, 'Proveedor');
+                      END IF;
+                  ELSE
+                       SELECT username FROM access WHERE access.id = OLD.access_id INTO old_username;
+                       SELECT name FROM clients INNER JOIN access on clients.id = access.client_id WHERE access.id = OLD.access_id INTO old_client_name;
+                       SELECT name FROM providers INNER JOIN access on providers.id = access.provider_id WHERE access.id = OLD.access_id INTO old_provider;
+                       
+                       INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                       VALUES (v_audit_id, old_username, '', 'Usuario'),
+                       (v_audit_id, old_client_name, '', 'Cliente del acceso'),
+                       (v_audit_id, old_client_name, '', 'Proveedor');
+                  END IF;
+                
+              ELSEIF TG_OP = 'DELETE' THEN
+  
+                  INSERT INTO audits (user_id, action, entity, created_at, entity_id) 
+                  VALUES (v_user_id, 'Eliminar', 'Acceso del dominio', NOW(), OLD.id)
+                  RETURNING id INTO v_audit_id;
+  
+                  SELECT name FROM domains WHERE id = OLD.domain_id INTO old_domain_name;
+                  SELECT name FROM clients INNER JOIN access on clients.id = access.client_id WHERE access.id = OLD.access_id INTO old_client_name;
+                  SELECT username FROM access WHERE access.id = OLD.access_id INTO old_username;
+                  SELECT name FROM providers INNER JOIN access on providers.id = access.provider_id WHERE access.id = OLD.access_id INTO old_provider;
+
+                  INSERT INTO audits_details (audit_id, old_value, new_value, field)
+                  VALUES (v_audit_id, old_domain_name, NULL, 'Dominio'),
+                      (v_audit_id, old_client_name, NULL, 'Cliente del acceso'),
+                      (v_audit_id, old_username, NULL, 'Usuario'),
+                      (v_audit_id, old_provider, NULL, 'Proveedor');
+  
+              END IF;
+  
+              RETURN NULL;
+          END;
+          $$ LANGUAGE plpgsql;
+      `);
     // PARA AUDITAR CONTACTOS
     await db.execute(`
         CREATE OR REPLACE FUNCTION audits_contacts()
@@ -564,11 +675,6 @@ export async function createFunctions() {
                 IF OLD.role IS DISTINCT FROM NEW.role THEN
                     INSERT INTO audits_details (audit_id, old_value, new_value, field)
                     VALUES (v_audit_id, OLD.role, NEW.role, 'Rol');
-                END IF;
-
-                IF OLD.emailVerified IS DISTINCT FROM NEW.emailVerified THEN
-                    INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                    VALUES (v_audit_id, OLD.emailVerified, NEW.emailVerified, 'Email verificado');
                 END IF;
                 
             ELSEIF TG_OP = 'DELETE' THEN

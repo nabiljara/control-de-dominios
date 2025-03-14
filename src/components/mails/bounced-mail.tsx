@@ -156,7 +156,7 @@ export default function BouncedMail({ emailTo, contactId }: BouncedEmailProps) {
                           </Text>
 
                           <Button
-                            href={"http://localhost:3000/contacts/" + contactId}
+                            href={`${baseUrl}/contacts/${contactId}`}
                             style={buttonStyle}
                             className="button"
                           >

@@ -88,6 +88,25 @@ await db.execute(`
   FOR EACH ROW
   EXECUTE FUNCTION audits_access();
 `);
+//TRIGGERS PARA DOMAIN_ACCESS
+await db.execute(`
+  CREATE OR REPLACE TRIGGER insert_audit_domain_access
+  AFTER INSERT ON domain_access
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_domain_access();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER update_audit_domain_access
+  AFTER UPDATE ON domain_access
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_domain_access();
+`);
+await db.execute(`
+  CREATE OR REPLACE TRIGGER delete_audit_domain_access
+  AFTER DELETE ON domain_access
+  FOR EACH ROW
+  EXECUTE FUNCTION audits_domain_access();
+`);
 //TRIGGERS PARA CONTACTOS
 await db.execute(`
   CREATE OR REPLACE TRIGGER insert_audit_contacts

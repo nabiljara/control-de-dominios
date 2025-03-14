@@ -415,6 +415,10 @@ export type DomainAccessWithRelations = DomainAccess & {
   access: Access,
   domain: Domain,
 }
+export type DomainAccessWithConnectedRelations = DomainAccess & {
+  access: Omit<AccessWithRelations, 'domainAccess'>,
+  domain: Omit<DomainWithRelations, 'contact' | 'history' | 'accessData'>,
+}
 
 //DOMINIOS
 export type Domain = InferSelectModel<typeof domains>;
@@ -458,7 +462,7 @@ export type AuditInsert = InferInsertModel<typeof audits>
 export type AuditWithRelations = Audit & {
   user: User,
   audit_details: AuditDetails[]
-  entityDetails: Client | Provider | Contact | Domain | null | Access | Locality | User
+  entityDetails: Client | Provider | Contact | Domain | null | Access | Locality | User | DomainAccessWithConnectedRelations
 }
 
 export type AuditDetails = InferSelectModel<typeof auditDetails>

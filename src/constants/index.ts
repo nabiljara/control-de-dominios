@@ -74,6 +74,7 @@ export const entityMap = {
   Usuarios: 'users',
   Accesos: 'access',
   Localidades: 'localities',
+  "Acceso del dominio": 'domain_access',
 };
 
 export const statusConfig = {
@@ -197,5 +198,6 @@ export const auditEntities = [
   "Accesos",
   "Proveedores",
   "Localidades",
-  "Usuarios"
+  "Usuarios",
+  "Acceso del dominio"
 ];
