@@ -88,10 +88,18 @@ export function ProvidersDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashData?.mostUsedProv.providerName}
+              {dashData?.mostUsedProv.providerName !== undefined ? (
+                dashData?.mostUsedProv.providerName
+              ) : (
+                <Skeleton className="h-8 w-12" />
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {dashData?.mostUsedProv.totalDomains} dominios asociados.
+              {dashData?.mostUsedProv.totalDomains !== undefined ? (
+                dashData?.mostUsedProv.totalDomains + " dominios asociados."
+              ) : (
+                <Skeleton className="h-4 w-4" />
+              )}
             </p>
           </CardContent>
         </Card>
@@ -103,7 +111,7 @@ export function ProvidersDashboard() {
               Dominios por Proveedor
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              Distribución actual
+              Distribución actual (todos los dominios).
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
