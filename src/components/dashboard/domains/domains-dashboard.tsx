@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe2, Activity, TrendingUp, CircleAlert, Minus } from "lucide-react";
-import { OverviewDomain } from "./overview-domain";
+import { OverviewDomain } from "../domains/overview-domain";
 import { ExpiringDomains } from "./expiring-domains";
 import { useEffect, useState } from "react";
 import {
   getDashboardData,
   getExpiringDomains,
 } from "@/actions/domains-actions";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "../../ui/skeleton";
 import { DomainWithRelations } from "@/db/schema";
 type DashboardData = {
   total: number;
@@ -70,9 +70,9 @@ export function DomainsDashboard() {
   }, []);
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Dominios Totales
             </CardTitle>
@@ -93,7 +93,7 @@ export function DomainsDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Dominios Activos
             </CardTitle>
@@ -114,7 +114,7 @@ export function DomainsDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Dominios Vencidos
             </CardTitle>
@@ -135,7 +135,7 @@ export function DomainsDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Crecimiento Mensual
             </CardTitle>
@@ -157,19 +157,21 @@ export function DomainsDashboard() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
-        <Card className="col-span-4">
+      <div className="gap-4 md:grid md:grid-cols-2 lg:grid-cols-8">
+        <Card className="md:col-span-4">
           <CardHeader>
-            <CardTitle>Dominios por Mes</CardTitle>
+            <CardTitle className="text-lg md:text-2xl">
+              Dominios por Mes
+            </CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <OverviewDomain data={registeredByMonth} loading={loading} />
           </CardContent>
         </Card>
-        <Card className="col-span-4">
+        <Card className="mt-4 md:col-span-4 md:mt-0">
           <CardHeader>
-            <CardTitle className="flex flex-row items-center gap-1 text-2xl">
-              <CircleAlert className="mt-1 text-orange-600" />
+            <CardTitle className="flex flex-row items-center gap-1 text-lg md:text-2xl">
+              <CircleAlert className="h-6 w-6 text-orange-600 md:mt-1" />
               Dominios proximos a Vencer
             </CardTitle>
           </CardHeader>

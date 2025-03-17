@@ -139,10 +139,17 @@ export async function getDashboardData(){
           eq(domainHistory.entityId, providers.id),
           eq(domainHistory.active, true)
         ))
-        .groupBy(providers.id)
+        .groupBy(providers.id),
+      // prov mas utilizado
+      db.select({
+        providerName: providers.name,
+        totalDomains: sql<number>`COUNT(${domains.id}) as totalDomains`
+      }).from(providers).innerJoin(domains, eq(providers.id, domains.providerId))
+      .groupBy(providers.name).orderBy(sql`totalDomains DESC`).limit(1)
     ]);
     const total = result[0][0]?.count ?? 0;
     const domainsPerProvider = result[1] ?? [];
+    const mostUsedProv = result[2][0] ?? '';
 
     const formattedChartData = domainsPerProvider.map((provider, index) => ({
       proveedor: provider.providerName,
@@ -153,6 +160,7 @@ export async function getDashboardData(){
     return {
       total,
       domainsPerProvider: formattedChartData,
+      mostUsedProv
     };
   }catch (error) {
     console.error("Error al obtener los datos de proveedores:", error);

@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, TrendingUp, Check } from "lucide-react";
-import { OverviewDomain } from "./overview-domain";
-import { RecentClients } from "./recent-clients";
+import { OverviewDomain } from "../domains/overview-domain";
+import { RecentClients } from "../clients/recent-clients";
 import { useEffect, useState } from "react";
 import { getDashboardData, getLatestClients } from "@/actions/client-actions";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "../../ui/skeleton";
 import { OverviewClients } from "./overview-clients";
 type DashboardData = {
   total: number;
@@ -60,9 +60,9 @@ export function ClientsDashboard() {
   }, []);
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Clientes Totales
             </CardTitle>
@@ -77,16 +77,21 @@ export function ClientsDashboard() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {dashData?.newClientsThisMonth !== undefined &&
-              dashData?.newClientsThisMonth >= 0
-                ? "+" + dashData?.newClientsThisMonth + " desde el mes pasado."
-                : "-" + dashData?.newClientsThisMonth + " desde el mes pasado."}
+              {dashData?.total !== undefined ? (
+                dashData?.newClientsThisMonth >= 0 ? (
+                  "+" + dashData?.newClientsThisMonth + " desde el mes pasado."
+                ) : (
+                  "-" + dashData?.newClientsThisMonth + " desde el mes pasado."
+                )
+              ) : (
+                <Skeleton className="h-3 w-10" />
+              )}
               {/* TODO: SACAR CUENTA EN CASO DE QUE SEAN MENOS (restar clientes hasta mes pasado y restar con el actual) */}
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Nuevos Clientes
             </CardTitle>
@@ -106,7 +111,7 @@ export function ClientsDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Clientes activos
             </CardTitle>
@@ -127,7 +132,7 @@ export function ClientsDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Variación de Clientes
             </CardTitle>
@@ -147,18 +152,22 @@ export function ClientsDashboard() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
-        <Card className="col-span-4">
+      <div className="gap-4 md:grid md:grid-cols-2 lg:grid-cols-8">
+        <Card className="md:col-span-4">
           <CardHeader>
-            <CardTitle>Clientes registrados por Mes</CardTitle>
+            <CardTitle className="text-lg md:text-2xl">
+              Clientes registrados por Mes
+            </CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <OverviewClients data={registeredByMonth} loading={loading} />
           </CardContent>
         </Card>
-        <Card className="col-span-4">
+        <Card className="mt-4 md:col-span-4 md:mt-0">
           <CardHeader>
-            <CardTitle>Últimos Clientes añadidos</CardTitle>
+            <CardTitle className="text-lg md:text-2xl">
+              Últimos Clientes añadidos
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <RecentClients clients={latestClients} loading={loading} />

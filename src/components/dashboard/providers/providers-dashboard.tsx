@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Building2, TrendingUp } from "lucide-react";
 import { ProviderOverview } from "./provider-overview";
 import { ProviderAreaChart } from "./provider-area-chart";
@@ -7,7 +13,7 @@ import {
   getDashboardData,
   getDomainsByProviderAndMonth,
 } from "@/actions/provider-actions";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "../../ui/skeleton";
 
 type DomainProviderType = {
   proveedor: string;
@@ -17,6 +23,10 @@ type DomainProviderType = {
 type DashboardData = {
   total: number;
   domainsPerProvider: DomainProviderType[];
+  mostUsedProv: {
+    providerName: string;
+    totalDomains: number;
+  };
 };
 export function ProvidersDashboard() {
   const [dashData, setDashData] = useState<DashboardData | null>(null);
@@ -30,6 +40,7 @@ export function ProvidersDashboard() {
     async function getDomainData() {
       try {
         const dashboardData: DashboardData = await getDashboardData();
+        console.log(dashboardData);
         const dataAreaChart = await getDomainsByProviderAndMonth();
         if (dataAreaChart) {
           setDataArea(dataAreaChart);
@@ -47,9 +58,9 @@ export function ProvidersDashboard() {
   }, []);
   return (
     <>
-      <div className="smd:grid-cols-1 grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Proveedores Totales
             </CardTitle>
@@ -69,23 +80,49 @@ export function ProvidersDashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">---</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+            <CardTitle className="text-sm font-medium">
+              Proveedor más utilizado
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+8.5%</div>
-            <p className="text-xs text-muted-foreground">------</p>
+            <div className="text-2xl font-bold">
+              {dashData?.mostUsedProv.providerName}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {dashData?.mostUsedProv.totalDomains} dominios asociados.
+            </p>
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
-        <div className="col-span-4">
-          <ProviderOverview data={domainProv} loading={loading} />
-        </div>
-        <div className="col-span-4">
-          <ProviderAreaChart data={dataArea} loading={loading} />
-        </div>
+      <div className="gap-4 md:grid md:grid-cols-2 lg:grid-cols-8">
+        <Card className="md:col-span-4">
+          <CardHeader>
+            <CardTitle className="text-lg md:text-2xl">
+              Dominios por Proveedor
+            </CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              Distribución actual
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <ProviderOverview data={domainProv} loading={loading} />
+          </CardContent>
+        </Card>
+        <Card className="mt-4 md:col-span-4 md:mt-0">
+          <CardHeader>
+            <CardTitle className="text-lg md:text-2xl">
+              Registros de Dominios por Proveedor
+            </CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              Últimos 6 meses
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProviderAreaChart data={dataArea} loading={loading} />
+          </CardContent>
+        </Card>
       </div>
     </>
   );

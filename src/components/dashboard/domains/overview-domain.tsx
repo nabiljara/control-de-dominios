@@ -15,7 +15,7 @@ interface OverviewDomainProps {
 }
 export function OverviewDomain({ data, loading }: OverviewDomainProps) {
   return (
-    <div className="relative h-[375px] w-full">
+    <div className="relative h-[300px] w-full md:h-[375px]">
       {loading ? (
         <div className="flex h-full items-center justify-center">
           <Loader2 className="animate-spin text-gray-500" size={48} />
