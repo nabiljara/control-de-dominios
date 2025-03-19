@@ -1,5 +1,5 @@
 "use client"
-import { updateProvider } from "@/actions/provider-actions"
+import { updateProvider, validateProvider } from "@/actions/provider-actions"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Provider } from "@/db/schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { ProviderFormValues, providerSchema } from "@/validators/client-validator"
+import { ProviderFormValues, providerSchema } from "@/validators/zod-schemas"
 import {
   Form,
   FormControl,
@@ -27,7 +27,6 @@ import { Switch } from "@/components/ui/switch"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { EditProviderConfirmationModal } from "./edit-provider-confirmation-modal"
 import Link from "next/link"
-import { validateProvider } from "../validations"
 
 interface EditableProviderCardProps {
   provider: Provider
@@ -38,6 +37,7 @@ export default function EditableProviderCard({
 }: EditableProviderCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<ProviderFormValues>({
     resolver: zodResolver(providerSchema),
@@ -48,19 +48,24 @@ export default function EditableProviderCard({
     },
   })
 
-  const onSubmit = async () => {
+  const onSubmit = async () => { //Primer submit para validar el formulario
     try {
-      const errorList = await validateProvider(form.getValues('name'), form.getValues('url'), provider.name, provider.url);
-      if (errorList.length > 0) {
-        errorList.forEach((error) => {
-          form.setError(error.field, {
-            type: "manual",
-            message: error.message,
+      setIsSubmitting(true)
+      const isValid = await form.trigger() //ejecuto validación manual
+      if (isValid) {
+        const errorList = await validateProvider(form.getValues('name'), form.getValues('url'), provider.name, provider.url);
+        if (errorList.length > 0) {
+          errorList.forEach((error) => {
+            form.setError(error.field, {
+              type: "manual",
+              message: error.message,
+            });
           });
-        });
-        return;
+          return;
+        }
+        setIsConfirmationModalOpen(true)
+        setIsSubmitting(false)
       }
-      setIsConfirmationModalOpen(true)
     } catch (error) {
       toast.error('No se pudo registrar el proveedor correctamente.')
       console.log(error);
@@ -68,6 +73,7 @@ export default function EditableProviderCard({
   }
 
   const handleFinalSubmit = async () => {
+    setIsSubmitting(true)
     toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
@@ -78,11 +84,12 @@ export default function EditableProviderCard({
           form.reset({
             name: form.getValues("name"),
             url: form.getValues("url"),
-            id: form.getValues("id")
           })
         } catch (error) {
           console.error(error)
           reject(error);
+        } finally {
+          setIsSubmitting(false)
         }
       }),
       {
@@ -98,9 +105,9 @@ export default function EditableProviderCard({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
-            <CardHeader className="flex flex-row justify-between items-center">
+            <CardHeader className="flex flex-row justify-between items-center gap-2">
               <div className="flex flex-row items-center gap-2">
-                <Box className="w-8 h-8" />
+                <Box className="w-8 h-8 shrink-0" />
                 <FormField
                   control={form.control}
                   name="name"
@@ -147,7 +154,7 @@ export default function EditableProviderCard({
                         </FormControl>
                       ) : (
                         <Link href={provider.url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
-                          <ExternalLink className="mr-2" />
+                          <ExternalLink className="mr-2 shrink-0" />
                           {provider.url}
                         </Link>
                       )}
@@ -185,8 +192,20 @@ export default function EditableProviderCard({
           />
         </form>
       </Form>
-      <ResponsiveDialog open={isConfirmationModalOpen} onOpenChange={setIsConfirmationModalOpen} title='Confirmar edición del proveedor' description='Revise si los datos modificados son correctos y confirme el cambio.' className='md:max-w-[700px]'>
-        <EditProviderConfirmationModal handleSubmit={handleFinalSubmit} form={form} provider={provider} setIsOpen={setIsConfirmationModalOpen} />
+      <ResponsiveDialog
+        open={isConfirmationModalOpen}
+        onOpenChange={setIsConfirmationModalOpen}
+        title='Confirmar edición del proveedor'
+        description='Revise si los datos modificados son correctos y confirme el cambio.'
+        className="md:max-w-fit"
+      >
+        <EditProviderConfirmationModal
+          handleSubmit={handleFinalSubmit}
+          isSubmitting={isSubmitting}
+          form={form}
+          provider={provider}
+          setIsOpen={setIsConfirmationModalOpen}
+        />
       </ResponsiveDialog>
     </>
   )

@@ -77,9 +77,9 @@ export function ContactInfoCard({
         )}
         <div className='flex items-center gap-2'>
           <Tag className="w-4 h-4 shrink-0" />
-          <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
+          <Badge variant={'outline'} className='truncate'>
             {contact?.type}
-          </span>
+          </Badge>
         </div>
       </CardContent>
     </Card>

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
 import { Mail, Phone, User, Tag, Loader2, Handshake, } from "lucide-react"
 import { Button } from "@/components/ui/button";
-import { ContactFormValues } from "@/validators/client-validator";
+import { ContactFormValues } from "@/validators/zod-schemas";
 import { Badge } from '@/components/ui/badge';
 import { statusConfig } from '@/constants';
 
@@ -65,9 +65,9 @@ export function NewContactConfirmationModal(
               )}
               <div className='flex items-center gap-2'>
                 <Tag className="w-4 h-4" />
-                <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
+                <Badge variant='outline' className='truncate'>
                   {contact.type}
-                </span>
+                </Badge>
               </div>
             </CardContent>
           </Card>

@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -37,7 +36,7 @@ export default async function AuditDetailsPage({
   const auditId = Number(params.id);
   const entityNotFound = (
     <EntityNotFound
-      icon={<BookOpen className="h-12 w-12 text-gray-400" />}
+      icon={<BookOpen className="w-12 h-12 text-gray-400" />}
       title="Auditoría no encontrada"
       description="Lo sentimos, no pudimos encontrar la auditoría que estás buscando. Es posible que la URL proporcionada no sea válida o que la auditoría haya sido eliminada."
       href="/audits"
@@ -58,46 +57,46 @@ export default async function AuditDetailsPage({
     <div className="space-y-6 p-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+          <CardTitle className="flex items-center gap-2 font-bold text-2xl">
             <BookOpen />
             Auditoría
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <CardContent className="gap-4 grid grid-cols-2 lg:grid-cols-4">
           <div className="flex items-start gap-2">
             {/* TODO: Avatar del usuario ?  */}
-            <User2 className="h-5 w-5 text-muted-foreground" />
+            <User2 className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Usuario</p>
+              <p className="text-muted-foreground text-sm">Usuario</p>
               <p className="font-medium">{audit.user?.name ?? "Sin usuario"}</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <TableIcon className="h-5 w-5 text-muted-foreground" />
+            <TableIcon className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Tabla</p>
+              <p className="text-muted-foreground text-sm">Tabla</p>
               <p className="font-medium">{audit.entity}</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <CalendarClock className="h-5 w-5 text-muted-foreground" />
+            <CalendarClock className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Fecha de movimiento
               </p>
               <p className="font-medium">{formatDate(audit.createdAt)}</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <Pointer className="h-5 w-5 text-muted-foreground" />
+            <Pointer className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Acción</p>
+              <p className="text-muted-foreground text-sm">Acción</p>
               <p className="font-medium">{audit.action}</p>
             </div>
           </div>
-          <div className="col-span-2 grid gap-4 lg:col-span-4">
-            <span className="flex items-center gap-2 text-sm text-muted-foreground">
-              <FileText className="h-5 w-5 text-muted-foreground" />
+          <div className="gap-4 grid col-span-2 lg:col-span-4">
+            <span className="flex items-center gap-2 text-muted-foreground text-sm">
+              <FileText className="w-5 h-5 text-muted-foreground" />
               Registro implicado
             </span>
             {audit.entityDetails ? (
@@ -132,7 +131,7 @@ export default async function AuditDetailsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+          <CardTitle className="flex items-center gap-2 font-bold text-2xl">
             <Logs />
             Detalles del movimiento
           </CardTitle>
@@ -148,47 +147,8 @@ export default async function AuditDetailsPage({
             </TableHeader>
             <TableBody>
               {audit.audit_details.map((detail) =>
-                detail.field === "Fecha de vencimiento" ||
-                detail.field === "Última modificación" ||
-                detail.field === "Fecha de creación" ? (
-                  <TableRow key={detail.id}>
-                    <TableCell>{detail.field}</TableCell>
-                    <TableCell>
-                      {detail.oldValue ? (
-                        formatDate(detail.oldValue)
-                      ) : (
-                        <span className="italic text-gray-400">(Vacío)</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(detail.newValue ? detail.newValue : "--")}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  <DiffTableRow key={detail.id} detail={detail} />
-                ),
+                <DiffTableRow key={detail.id} detail={detail} />
               )}
-              {/* {
-                (() => {
-                  switch (audit.entity) {
-                    case 'Dominios':
-                      return <DomainAuditDetails audit={audit} />;
-                    case 'Proveedores':
-                      return <ProviderEntityDetails {...audit} />
-                    case 'Contactos':
-                      return <DomainEntityDetails {...audit} />
-
-                    case 'Clientes':
-                      return <ClientEntityDetails {...audit} />
-                    case 'Usuarios':
-                      return <DomainEntityDetails {...audit} />
-                    case 'Accesos':
-                      return <DomainEntityDetails {...audit} />
-                    default:
-                      return <span>Entidad no reconocida</span>;
-                  }
-                })()
-              } */}
             </TableBody>
           </Table>
         </CardContent>

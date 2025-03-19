@@ -1,9 +1,9 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, ArrowRight, Globe, Calendar, Box, User, Contact2, Shield, KeySquare } from "lucide-react"
+import { CheckCircle, ArrowRight, Globe, Calendar, Box, User, Contact2, KeySquare, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { DomainFormValues } from "@/validators/client-validator"
+import { DomainFormValues } from "@/validators/zod-schemas"
 import { UseFormReturn } from "react-hook-form"
 import { Badge } from "@/components/ui/badge"
 import { Access, Contact, DomainWithRelations } from "@/db/schema"
@@ -20,7 +20,9 @@ export function EditDomainConfirmationModal({
   newSelectedContact,
   newSelectedAccess,
   oldSelectedContact,
-  oldSelectedAccess
+  oldSelectedAccess,
+  isSubmitting,
+  setIsEditConfirmationModalOpen
 }: {
   handleSubmit: () => void
   form: UseFormReturn<DomainFormValues>
@@ -28,7 +30,10 @@ export function EditDomainConfirmationModal({
   newSelectedContact?: Contact
   newSelectedAccess?: Access
   oldSelectedContact?: Contact,
-  oldSelectedAccess?: Access
+  oldSelectedAccess?: Access,
+  isSubmitting: boolean,
+  setIsEditConfirmationModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+
 }) {
   const { name, provider, expirationDate, status, client } = form.getValues()
   const nameState = form.getFieldState("name")
@@ -171,14 +176,34 @@ export function EditDomainConfirmationModal({
             </div>
           </div>
         )}
-        <div className="flex justify-end pt-4">
+        <div className='flex gap-2'>
           <Button
+            type="button"
+            variant='destructive'
             onClick={() => {
-              handleSubmit()
+              setIsEditConfirmationModalOpen(false)
             }}
-            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+            className='w-full'
           >
-            Finalizar edición
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className='w-full'
+          >
+            {isSubmitting ? (
+              <>
+                <div className='flex items-center gap-1'>
+                  <Loader2 className='animate-spin' />
+                  Confirmando
+                </div>
+              </>
+            ) : (
+              'Confirmar'
+            )}
           </Button>
         </div>
       </CardContent>

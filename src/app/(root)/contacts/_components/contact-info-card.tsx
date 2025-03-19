@@ -20,9 +20,9 @@ export function ContactInfoCard({
             <CardTitle className="flex justify-between items-center gap-2 mb-2 font-bold text-3xl"><User className="w-8 h-8"/>{contact.name}</CardTitle>
             <div className='flex items-center gap-2'>
               <Tag className="w-4 h-4" />
-              <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
+              <Badge variant='outline' className='truncate'>
                 {contact?.type}
-              </span>
+              </Badge>
             </div>
             <div className="flex items-center gap-2">
               <CalendarArrowUp className="w-4 h-4" />
@@ -41,7 +41,7 @@ export function ContactInfoCard({
             <span className="text-gray-600 text-lg">{contact.email}</span>
           </div>
           {contact.phone &&
-            <div className="flex xl:justify-center items-center space-x-3">
+            <div className="flex items-center space-x-3">
               <Phone className="w-6 h-6 text-gray-400" />
               <span className="text-gray-600 text-lg">{contact.phone}</span>
             </div>

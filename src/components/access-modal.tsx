@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AccessFormValues, accessFormSchema as defaultAccessSchema } from '@/validators/client-validator'
+import { AccessFormValues, accessFormSchema as defaultAccessSchema } from '@/validators/zod-schemas'
 import { Textarea } from '@/components/ui/textarea'
 import { PasswordInput } from '@/components/password-input'
 import { AccessWithRelations } from '@/db/schema'
@@ -209,6 +209,7 @@ export function AccessModal({
         onOpenChange={() => setIsAccessModalOpen(false)}
         title={access ? "Editar acceso." : "Agregar nuevo acceso"}
         description={access ? "Editar los datos correspondientes del acceso." : 'Agregue los datos correspondientes al acceso.'}
+        className="md:max-w-fit"
       >
 
         <Form {...form}>
@@ -365,7 +366,7 @@ export function AccessModal({
         onOpenChange={() => setIsNewAccessConfirmationModalOpen(false)}
         title="Confirmar registro de nuevo acceso."
         description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:w-fit"
+        className="md:max-w-fit"
       >
         <NewAccessConfirmationModal
           setIsCreateAccessModalOpen={setIsAccessModalOpen}
@@ -390,7 +391,7 @@ export function AccessModal({
         }
         title="Confirmar la edición del acceso"
         description="Revise que los datos sean correctos y confirme la edición."
-        className="sm:max-w-fit"
+        className="md:max-w-fit"
       >
         <EditAccessConfirmationModal
           setIsAccessModalOpen={setIsAccessModalOpen}

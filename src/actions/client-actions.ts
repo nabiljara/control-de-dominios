@@ -1,9 +1,9 @@
 "use server"
 
 import db from "@/db";
-import { clientFormSchema, ClientFormValues, clientUpdateFormSchema, ClientUpdateValues, DomainFormValues } from "@/validators/client-validator";
-import { ClientInsert, clients, Contact, contacts, localities, domainHistory, AccessInsert, DomainInsert, domains } from "@/db/schema";
-import { desc, eq, count, gte, and, lte, lt, asc } from "drizzle-orm";
+import { clientFormSchema, ClientFormValues, clientUpdateFormSchema, ClientUpdateValues } from "@/validators/zod-schemas";
+import { clients, contacts, domainHistory, AccessInsert, DomainInsert, domains } from "@/db/schema";
+import { desc, eq, count, gte, and, lt, asc } from "drizzle-orm";
 import { revalidatePath } from 'next/cache';
 import { redirect } from "next/navigation";
 import { setUserId } from "./user-action/user-actions";
@@ -49,9 +49,9 @@ export async function getClient(id: number) {
       where: eq(clients.id, id),
       with:
       {
-        domains: { 
+        domains: {
           with: { provider: true, accessData: true },
-          orderBy: asc(domains.expirationDate) 
+          orderBy: asc(domains.expirationDate)
         },
         locality: true,
         access: {

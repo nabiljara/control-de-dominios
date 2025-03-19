@@ -55,7 +55,7 @@ import {
 import {
   domainFormSchema,
   DomainFormValues
-} from "@/validators/client-validator"
+} from "@/validators/zod-schemas"
 import { toast } from "sonner"
 import {
   Client,
@@ -276,13 +276,14 @@ export default function CreateDomainForm({
       isIndividualContact: diffFromUndefinedContact && domain?.contact.clientId !== domain?.clientId && domain?.contact.clientId !== 1,
       isClientAccess: diffFromUndefinedAccess && domain?.accessData?.access.clientId !== 1,
       isKernelAccess: diffFromUndefinedAccess && domain?.accessData?.access.clientId === 1,
-      status: domain?.status,
+      status: domain?.status ?? 'Activo',
       expirationDate: domain?.expirationDate ? new Date(domain.expirationDate) : undefined,
     },
     mode: 'onSubmit'
   })
 
   const isDirty = Object.keys(form.formState.dirtyFields).length !== 0
+  const activeClient = clients.filter((client) => domain?.clientId === client.id).length > 0 ? true : domain === undefined
 
   const clientId = parseInt(form.getValues("client").id)
   const providerId = parseInt(form.getValues("provider").id)
@@ -491,6 +492,9 @@ export default function CreateDomainForm({
                       </PopoverContent>
                     </Popover>
                     <FormMessage />
+                    {
+                      !activeClient && <span className="text-destructive text-sm">El cliente no es un cliente activo.</span>
+                    }
                   </FormItem>
                 )}
               />
@@ -552,7 +556,13 @@ export default function CreateDomainForm({
                       Estado <span className="text-red-500">*</span>
                     </FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        if (!activeClient && value === 'Activo') {
+                          toast.warning('No puede cambiar el estado a Activo del dominio si el cliente no está activo.')
+                        } else {
+                          field.onChange(value)
+                        }
+                      }}
                       defaultValue={field.value}
                       name="state"
                     >
@@ -563,10 +573,14 @@ export default function CreateDomainForm({
                       </FormControl>
                       <SelectContent>
                         {domainStatus.map((status) => (
-                          <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer">
-                            <Badge variant='outline' className={statusConfig[status].color}>
-                              {status}
-                            </Badge>
+                          <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer" disabled={status === 'Activo' && !activeClient}>
+
+                            <div className="flex justify-between items-center gap-2">
+                              <Badge variant='outline' className={statusConfig[status].color}>
+                                {status}
+                              </Badge>
+                              {status === 'Activo' && !activeClient && <span className="text-destructive text-xs">No puede cambiar el estado a Activo del dominio si el cliente no está activo.</span>}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1111,7 +1125,7 @@ export default function CreateDomainForm({
         onOpenChange={() => setIsEditConfirmationDomainModalOpen(false)}
         title="Confirmar edición"
         description="Revise que los datos sean correctos y confirme la edición."
-        className="sm:max-w-[700px]"
+        className="md:max-w-fit"
       >
         <EditDomainConfirmationModal
           handleSubmit={handleFinalSubmit}
@@ -1121,6 +1135,8 @@ export default function CreateDomainForm({
           newSelectedAccess={selectedAccess}
           oldSelectedContact={domain?.contact}
           oldSelectedAccess={domain?.accessData?.access}
+          isSubmitting={isSubmitting}
+          setIsEditConfirmationModalOpen={setIsEditConfirmationDomainModalOpen}
         />
       </ResponsiveDialog>
       <ResponsiveDialog
@@ -1131,14 +1147,16 @@ export default function CreateDomainForm({
         className="md:max-w-fit"
       >
         <CreateDomainConfirmationModal
+          isSubmitting={isSubmitting}
           handleSubmit={handleFinalSubmit}
           form={form}
+          setIsConfirmationDomainModalOpen={setIsConfirmationDomainModalOpen}
           selectedContact={selectedContact}
           selectedAccess={selectedAccess}
           provider={form.getValues("provider.name")}
         />
       </ResponsiveDialog>
-      <PreventNavigation isDirty={isDirty} backHref={'/domain'} resetData={form.reset} />
+      <PreventNavigation isDirty={isDirty} backHref={'/domains'} resetData={form.reset} />
     </Card>
   )
 }

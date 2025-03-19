@@ -5,7 +5,7 @@ import { ResponsiveDialog } from '@/components/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-import { AccessFormValues } from '@/validators/client-validator';
+import { AccessFormValues } from '@/validators/zod-schemas';
 import { AtSign, Box, SquarePen, StickyNote, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { EditAccessForm } from '@/app/(root)/clients/create/_components/accesses/edit-access-form';
@@ -49,14 +49,15 @@ export function Access({
         onOpenChange={setIsEditOpen}
         title="Editar acceso"
         description='Edite los campos correspondientes al acceso.'
+        className="md:max-w-fit"
       >
         <EditAccessForm setIsOpen={setIsEditOpen} editAccess={editAccess} index={index} accessSchema={accessSchema} access={access} providers={providers} />
       </ResponsiveDialog>
       <ResponsiveDialog
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
-        title="Eliminar accesso"
-        description="Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este accesso?"
+        title="Eliminar acceso"
+        description="Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este acceso?"
       >
         <DeleteForm onClose={() => setIsDeleteOpen(false)} index={index} remove={removeAccess} />
       </ResponsiveDialog>

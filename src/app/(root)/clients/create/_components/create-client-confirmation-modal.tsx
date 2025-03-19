@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { BarChart2, CheckCircle, Handshake } from "lucide-react"
+import { BarChart2, CheckCircle, Handshake, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button";
-import { AccessFormValues, ContactFormValues, ClientFormValues } from "@/validators/client-validator";
+import { AccessFormValues, ContactFormValues, ClientFormValues } from "@/validators/zod-schemas";
 import { UseFormReturn } from "react-hook-form";
 import { Badge } from '@/components/ui/badge';
 import { ContactInfoCard } from '../../_components/contact-info-card';
@@ -14,12 +14,17 @@ export function CreateClientConfirmationModal(
     handleSubmit,
     contacts,
     accesses,
-    form
+    form,
+    isSubmitting,
+    setIsConfirmationModalOpen
+
   }: {
     handleSubmit: () => void;
     contacts: ContactFormValues[];
     accesses: AccessFormValues[];
-    form: UseFormReturn<ClientFormValues>
+    form: UseFormReturn<ClientFormValues>,
+    isSubmitting: boolean,
+    setIsConfirmationModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   }
 ) {
   return (
@@ -97,7 +102,36 @@ export function CreateClientConfirmationModal(
             )}
           </div>
         </div>
-        <Button type="button" onClick={handleSubmit}>Confirmar Registro</Button>
+        <div className='flex gap-2'>
+          <Button
+            type="button"
+            variant='destructive'
+            onClick={() => {
+              setIsConfirmationModalOpen(false)
+            }}
+            disabled={isSubmitting}
+            className='w-full'
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className='w-full'
+          >
+            {isSubmitting ? (
+              <>
+                <div className='flex items-center gap-1'>
+                  <Loader2 className='animate-spin' />
+                  Confirmando
+                </div>
+              </>
+            ) : (
+              'Confirmar'
+            )}
+          </Button>
+        </div>
       </div>
     </>
   )

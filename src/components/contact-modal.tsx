@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/high-res.css';
-import { contactFormSchema as defaultContactFormSchema, ContactFormValues } from '@/validators/client-validator'
+import { contactFormSchema as defaultContactFormSchema, ContactFormValues } from '@/validators/zod-schemas'
 import { Badge } from '@/components/ui/badge'
 import { contactStatus, contactTypes, statusConfig } from '@/constants'
 import { Client, Contact, ContactWithRelations } from '@/db/schema'
@@ -172,7 +172,7 @@ export function ContactModal({
         try {
           if (changedDomainsContact) {
             await updateContact(form.getValues(), pathToRevalidate, selectedContacts)
-          }else {
+          } else {
             await updateContact(form.getValues(), pathToRevalidate)
           }
           resolve();
@@ -227,6 +227,7 @@ export function ContactModal({
         }}
         title={contact ? "Editar contacto." : 'Agregar nuevo contacto.'}
         description={contact ? "Editar los datos correspondientes del contacto." : 'Agregue los datos correspondientes al contacto.'}
+        className="md:max-w-fit"
       >
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -501,7 +502,7 @@ export function ContactModal({
         onOpenChange={() => setIsNewContactConfirmationModalOpen(false)}
         title="Confirmar registro de nuevo contacto"
         description="Revise que los datos sean correctos y confirme el registro."
-        className="sm:max-w-[420px]"
+        className="md:max-w-fit"
       >
         <NewContactConfirmationModal
           setIsContactModalOpen={setIsContactModalOpen}
@@ -524,7 +525,7 @@ export function ContactModal({
         }
         title="Confirmar la edición del contacto"
         description="Revise que los datos sean correctos y confirme la edición."
-        className="sm:max-w-fit"
+        className="md:max-w-fit"
       >
         <EditContactConfirmationModal
           setIsContactModalOpen={setIsContactModalOpen}

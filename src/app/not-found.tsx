@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Home, Search, ArrowRight } from "lucide-react"
+import { Home, Search } from "lucide-react"
 
 export default function NotFound() {
   return (
@@ -16,12 +16,12 @@ export default function NotFound() {
                 alt='Logo'
               />
           </Link>
-          <h1 className="mt-4 font-bold text-4xl text-gray-700 dark:text-blue-400">SICOM</h1>
+          <h1 className="mt-4 font-bold text-gray-700 dark:text-blue-400 text-4xl">SICOM</h1>
         </div>
 
         <div className="bg-white dark:bg-gray-800 shadow-2xl mb-8 p-8 rounded-3xl">
-          <h2 className="mb-4 font-bold text-6xl text-gray-900 dark:text-gray-100">404</h2>
-          <p className="mb-8 text-gray-600 text-xl dark:text-gray-400">
+          <h2 className="mb-4 font-bold text-gray-900 dark:text-gray-100 text-6xl">404</h2>
+          <p className="mb-8 text-gray-600 dark:text-gray-400 text-xl">
             Oops! Parece que te perdiste.
           </p>
           <div className="flex sm:flex-row flex-col justify-center items-center gap-4 mb-8">

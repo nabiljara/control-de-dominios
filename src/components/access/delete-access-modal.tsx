@@ -57,6 +57,7 @@ export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
         }}
         title="Eliminar acceso."
         description="Confirme la eliminación del acceso."
+        className="md:max-w-fit"
       >
         <div className="flex flex-col gap-2">
           <h4 className="font-medium">Datos del acceso</h4>
@@ -106,6 +107,7 @@ export function DeleteAccessModal({ access }: DeleteAccessModalProps) {
         description="Confirme la eliminación del acceso."
         open={isConfirmationModalOpen}
         onOpenChange={() => setIsConfirmationModalOpen(false)}
+        className="md:max-w-fit"
       >
         <div className="flex flex-row gap-2">
           <Button

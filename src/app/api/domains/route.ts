@@ -1,4 +1,5 @@
 import { getExpiringDomains, updateDomainsState } from '@/actions/domains-actions';
+import { sendEmailToClient } from '@/actions/mail-actions';
 import { createNotificationForDomain } from '@/actions/notifications-actions';
 import { DomainsByExpiration, ExpiringDomains } from '@/db/schema';
 import { NextRequest, NextResponse } from 'next/server';

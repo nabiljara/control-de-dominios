@@ -93,7 +93,7 @@ export function DataTableToolbar<TData>({
         onOpenChange={setIsModalOpen}
         title="Nuevo proveedor"
         description="Ingrese los datos correspondientes al proveedor."
-        className="md:max-w-[500px]"
+        className="md:max-w-fit"
       >
         <CreateProviderForm setIsOpen={setIsModalOpen} />
       </ResponsiveDialog>

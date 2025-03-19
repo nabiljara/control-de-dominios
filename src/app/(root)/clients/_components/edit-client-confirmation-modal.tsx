@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { BarChart2, CheckCircle, ArrowRight, Loader2, Handshake, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ClientUpdateValues } from "@/validators/client-validator"
+import { ClientUpdateValues } from "@/validators/zod-schemas"
 import { UseFormReturn } from "react-hook-form"
 import { Badge } from "@/components/ui/badge"
 import { ClientWithRelations, Contact } from "@/db/schema"

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardTitle, } from '@/components/ui/card'
 import { Loader2, Globe, AtSign, Box, KeySquare, StickyNote, } from "lucide-react"
 import { Button } from "@/components/ui/button";
-import { AccessFormValues } from "@/validators/client-validator";
+import { AccessFormValues } from "@/validators/zod-schemas";
 import { UseFormReturn } from 'react-hook-form';
 import { AccessWithRelations } from '@/db/schema';
 import { changedField } from './changed-field';

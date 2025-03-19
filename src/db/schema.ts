@@ -196,7 +196,7 @@ export const domainHistoryRelations = relations(domainHistory, ({ one }) => ({
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
   message: text("message").notNull(),
-  type: notificationTypeEnum("type").notNull().default('Simple'),
+  type: notificationTypeEnum("type").notNull(),
   domainId: integer('domain_id'),
   domainName: varchar('domain_name', { length: 255 }),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
@@ -485,6 +485,9 @@ export type ExpiringDomains = {
   client: {
     id: number;
     name: string;
+  };
+  contact: {
+    email: string;
   };
 }
 

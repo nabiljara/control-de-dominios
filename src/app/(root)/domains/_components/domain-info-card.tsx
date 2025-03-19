@@ -255,7 +255,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
                     <TableRow key={item.id}>
                       <TableCell>{item.data?.name}</TableCell>
                       <TableCell>{item.data?.email}</TableCell>
-                      <TableCell>{item.data?.phone ? item.data?.phone : 'Sin información'}</TableCell>
+                      <TableCell>{item.data?.phone ? item.data?.phone : '-'}</TableCell>
                       <TableCell>{item.data?.type}</TableCell>
                       <TableCell>
                         <Badge

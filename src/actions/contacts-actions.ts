@@ -1,11 +1,10 @@
 "use server"
 import db from "@/db";
-import { contacts, Contact, ContactWithRelations, ContactInsert, domains } from "@/db/schema";
-import { desc, eq, or, isNull, and, sql } from "drizzle-orm";
+import { contacts, ContactInsert, domains } from "@/db/schema";
+import { desc, eq, isNull, and, sql } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { contactFormSchema, ContactFormValues } from "@/validators/client-validator";
+import { contactFormSchema, ContactFormValues } from "@/validators/zod-schemas";
 
 export async function getContacts() {
     try {

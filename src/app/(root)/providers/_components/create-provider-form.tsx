@@ -13,13 +13,12 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { insertProvider } from "@/actions/provider-actions"
+import { insertProvider, validateProvider } from "@/actions/provider-actions"
 import { toast } from "sonner"
-import { ProviderFormValues } from "@/validators/client-validator"
+import { ProviderFormValues } from "@/validators/zod-schemas"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { CreateProviderConfirmationModal } from "./create-provider-confirmation-modal"
-import { providerSchema } from "@/validators/client-validator"
-import { validateProvider } from "@/app/(root)/providers/validations"
+import { providerSchema } from "@/validators/zod-schemas"
 
 interface CreateProviderFormProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -113,16 +112,18 @@ export function CreateProviderForm({
               </FormItem>
             )}
           />
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-between gap-2 w-full">
             <Button
               type="button"
               variant="destructive"
+              className="w-full"
               onClick={() => setIsOpen(false)}>
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
+              className="w-full"
             >
               <Save className="w-5 h-5" />
               Registrar proveedor
@@ -130,8 +131,19 @@ export function CreateProviderForm({
           </div>
         </form>
       </Form>
-      <ResponsiveDialog open={isConfirmationModalOpen} onOpenChange={setIsConfirmationModalOpen} title='Confirmar registro.' description='Revise que los datos sean correctos y confirme el registro.' className='sm:max-w-[500px]'>
-        <CreateProviderConfirmationModal handleSubmit={handleFinalSubmit} name={form.getValues('name')} url={form.getValues('url')} isSubmitting={isSubmitting} />
+      <ResponsiveDialog
+        open={isConfirmationModalOpen}
+        onOpenChange={setIsConfirmationModalOpen}
+        title='Confirmar registro.'
+        description='Revise que los datos sean correctos y confirme el registro.'
+        className="md:max-w-fit"
+      >
+        <CreateProviderConfirmationModal
+          handleSubmit={handleFinalSubmit}
+          name={form.getValues('name')}
+          url={form.getValues('url')}
+          isSubmitting={isSubmitting}
+          setIsConfirmationModalOpen={setIsConfirmationModalOpen} />
       </ResponsiveDialog>
     </>
   )

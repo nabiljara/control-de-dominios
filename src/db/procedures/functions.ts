@@ -211,7 +211,7 @@ export async function createFunctions() {
             SELECT name FROM clients WHERE id = NEW.client_id INTO new_client_name;
 
             INSERT INTO audits_details (audit_id, old_value, new_value, field)
-            VALUES (v_audit_id, NULL, NEW.username, 'Usuario'),
+            VALUES (v_audit_id, NULL, NEW.username, 'Usuario / Email'),
             (v_audit_id, NULL, NEW.notes, 'Notas'),
             (v_audit_id, NULL, new_client_name, 'Cliente'),
             (v_audit_id, NULL, new_provider_name, 'Proveedor'),
@@ -245,7 +245,7 @@ export async function createFunctions() {
                     SELECT name FROM providers WHERE id = OLD.provider_id INTO old_provider_name;
                     SELECT name FROM providers WHERE id = NEW.provider_id INTO new_provider_name;
                     INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                    VALUES (v_audit_id, old_provider_name, new_provider_name, 'Localidad');
+                    VALUES (v_audit_id, old_provider_name, new_provider_name, 'Proveedor');
                 END IF;
 
                 IF OLD.created_at IS DISTINCT FROM NEW.created_at THEN
@@ -310,7 +310,7 @@ export async function createFunctions() {
   
               INSERT INTO audits_details (audit_id, old_value, new_value, field)
               VALUES (v_audit_id, NULL, new_domain_name, 'Dominio'),
-              (v_audit_id, NULL, new_username, 'Usuario'),
+              (v_audit_id, NULL, new_username, 'Usuario / Email'),
               (v_audit_id, NULL, new_client_name, 'Cliente del acceso'),
               (v_audit_id, NULL, new_provider, 'Proveedor');
     
@@ -345,7 +345,7 @@ export async function createFunctions() {
 
 
                       INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                      VALUES (v_audit_id, old_username, new_username, 'Usuario'),
+                      VALUES (v_audit_id, old_username, new_username, 'Usuario / Email'),
                       (v_audit_id, old_client_name, new_client_name, 'Cliente del acceso');
                       
                       IF old_provider IS DISTINCT FROM new_provider THEN
@@ -361,7 +361,7 @@ export async function createFunctions() {
                        SELECT name FROM providers INNER JOIN access on providers.id = access.provider_id WHERE access.id = OLD.access_id INTO old_provider;
                        
                        INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                       VALUES (v_audit_id, old_username, '', 'Usuario'),
+                       VALUES (v_audit_id, old_username, '', 'Usuario / Email'),
                        (v_audit_id, old_client_name, '', 'Cliente del acceso'),
                        (v_audit_id, old_client_name, '', 'Proveedor');
                   END IF;
@@ -380,7 +380,7 @@ export async function createFunctions() {
                   INSERT INTO audits_details (audit_id, old_value, new_value, field)
                   VALUES (v_audit_id, old_domain_name, NULL, 'Dominio'),
                       (v_audit_id, old_client_name, NULL, 'Cliente del acceso'),
-                      (v_audit_id, old_username, NULL, 'Usuario'),
+                      (v_audit_id, old_username, NULL, 'Usuario / Email'),
                       (v_audit_id, old_provider, NULL, 'Proveedor');
   
               END IF;
@@ -413,9 +413,9 @@ export async function createFunctions() {
                 VALUES (v_audit_id, NULL, new_client_name, 'Cliente'),
                 (v_audit_id, NULL, NEW.name, 'Nombre'),
                 (v_audit_id, NULL, NEW.email, 'Email'),
-                (v_audit_id, NULL, NEW.phone, 'Telefono'),
-                (v_audit_id, NULL, NEW.type, 'Tipo de contacto'),
-                (v_audit_id, NULL, NEW.status, 'Estado del contacto'),
+                (v_audit_id, NULL, NEW.phone, 'Teléfono'),
+                (v_audit_id, NULL, NEW.type, 'Tipo'),
+                (v_audit_id, NULL, NEW.status, 'Estado'),
                 (v_audit_id, NULL, NEW.created_at, 'Fecha de creación'),
                 (v_audit_id, NULL, NEW.updated_at, 'Última modificación');
     
@@ -444,17 +444,17 @@ export async function createFunctions() {
 
                 IF OLD.phone IS DISTINCT FROM NEW.phone THEN
                     INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                    VALUES (v_audit_id, OLD.phone, NEW.phone, 'Telefono');
+                    VALUES (v_audit_id, OLD.phone, NEW.phone, 'Teléfono');
                 END IF;
 
                 IF OLD.type IS DISTINCT FROM NEW.type THEN
                     INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                    VALUES (v_audit_id, OLD.type, NEW.type, 'Tipo de contacto');
+                    VALUES (v_audit_id, OLD.type, NEW.type, 'Tipo');
                 END IF;
                 
                 IF OLD.status IS DISTINCT FROM NEW.status THEN
                     INSERT INTO audits_details (audit_id, old_value, new_value, field)
-                    VALUES (v_audit_id, OLD.status, NEW.status, 'Estado del contacto');
+                    VALUES (v_audit_id, OLD.status, NEW.status, 'Estado');
                 END IF;
 
                 IF OLD.created_at IS DISTINCT FROM NEW.created_at THEN

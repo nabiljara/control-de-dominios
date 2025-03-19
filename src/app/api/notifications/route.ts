@@ -1,4 +1,4 @@
-import { sendMailBounced } from "@/actions/mail-actions";
+import { sendEmailBounced } from "@/actions/mail-actions";
 import { insertNotification } from "@/actions/notifications-actions";
 import { getUsers } from "@/actions/user-action/user-actions";
 import db from "@/db";
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         }
 
       const [emailResult] = await Promise.allSettled([
-        sendMailBounced(emailTo, contact?.id ?? null),
+        sendEmailBounced(emailTo, contact?.id ?? null),
       ]);
       
       if (emailResult.status === "fulfilled") {

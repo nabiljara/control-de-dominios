@@ -1,3 +1,4 @@
+import { NotificationType } from "@/constants";
 import {
   Body,
   Button,
@@ -17,18 +18,17 @@ import {
 interface ClientEmailProps {
   domain: string;
   expirationDate: string;
-  title: string;
-  expire?: string;
-  primaryColor: string;
+  type: NotificationType;
+  expire: 'expired' | 'today' | 'soon';
+  primaryColor: '#60C9A1' | "#FF5B5B";
 }
 const baseUrl = process.env.BASE_URL ? process.env.BASE_URL : "";
 export default function ClientEmail({
-  domain = "dominio.com",
-  expirationDate = "DD-MM-YYYY",
-  title = "Titulo vencimiento",
-  // primaryColor = "#60C9A1",
-  primaryColor = "#FF5B5B",
-  expire = "",
+  domain,
+  expirationDate,
+  type,
+  primaryColor,
+  expire,
 }: ClientEmailProps) {
   return (
     <Html>
@@ -125,7 +125,7 @@ export default function ClientEmail({
                                 : `${baseUrl}/images/kernel-color.png`
                             }
                             alt="Kernel"
-                            className="h-[24px] w-[120px]"
+                            className="w-[120px] h-[24px]"
                           />
                         </Column>
                         <Column
@@ -148,7 +148,7 @@ export default function ClientEmail({
                           }}
                         >
                           <Text style={titleStyle(primaryColor)}>
-                            Tu dominio {title}
+                            {`Tu dominio ${type === 'Vencido' ? 'ha ': ''}${type.toLocaleLowerCase()}`}
                           </Text>
                           <Text style={paragraph}>
                             Tu dominio <strong style={bold}>{domain}</strong>{" "}
@@ -196,8 +196,8 @@ export default function ClientEmail({
                           <Button
                             href={
                               expire === "expired"
-                                ? "https://wa.me/542974269067?text=Hola%21%20Necesito%20recuperar%20mi%20dominio."
-                                : "https://wa.me/542974269067?text=Hola%21%20Necesito%20hacer%20la%20renovaci%C3%B3n%20de%20mi%20dominio."
+                                ? "https://wa.me/542975178507?text=Hola%21%20Necesito%20recuperar%20mi%20dominio."
+                                : "https://wa.me/542975178507?text=Hola%21%20Necesito%20hacer%20la%20renovaci%C3%B3n%20de%20mi%20dominio."
                             }
                             style={buttonStyle(primaryColor)}
                             className="button"

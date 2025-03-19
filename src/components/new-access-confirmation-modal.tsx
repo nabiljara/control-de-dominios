@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader2, Handshake, Box, StickyNote, KeySquare, EyeOff, Eye, AtSign, } from "lucide-react"
 import { Button } from "@/components/ui/button";
-import { AccessFormValues, } from "@/validators/client-validator";
+import { AccessFormValues, } from "@/validators/zod-schemas";
 import { useState } from 'react';
 
 export function NewAccessConfirmationModal(

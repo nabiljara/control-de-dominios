@@ -7,10 +7,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
 import { createNotificationForDomain } from "./notifications-actions";
-import { domainFormSchema, DomainFormValues } from "@/validators/client-validator";
+import { domainFormSchema, DomainFormValues } from "@/validators/zod-schemas";
 import { format } from "date-fns";
-
-
 
 export async function getDomains() {
   try {
@@ -318,11 +316,17 @@ export async function getExpiringDomains() {
   const today = Date.now();
   try {
     const data = await db.query.domains.findMany({
-      columns: { expirationDate: true, id: true, clientId: true, name: true },
+      columns: {
+        expirationDate: true,
+        id: true,
+        clientId: true,
+        name: true
+      },
       where:
         eq(domains.status, 'Activo'),
       with: {
-        client: true,
+        client: { columns: { id: true, name: true } },
+        contact: { columns: { email: true } },
       }
     });
 
@@ -447,21 +451,21 @@ export async function getDomainAccessDetail(domAccId: number) {
       where: eq(domainAccess.id, domAccId),
       with: {
         domain: {
-          with:{
-            client:true,
-            provider:true
+          with: {
+            client: true,
+            provider: true
           }
         },
         access: {
-          with:{
-            provider:true,
-            client:true
+          with: {
+            provider: true,
+            client: true
           }
         }
       }
     });
     return data
   } catch (error) {
-      console.error('Error al obtener el domainAccess:', error);
+    console.error('Error al obtener el domainAccess:', error);
   }
 }

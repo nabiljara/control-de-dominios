@@ -12,29 +12,17 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Client, ClientWithRelations, Contact } from "@/db/schema"
+import { Client, Contact } from "@/db/schema"
 import {
-  clientUpdateFormSchema,
   ClientUpdateValues,
-  domainFormSchema
-} from "@/validators/client-validator"
+} from "@/validators/zod-schemas"
 import { useEffect, useState } from "react"
-// import { getContactsByClient } from "@/actions/contacts-actions"
 import {
   Controller,
-  Form,
-  FormProvider,
-  useFieldArray,
-  useForm,
-  useFormContext,
   UseFormReturn
 } from "react-hook-form"
-import z from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   FormControl,
-  FormField,
   FormItem,
   FormLabel
 } from "@/components/ui/form"
@@ -134,9 +122,9 @@ export function UpdateDomain({
                           <SelectContent>
                             {domainStatus.map((status) => (
                               <SelectItem key={status} value={status} className="hover:bg-muted cursor-pointer">
-                                <Badge 
-                                variant='outline'
-                                className={statusConfig[status].color}
+                                <Badge
+                                  variant='outline'
+                                  className={statusConfig[status].color}
                                 >
                                   {status}
                                 </Badge>

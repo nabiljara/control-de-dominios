@@ -33,8 +33,8 @@ export default async function ProvidersPage() {
     <div className="flex flex-col space-y-8 p-8">
       <HeaderPage
         icon={<BookOpen className="shrink-0" />}
-        title="Auditor&iacute;as"
-        description="Listado de todos las auditor&iacute;as"
+        title="Auditorías"
+        description="Listado de todos las auditorías"
       />
       <DataTable
         data={audits}

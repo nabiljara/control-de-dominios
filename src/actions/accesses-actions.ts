@@ -4,7 +4,7 @@ import db from "@/db";
 import { access, AccessInsert, domainAccess, domains } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
-import { accessFormSchema, AccessFormValues } from "@/validators/client-validator";
+import { accessFormSchema, AccessFormValues } from "@/validators/zod-schemas";
 import { revalidatePath } from "next/cache";
 import crypto from 'crypto';
 import { encrypt } from "@/lib/utils";

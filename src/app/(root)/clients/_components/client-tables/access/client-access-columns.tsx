@@ -46,7 +46,7 @@ export const columns: ColumnDef<AccessWithRelations>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Usuario / Email" icon={<AtSign className="w-4 h-4" />} />
     ),
-    cell: ({ row }) => <UsernameCopy username={row.getValue('username')}/>,
+    cell: ({ row }) => <UsernameCopy username={row.getValue('username')} />,
     enableSorting: false,
     enableHiding: true,
   },

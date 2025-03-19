@@ -72,9 +72,9 @@ export const columns: ColumnDef<Contact>[] = [
       <DataTableColumnHeader column={column} title="Tipo" icon={<Tag />} />
     ),
     cell: ({ row }) =>
-      <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
+      <Badge variant='outline' className='truncate'>
         {row.getValue('type')}
-      </span>
+      </Badge>
     ,
     enableSorting: true,
     enableHiding: true,

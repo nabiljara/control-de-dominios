@@ -17,7 +17,6 @@ import {
   CalendarArrowDown,
   AlertCircle,
   CalendarClock,
-  Mail,
   MailX,
   Bell
 } from "lucide-react"

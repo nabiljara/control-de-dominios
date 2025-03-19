@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "@/components/data-table-view-options"
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter"
-import { CommandShortcut } from "@/components/ui/command"
 import { domainStatus } from "@/constants"
 
 interface DataTableToolbarProps<TData> {
@@ -27,7 +26,6 @@ export function DataTableToolbar<TData>({
           <Input
             id="filter-domains"
             placeholder="Filtrar dominios por nombre"
-            autoFocus
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)

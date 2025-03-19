@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardTitle, } from '@/components/ui/card'
 import { Mail, Phone, User, Tag, Loader2, Handshake, CheckCircle, ArrowRight, Globe, Contact2, } from "lucide-react"
 import { Button } from "@/components/ui/button";
-import { ContactFormValues } from "@/validators/client-validator";
+import { ContactFormValues } from "@/validators/zod-schemas";
 import { Badge } from '@/components/ui/badge';
 import { statusConfig } from '@/constants';
 import { UseFormReturn } from 'react-hook-form';

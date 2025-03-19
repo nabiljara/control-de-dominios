@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Access } from "@/db/schema";
-import { AtSign, Box, Eye, EyeOff, KeySquare, StickyNote, User } from "lucide-react";
+import { AtSign, Box, Eye, EyeOff, KeySquare, StickyNote } from "lucide-react";
 import { useState } from "react";
 
 interface AccessInfoCardProps {

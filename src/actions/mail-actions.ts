@@ -2,88 +2,52 @@
 
 import BouncedMail from '@/components/mails/bounced-mail';
 import ClientEmail from '@/components/mails/client-mail';
+import { NotificationType } from '@/constants';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendMail(domain:string, expirationDate:string, title:string, primaryColor:string, expire:string) { 
-  
-  try {
-    // const response = await sendEmailToClient(domain, expirationDate,title, primaryColor,expire);
-
-    // if (response.success) {
-        return { success: true };
-      // }else{
-      //   throw new Error("Error inesperado al enviar el correo al cliente");  
-      // }
-    // } else {
-    //   throw new Error("Error inesperado al enviar el correo");
-    // }
-  } catch (error) {
-    console.error("Error al envíar el correo:", error);
-    if (error instanceof Error) {
-      throw new Error(error.message);
-    } else {
-      throw new Error("Error desconocido");
-    }
-  }
-}
-
-const sendEmailToClient = async (domain:string, expirationDate:string, title:string, primaryColor:string, expire:string) => {
-  const managementEmail = 'luccamansilla01@gmail.com'
+export const sendEmailToClient = async (
+  domain: string,
+  expirationDate: string,
+  type: NotificationType,
+  email: string,
+  expire: 'expired' | 'today' | 'soon',
+  primaryColor: '#60C9A1' | '#FF5B5B'
+) => {
   try {
     const data = await resend.emails.send({
-      from: 'Pruebas SICOM <noreply@pruebaslm.online>',
-      to: [managementEmail],
-      subject: 'Vencimiento de Dominio',
+      from: 'Soporte Kernel <soporte@kerneltech.dev>',
+      to: [email],
+      subject: 'Vencimiento de dominio.',
       react: ClientEmail({
         domain,
         expirationDate,
-        title,
+        type,
         primaryColor,
         expire,
       }) as React.ReactElement,
     });
     if (!data.error) {
       return { success: true };
-    }
-    else {
+    } else {
       throw new Error(
-        `Error en Resend: ${data.error.message || "Error desconocido"}`
+        `Error en Resend: ${data.error.message || 'Error desconocido'}`
       );
     }
   } catch (error) {
-    console.error("Error al enviar correo a cliente:", error);
+    console.error('Error al enviar correo a cliente:', error);
     throw error;
   }
-}
-export async function sendMailBounced(emailTo:string, contactId:number | null) { 
-  
-  try {
-    const response = await sendEmailToManagement(emailTo,contactId);
+};
 
-    if (response.success) {
-      return { success: true };
-    }else{
-        throw new Error("Error inesperado al enviar el correo al cliente");  
-      }
-    
-  } catch (error) {
-    console.error("Error al envíar el correo:", error);
-    if (error instanceof Error) {
-      throw new Error(error.message);
-    } else {
-      throw new Error("Error desconocido");
-    }
-  }
-}
-const sendEmailToManagement = async (emailTo:string, contactId:number | null) => {
-  const managementEmail = 'luccamansilla01@gmail.com'
+export const sendEmailBounced = async (emailTo: string, contactId: number | null) => {
+  const managementEmail = 'gerencia@kerneltech.dev'
   try {
     const data = await resend.emails.send({
-      from: 'Pruebas SICOM <noreply@pruebaslm.online>',
+      from: 'SICOM <soporte@kerneltech.dev>',
       to: [managementEmail],
-      subject: 'Email no enviado.',
+      subject: 'Email no entregado.',
       react: BouncedMail({
         emailTo,
         contactId

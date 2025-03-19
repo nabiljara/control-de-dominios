@@ -4,7 +4,7 @@ import { domainHistory, domains, providers } from "@/db/schema";
 import { and, count, desc, eq, ilike, sql } from "drizzle-orm";
 import { setUserId } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
-import { ProviderFormValues, providerSchema } from "@/validators/client-validator";
+import { ProviderFormValues, providerSchema } from "@/validators/zod-schemas";
 
 export async function getProviders() {
   try {
@@ -118,6 +118,29 @@ export async function validateProviderName(name: string) {
   } catch (error) {
     console.error("Error al validar el nombre del proveedor")
     throw error
+  }
+}
+
+export const validateProvider = async (name: string, url: string, oldName:string | undefined, oldUrl: string | undefined) => {
+  try {
+    const errorList: { field: "name" | "url"; message: string }[] = [];
+    const nameIsValid = await validateProviderName(name);
+    if (!nameIsValid && name !== oldName) {
+      errorList.push({
+        field: "name",
+        message: "El nombre del proveedor ya está registrado en el sistema.",
+      });
+    }
+    const urlIsValid = await validateProviderURL(url);
+    if (!urlIsValid && url !== oldUrl) {
+      errorList.push({
+        field: "url",
+        message: "La URL del proveedor ya está registrada en el sistema.",
+      });
+    }
+    return errorList;
+  } catch (error) {
+    throw error;
   }
 }
 

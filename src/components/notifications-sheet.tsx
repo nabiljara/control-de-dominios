@@ -92,22 +92,20 @@ export function NotificationsSheet() {
   //Buscar las notificaciones no leídas
   useEffect(() => {
     const fetchUnreadNotifications = async () => {
-      if (open) {
-        try {
-          setIsLoadingUnread(true)
-          const notifications = await getUserUnreadNotifications();
-          setErrorUnread(false)
-          setUnreadNotifications(notifications);
-          setUnreadCount(notifications.length)
-        } catch (error) {
-          setErrorUnread(true)
-        } finally {
-          setIsLoadingUnread(false)
-        }
+      try {
+        setIsLoadingUnread(true)
+        const notifications = await getUserUnreadNotifications();
+        setErrorUnread(false)
+        setUnreadNotifications(notifications);
+        setUnreadCount(notifications.length)
+      } catch (error) {
+        setErrorUnread(true)
+      } finally {
+        setIsLoadingUnread(false)
       }
     };
     fetchUnreadNotifications();
-  }, [open, refreshUnread]);
+  }, [refreshUnread]);
 
   //Buscar por filtro en la base de datos
   const handleFetchDBData = async () => {
@@ -187,7 +185,7 @@ export function NotificationsSheet() {
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="flex flex-col gap-4 w-full sm:max-w-md min-h-screen overflow-y-scroll" ref={sheetContentRef}>
+      <SheetContent side="right" className="flex flex-col gap-4 w-full sm:max-w-md min-h-svh overflow-y-scroll" ref={sheetContentRef}>
 
         <SheetHeader className="px-4 py-3">
           <SheetTitle className="font-semibold text-lg">Notificaciones</SheetTitle>
@@ -226,65 +224,16 @@ export function NotificationsSheet() {
             </SelectContent>
           </Select>
         </div>
-        {
-          tabSelected === 'read' &&
-          <div className="flex flex-col items-start gap-2 px-4">
-            <div className="flex sm:flex-row flex-col justify-between items-center gap-2 w-full">
-              <Button
-                className="w-full"
-                size='sm'
-                variant="outline"
-                onClick={handleFetchDBData}
-                disabled={isLoadingRead}
-              >
-                {isLoadingRead ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" /> Buscando...
-                  </div>
-                ) : (
-                  <>
-                    <Database />
-                    Filtrar por base de datos
-                  </>
-                )}
-              </Button>
-              <Button
-                className="w-full"
-                size='sm'
-                variant="outline"
-                onClick={() => {
-                  setTypeFilter('all')
-                  setSearchQuery('')
-                  setPage(1)
-                }}
-                disabled={isLoadingRead}
-              >
-                {isLoadingRead ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" /> Buscando...
-                  </div>
-                ) : (
-                  <>
-                    <RefreshCw />
-                    {`Traer últimas ${limit}`}
-                  </>
-                )}
-              </Button>
-            </div>
-            <span className="text-muted-foreground text-xs">Presiona luego de elegir los filtros para realizar el filtrado por base de datos, de no ser as&iacute; se realizará con las notificaciones actuales.</span>
-          </div>
-        }
-
 
         <Tabs defaultValue="unread" className="flex flex-col items-center gap-2 w-full">
           <TabsList className="w-[94%]">
-            <TabsTrigger value="unread" className="w-full" onClick={() => setTabSelected('unread')}>No le&iacute;das</TabsTrigger>
+            <TabsTrigger value="unread" className="w-full" onClick={() => setTabSelected('unread')}>No leídas</TabsTrigger>
             <TabsTrigger value="read" className="w-full" onClick={() => {
               setTabSelected('read')
               if (!tabSelectedOnce) setTabSelectedOnce(true)
             }}
             >
-              Le&iacute;das
+              Leídas
             </TabsTrigger>
           </TabsList>
           <TabsContent value="unread" className="w-full">
@@ -305,12 +254,12 @@ export function NotificationsSheet() {
                     >
                       {isMarkNotificationLoading ? (
                         <div className="flex items-center gap-2">
-                          <Loader2 className="animate-spin" /> Marcando como le&iacute;das...
+                          <Loader2 className="animate-spin" /> Marcando como leídas...
                         </div>
                       ) : (
                         <>
                           <Check />
-                          Marcar como le&iacute;das
+                          Marcar como leídas
                         </>
                       )}
                     </Button>
@@ -359,6 +308,51 @@ export function NotificationsSheet() {
             </div>
           </TabsContent>
           <TabsContent value="read" className="w-full">
+            <div className="flex flex-col items-start gap-2 px-4">
+              <div className="flex sm:flex-row flex-col justify-between items-center gap-2 w-full">
+                <Button
+                  className="w-full"
+                  size='sm'
+                  variant="outline"
+                  onClick={handleFetchDBData}
+                  disabled={isLoadingRead}
+                >
+                  {isLoadingRead ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="animate-spin" /> Buscando...
+                    </div>
+                  ) : (
+                    <>
+                      <Database />
+                      Filtrar por base de datos
+                    </>
+                  )}
+                </Button>
+                <Button
+                  className="w-full"
+                  size='sm'
+                  variant="outline"
+                  onClick={() => {
+                    setTypeFilter('all')
+                    setSearchQuery('')
+                    setPage(1)
+                  }}
+                  disabled={isLoadingRead}
+                >
+                  {isLoadingRead ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="animate-spin" /> Buscando...
+                    </div>
+                  ) : (
+                    <>
+                      <RefreshCw />
+                      {`Traer últimas ${limit}`}
+                    </>
+                  )}
+                </Button>
+              </div>
+              <span className="text-muted-foreground text-xs">Presiona luego de elegir los filtros para realizar el filtrado por base de datos, de no ser as&iacute; se realizará con las notificaciones actuales.</span>
+            </div>
             <div className="px-4 py-2">
               <p className="text-muted-foreground text-sm">
                 {filteredReadNotifications && filteredReadNotifications.length !== undefined ? filteredReadNotifications.length : 0} {filteredReadNotifications && filteredReadNotifications.length === 1 ? "resultado" : "resultados"}

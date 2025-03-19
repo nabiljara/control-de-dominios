@@ -6,7 +6,7 @@ import { Client } from "@/db/schema"
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { clientSizes, clientStatus, sizeConfig, statusConfig } from "@/constants"
-import { BarChart2, CalendarArrowUpIcon, CheckCircle, CircleCheckBig, Handshake, MapPin } from "lucide-react"
+import { BarChart2, CalendarArrowUpIcon, CheckCircle, Handshake, MapPin } from "lucide-react"
 
 export const columns: ColumnDef<Client>[] = [
   {
@@ -103,7 +103,7 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha de registro"  icon={<CalendarArrowUpIcon className="w-4 h-4" />}/>
+      <DataTableColumnHeader column={column} title="Fecha de registro" icon={<CalendarArrowUpIcon className="w-4 h-4" />} />
     ),
     cell: ({ row }) => (
       <div>

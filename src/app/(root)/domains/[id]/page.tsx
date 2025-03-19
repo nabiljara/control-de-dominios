@@ -1,4 +1,4 @@
-import { getActiveClients, getClients } from "@/actions/client-actions"
+import { getActiveClients } from "@/actions/client-actions"
 import { getProviders } from "@/actions/provider-actions"
 import EditableDomainCard from "@/app/(root)/domains/_components/editable-domain-card"
 import { getDomain, getDomainHistory } from "@/actions/domains-actions"

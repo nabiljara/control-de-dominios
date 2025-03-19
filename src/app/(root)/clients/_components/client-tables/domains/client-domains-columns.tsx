@@ -63,7 +63,7 @@ export const columns: ColumnDef<Domain>[] = [
 
       return (
         <Badge
-        variant='outline'
+          variant='outline'
           className={
             statusConfig[row.getValue("status") as keyof typeof statusConfig].color
           }

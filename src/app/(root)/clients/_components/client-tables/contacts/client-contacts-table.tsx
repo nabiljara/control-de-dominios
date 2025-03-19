@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
-import {Contact2 } from "lucide-react"
+import { Contact2 } from "lucide-react"
 import { ContactModal } from "@/components/contact-modal"
 import { Contact } from '@/db/schema'
 import { Button } from "@/components/ui/button"

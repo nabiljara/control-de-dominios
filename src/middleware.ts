@@ -7,7 +7,7 @@ type NextAuthRequest = NextRequest & { auth: Session | null };
 const auth = NextAuth(authConfig).auth;
 
 export default auth((request: NextAuthRequest) => {
-  const publicRoutes = new Set(["/signin", "/signup", "/maintenance"]);
+  const publicRoutes = new Set(["/signin", "/maintenance"]);
   const protectedRoutesPrefixes = ["/audits", "/domains", "/providers", "/clients", "/contacts"];
   
   const { auth, nextUrl } = request;

@@ -6,7 +6,6 @@ import {
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
 } from "@/components/ui/avatar"
 
 import {
@@ -41,10 +40,6 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="rounded-lg w-8 h-8">
-                {/* <AvatarImage
-                  src={data.user.avatar}
-                  alt={name}
-                /> */}
                 <AvatarFallback className="rounded-lg">{getInitials(name)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 grid text-sm text-left leading-tight">
@@ -67,10 +62,6 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
                 <Avatar className="rounded-lg w-8 h-8">
-                  {/* <AvatarImage
-                    src={data.user.avatar}
-                    alt={name}
-                  /> */}
                   <AvatarFallback className="rounded-lg">
                     {getInitials(name)}
                   </AvatarFallback>
@@ -85,15 +76,6 @@ export default function AppSidebarFooter({ name, email }: AppSidebarFooterProps)
                 </div>
               </div>
             </DropdownMenuLabel>
-            {/* <DropdownMenuSeparator /> */}
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem title="Perfil" href="/profile">
-                <User />
-              </DropdownMenuItem>
-              <DropdownMenuItem title="Configuración" href="/settings">
-                <Settings />
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
             <DropdownMenuSeparator />
             <SignoutButton />
           </DropdownMenuContent>

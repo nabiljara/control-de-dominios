@@ -11,7 +11,7 @@ import { useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/high-res.css';
 
-import { ContactFormValues } from '@/validators/client-validator'
+import { ContactFormValues } from '@/validators/zod-schemas'
 import { Badge } from '@/components/ui/badge'
 import { contactStatus, contactTypes, statusConfig } from '@/constants'
 

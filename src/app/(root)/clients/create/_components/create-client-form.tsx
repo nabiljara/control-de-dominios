@@ -46,7 +46,7 @@ import {
   ClientFormValues,
   contactFormSchema,
   ContactFormValues
-} from "@/validators/client-validator"
+} from "@/validators/zod-schemas"
 import { AccessModal } from "@/components/access-modal"
 import { PreventNavigation } from "@/components/prevent-navigation"
 import { clientSizes, clientStatus, sizeConfig, statusConfig } from "@/constants"
@@ -439,7 +439,9 @@ export function CreateClientForm({
           handleSubmit={handleFinalSubmit}
           contacts={contacts}
           form={form}
+          isSubmitting={isSubmitting}
           accesses={accessArray}
+          setIsConfirmationModalOpen={setIsConfirmationModalOpen}
         />
       </ResponsiveDialog>
       <PreventNavigation isDirty={isDirty} backHref={'/clients'} resetData={form.reset} />

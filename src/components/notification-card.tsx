@@ -1,7 +1,7 @@
 import { notificationStatusConfig } from "@/constants";
 import { Notification } from "@/db/schema";
 import Link from "next/link";
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 import { Badge } from "./ui/badge";
 import { formatDate } from "@/lib/utils";
 import { SheetClose } from "./ui/sheet";

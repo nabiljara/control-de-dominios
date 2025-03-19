@@ -19,7 +19,6 @@ import {
   Contact,
   Locality
 } from "@/db/schema"
-import { formatDate } from "@/lib/utils"
 import {
   Form,
   FormControl,
@@ -33,7 +32,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   clientUpdateFormSchema,
   ClientUpdateValues
-} from "@/validators/client-validator"
+} from "@/validators/zod-schemas"
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { EditClientConfirmationModal } from "./edit-client-confirmation-modal"
 import { toast } from "sonner"

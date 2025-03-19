@@ -14,7 +14,7 @@ export function getInitials(name: string) {
 }
 
 export const formatDate = (date: string) => {
-  return formatUtil(new Date(date), "dd/MM/yyyy HH:mm")
+  return formatUtil(new Date(date), "dd/MM/yyyy")
 };
 
 export const encrypt = (text: string): { encrypted: string; iv: string } => {
@@ -31,4 +31,23 @@ export const encrypt = (text: string): { encrypted: string; iv: string } => {
 
 export const formatTextDate = (date: string) => {
   return format(date, "d 'de' MMMM 'del' yyyy", { locale: es })
+}
+
+export function formatAuditDate(dateString: string): string {
+  try {
+    const date = new Date(dateString)
+
+    if (!isNaN(date.getTime())) {
+      const day = String(date.getDate()).padStart(2, "0")
+      const month = String(date.getMonth() + 1).padStart(2, "0")
+      const year = date.getFullYear()
+      const hours = String(date.getHours()).padStart(2, "0")
+      const minutes = String(date.getMinutes()).padStart(2, "0")
+
+      return `${day}/${month}/${year} ${hours}:${minutes}`
+    }
+    return dateString
+  } catch (error) {
+    return dateString
+  }
 }

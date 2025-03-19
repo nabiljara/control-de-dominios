@@ -2,10 +2,11 @@
 import { auth } from "@/auth";
 import { NotificationType } from "@/constants";
 import db from "@/db";
-import {  ExpiringDomains, NotificationInsert, notifications, UserNotification, usersNotifications } from "@/db/schema";
+import { ExpiringDomains, NotificationInsert, notifications, UserNotification, usersNotifications } from "@/db/schema";
 import { and, count, desc, eq, ilike, isNull, or } from "drizzle-orm";
 import { getUsers } from "./user-action/user-actions";
-import { formatTextDate } from '@/lib/utils';
+import { formatDate, formatTextDate } from '@/lib/utils';
+import { sendEmailToClient } from "./mail-actions";
 
 
 export async function insertNotification(notification: NotificationInsert, userId: string) {
@@ -151,55 +152,68 @@ export async function markNotificationsAsRead(userNotifications: UserNotificatio
   }
 };
 
-export async function createNotificationForDomain(doms: ExpiringDomains[], type: NotificationType, message?: string
-) {
-    try {
-        const users = await getUsers();
-        if (!users.length) {
-            console.log("No hay usuarios para notificar.");
-            return;
-        }
-        const notifications = doms.flatMap((dom) => {
-            let messageComplete = `El dominio ${dom.name} `;
-            switch (type) {
-                case 'Vence hoy':
-                    messageComplete += `vence hoy ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
-                    break;
-                case 'Vence en una semana':
-                    messageComplete += `vencerá en una semana el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
-                    break;
-                case 'Vence en un mes':
-                    messageComplete += `vencerá en un mes el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
-                    break;
-                case 'Vencido':
-                    messageComplete += `venció el ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
-                    break;
-                case 'Simple':
-                    if (!message) throw new Error("Para notificaciones de tipo 'Simple', se debe proporcionar un mensaje.");
-                    messageComplete = message;
-            }
-            const notification: NotificationInsert = {
-                message: messageComplete,
-                type,
-                domainId: dom.id,
-                domainName: dom.name,
-            };  
-            return users.map((user) => insertNotification(notification, user.id));
-        });
-
-        const returnMessage = {
-          'Vence hoy': 'Dominios que vencen hoy.',
-          'Vence en una semana': 'Dominios que vencen en una semana.',
-          'Vence en un mes': 'Dominios que vencen en un mes.',
-          'Vencido': 'Dominios vencidos.',
-          'Email no entregado' : 'Mails no entregados',
-          'Simple' : 'Notificaciones simples'
-        };
-        //ejecución en paralelo de todas las notis
-        await Promise.allSettled(notifications);
-        return 'Notificaciones creadas correctamente: '+returnMessage[type];
-    } catch (error) {
-        console.error("Error al insertar notificaciones:", error);
+export async function createNotificationForDomain(doms: ExpiringDomains[], type: NotificationType, message?: string) {
+  try {
+    const users = await getUsers();
+    if (!users.length) {
+      console.log("No hay usuarios para notificar.");
+      return;
     }
+    const notifications = doms.flatMap((dom) => {
+      let messageComplete = `El dominio ${dom.name} `;
+      switch (type) {
+        case 'Vence hoy':
+          messageComplete += `vence hoy ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
+          break;
+        case 'Vence en una semana':
+          messageComplete += `vencerá en una semana el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+          break;
+        case 'Vence en un mes':
+          messageComplete += `vencerá en un mes el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+          break;
+        case 'Vencido':
+          messageComplete += `venció el ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
+          break;
+        case 'Simple':
+          if (!message) throw new Error("Para notificaciones de tipo 'Simple', se debe proporcionar un mensaje.");
+          messageComplete = message;
+      }
+      const notification: NotificationInsert = {
+        message: messageComplete,
+        type,
+        domainId: dom.id,
+        domainName: dom.name,
+      };
+      return users.map(async (user) => {
+        await insertNotification(notification, user.id);
+
+        if (notification.type !== 'Simple' && notification.type !== 'Email no entregado') {
+
+          await sendEmailToClient(
+            dom.name,
+            formatDate(dom.expirationDate),
+            notification.type,
+            dom.contact.email,
+            notification.type === 'Vencido' ? 'expired' : notification.type === 'Vence hoy' ? 'today' : 'soon',
+            notification.type === 'Vencido' || notification.type === 'Vence hoy' ? '#FF5B5B' : '#60C9A1'
+          );
+        }
+      });
+    });
+
+    const returnMessage = {
+      'Vence hoy': 'Dominios que vencen hoy.',
+      'Vence en una semana': 'Dominios que vencen en una semana.',
+      'Vence en un mes': 'Dominios que vencen en un mes.',
+      'Vencido': 'Dominios vencidos.',
+      'Email no entregado': 'Mails no entregados',
+      'Simple': 'Notificaciones simples'
+    };
+    //ejecución en paralelo de todas las notis
+    await Promise.allSettled(notifications);
+    return 'Notificaciones creadas correctamente: ' + returnMessage[type];
+  } catch (error) {
+    console.error("Error al insertar notificaciones:", error);
+  }
 }
 

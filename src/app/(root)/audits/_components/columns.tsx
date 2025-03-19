@@ -51,7 +51,7 @@ export const columns: ColumnDef<Audit>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Acción" icon={<Pointer />} />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("action")}</div>,
+    cell: ({ row }) => <div className="w-fit truncate">{row.getValue("action")}</div>,
     enableSorting: true,
     enableHiding: true
   },
@@ -60,7 +60,7 @@ export const columns: ColumnDef<Audit>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Entidad" icon={<Table/>} />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("entity")}</div>,
+    cell: ({ row }) => <div className="w-fit truncate">{row.getValue("entity")}</div>,
     enableSorting: true,
     enableHiding: true
   },
@@ -70,7 +70,7 @@ export const columns: ColumnDef<Audit>[] = [
       <DataTableColumnHeader column={column} title="Fecha de movimiento" icon={<CalendarClock/>}/>
     ),
     cell: ({ row }) => (
-      <div>
+      <div className="w-fit truncate">
         {formatDate(row.getValue("createdAt"))}
       </div>
     ),

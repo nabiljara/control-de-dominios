@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { CheckCircle, Globe, CalendarArrowDown, Handshake } from "lucide-react"
+import { CheckCircle, Globe, CalendarArrowDown, Handshake, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button";
-import { DomainFormValues } from "@/validators/client-validator";
+import { DomainFormValues } from "@/validators/zod-schemas";
 import { UseFormReturn } from "react-hook-form";
 import { Badge } from '@/components/ui/badge';
 import { ContactInfoCard } from '@/app/(root)/clients/_components/contact-info-card';
@@ -17,12 +17,16 @@ export function CreateDomainConfirmationModal(
     selectedContact,
     selectedAccess,
     provider,
+    isSubmitting,
+    setIsConfirmationDomainModalOpen
   }: {
     handleSubmit: () => void;
     form: UseFormReturn<DomainFormValues>
     selectedContact: Contact | undefined,
     selectedAccess: Access | undefined,
-    provider: string | undefined
+    provider: string | undefined,
+    isSubmitting: boolean,
+    setIsConfirmationDomainModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   }
 ) {
   return (
@@ -34,15 +38,18 @@ export function CreateDomainConfirmationModal(
             <CardContent className="pt-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
+                  <Globe className="w-4 h-4 shrink-0" />
                   <span className="font-medium">Nombre:</span> {form.getValues('name')}
                 </div>
                 <div className="flex items-center gap-2">
-                  <CalendarArrowDown className="w-4 h-4" />
-                  <span className="font-medium">Fecha de vencimiento:</span> {format(form.getValues('expirationDate'), "dd/MM/yyyy HH:mm")}
+                  <CalendarArrowDown className="w-4 h-4 shrink-0" />
+                  <p className='flex gap-2 truncate'>
+                    <span className="font-medium">Fecha de vencimiento:</span>
+                    {format(form.getValues('expirationDate'), "dd/MM/yyyy HH:mm")}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle className="w-4 h-4 shrink-0" />
                   <span className="font-medium">Estado:</span>
                   <Badge
                     variant='outline'
@@ -52,7 +59,7 @@ export function CreateDomainConfirmationModal(
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Handshake className="w-4 h-4" />
+                  <Handshake className="w-4 h-4 shrink-0" />
                   <span className="font-medium">Cliente:</span>
                   {form.getValues('client.name')}
                 </div>
@@ -83,7 +90,36 @@ export function CreateDomainConfirmationModal(
             </div>
           </div>
         </div>
-        <Button type="button" onClick={handleSubmit}>Confirmar Registro</Button>
+        <div className='flex gap-2'>
+          <Button
+            type="button"
+            variant='destructive'
+            onClick={() => {
+              setIsConfirmationDomainModalOpen(false)
+            }}
+            disabled={isSubmitting}
+            className='w-full'
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className='w-full'
+          >
+            {isSubmitting ? (
+              <>
+                <div className='flex items-center gap-1'>
+                  <Loader2 className='animate-spin' />
+                  Confirmando
+                </div>
+              </>
+            ) : (
+              'Confirmar'
+            )}
+          </Button>
+        </div>
       </div>
     </>
   )

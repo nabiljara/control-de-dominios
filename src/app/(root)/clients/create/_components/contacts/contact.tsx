@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ResponsiveDialog } from '@/components/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ContactFormValues } from '@/validators/client-validator';
+import { ContactFormValues } from '@/validators/zod-schemas';
 import { Mail, Phone, SquarePen, Tag, Trash2, User } from 'lucide-react';
 import { EditContactForm } from '@/app/(root)/clients/create/_components/contacts/edit-contact-form';
 import { z } from 'zod';
@@ -47,6 +47,7 @@ export function Contact({
         onOpenChange={() => setIsEditOpen(false)}
         title="Editar contacto"
         description='Edite los datos correspondientes al contacto.'
+        className="md:max-w-fit"
       >
         <EditContactForm onClose={() => setIsEditOpen(false)} editContact={editContact} index={index} contactSchema={contactSchema} contact={contact} />
       </ResponsiveDialog>
@@ -67,7 +68,7 @@ export function Contact({
               {contact.name}
             </h2>
             <Badge
-            variant='outline'
+              variant='outline'
               className={statusConfig[contact.status].color}
             >
               {contact.status}
@@ -89,9 +90,9 @@ export function Contact({
           )}
           <div className='flex items-center gap-2'>
             <Tag className="w-4 h-4" />
-            <span className="inline-flex items-center px-2.5 py-0.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold text-xs transition-colors">
+            <Badge variant='outline' className='truncate'>
               {contact.type}
-            </span>
+            </Badge>
           </div>
           <div className="top-2 right-3 z-10 absolute flex justify-between">
             <Button
