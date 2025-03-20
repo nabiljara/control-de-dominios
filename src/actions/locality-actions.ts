@@ -1,12 +1,12 @@
 "use server"
 import db from "@/db";
 import { localities } from "@/db/schema";
-import { desc, eq} from "drizzle-orm";
+import { asc, eq} from "drizzle-orm";
 
 export async function getLocalities() {
   try {
     const data = await db.query.localities.findMany({
-      orderBy: [desc(localities.id)],
+      orderBy: [asc(localities.id)],
     });
     return data;
   }
