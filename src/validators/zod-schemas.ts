@@ -79,9 +79,8 @@ export const clientFormSchema = z.object({
   name: z
     .string()
     .trim()
-    .max(30, { message: "El nombre debe tener como máximo 30 caracteres." })
-    .min(2, { message: "El nombre debe tener al menos 2 caracteres." })
-    .refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
+    .max(40, { message: "El nombre debe tener como máximo 40 caracteres." })
+    .min(2, { message: "El nombre debe tener al menos 2 caracteres." }),
 
   contacts: z.array(contactFormSchema).optional(),
 
@@ -134,18 +133,18 @@ export const domainFormSchema = z.object({
 })
 
 export const clientUpdateFormSchema = clientFormSchema.omit({
-  access:true,
-  contacts:true,
+  access: true,
+  contacts: true,
 }).extend({
   domains: z.array(domainFormSchema.pick({
-    id:true,
+    id: true,
     client: true,
     status: true,
-    name:true,
+    name: true,
     contactId: true,
-    accessId:true,
-    provider:true,
-    expirationDate:true
+    accessId: true,
+    provider: true,
+    expirationDate: true
   })).optional()
 })
 export type ClientUpdateValues = z.infer<typeof clientUpdateFormSchema>
