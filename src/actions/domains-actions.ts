@@ -1,12 +1,12 @@
 "use server"
 import db from "@/db";
-import { clients, contacts, domainAccess, DomainHistory, DomainInsert, domains, DomainWithRelations, ExpiringDomains, providers } from "@/db/schema";
-import { asc, desc, eq, sql, count, lt } from "drizzle-orm";
+import { clients, contacts, domainAccess, DomainHistory, DomainInsert, domains, DomainsByExpiration, DomainWithRelations, ExpiringDomains, providers } from "@/db/schema";
+import { asc, desc, eq, sql, count, lt, and, or } from "drizzle-orm";
 import { setUserId, setUserSystem } from "./user-action/user-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
-import { createNotificationForDomain } from "./notifications-actions";
+import { createNotificationForDomains } from "./notifications-actions";
 import { domainFormSchema, DomainFormValues } from "@/validators/zod-schemas";
 import { format } from "date-fns";
 
@@ -312,44 +312,85 @@ export async function getDomainHistory(history: DomainHistory[]) {
   }
 }
 
-export async function getExpiringDomains() {
-  const today = Date.now();
+export async function getActiveDomainsByExpiration() {
   try {
-    const data = await db.query.domains.findMany({
+    const expiringDomains = await db.query.domains.findMany({
       columns: {
         expirationDate: true,
         id: true,
         clientId: true,
         name: true
       },
-      where:
+      where: and(
         eq(domains.status, 'Activo'),
+        or(
+          eq(domains.expirationDate, sql`CURRENT_DATE`),
+          eq(domains.expirationDate, sql`CURRENT_DATE + INTERVAL '7 days'`),
+          eq(domains.expirationDate, sql`CURRENT_DATE + INTERVAL '30 days'`)
+        )
+      ),
+      orderBy: asc(domains.expirationDate),
       with: {
         client: { columns: { id: true, name: true } },
         contact: { columns: { email: true } },
       }
     });
 
-    const expiringDomains = data.filter((domain) => {
-      const expirationDate = new Date(domain.expirationDate);
-      expirationDate.setHours(0, 0, 0, 0);
-      const diffInMs = expirationDate.getTime() - today.valueOf();
-      const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-      return daysRemaining >= 0;
-    }).sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+    const domainsByExpiration: DomainsByExpiration = {
+      expiringToday: [],
+      expiring7days: [],
+      expiring30days: []
+    };
 
-    const expiredDomains = data.filter((domain) => {
+    expiringDomains.forEach((domain: ExpiringDomains) => {
       const expirationDate = new Date(domain.expirationDate);
       expirationDate.setHours(0, 0, 0, 0);
-      const diffInMs = expirationDate.getTime() - today.valueOf();
+
+      const diffInMs = expirationDate.getTime() - Date.now();
       const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-      return daysRemaining < 0;
+
+      if (daysRemaining === 0) {
+        domainsByExpiration.expiringToday.push(domain);
+      } else if (daysRemaining === 7) {
+        domainsByExpiration.expiring7days.push(domain);
+      } else if (daysRemaining === 30) {
+        domainsByExpiration.expiring30days.push(domain);
+      }
     });
 
-    return { expiringDomains, expiredDomains };
+    return domainsByExpiration;
+
+  } catch (error) {
+    console.error("Error al obtener los dominios próximos a vencer: ", error);
+    throw error;
   }
-  catch (error) {
-    console.error("Error al obtener los dominios próximos a vencer y vencidos: ", error);
+}
+
+export async function getExpiredActiveDomains() {
+  try {
+
+    const expiredDomains = await db.query.domains.findMany({
+      columns: {
+        expirationDate: true,
+        id: true,
+        clientId: true,
+        name: true
+      },
+      where: and(
+        eq(domains.status, 'Activo'),
+        lt(domains.expirationDate, sql`CURRENT_DATE`)
+      ),
+      orderBy: asc(domains.expirationDate),
+      with: {
+        client: { columns: { id: true, name: true } },
+        contact: { columns: { email: true } },
+      }
+    });
+
+    return expiredDomains;
+
+  } catch (error) {
+    console.error("Error al obtener los dominios activos vencidos:", error);
     throw error;
   }
 }
@@ -438,7 +479,7 @@ export async function updateDomainsState(doms: ExpiringDomains[]) {
         console.error(`Error al modificar el estado del dominio ${dom.name}:`, error);
       }
     }));
-    await createNotificationForDomain(doms, 'Vencido');
+    await createNotificationForDomains(doms, 'Vencido');
     return "Dominios vencidos actualizados correctamente";
   } catch (error) {
     console.error('Error al actualizar el estado de los dominios:', error);

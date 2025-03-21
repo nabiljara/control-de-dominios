@@ -9,18 +9,22 @@ import { formatDate, formatTextDate } from '@/lib/utils';
 import { sendEmailToClient } from "./mail-actions";
 
 
-export async function insertNotification(notification: NotificationInsert, userId: string) {
+export async function insertNotification(notification: NotificationInsert) {
   let success = false;
   try {
     await db.transaction(async (tx) => {
       const response = await tx.insert(notifications).values(notification)
         .returning({ insertedId: notifications.id });
 
-      await tx.insert(usersNotifications).values({
-        userId: userId,
-        notificationId: response[0].insertedId,
-        readed: false
-      });
+      const users = await getUsers();
+
+      for (const user of users) {
+        await tx.insert(usersNotifications).values({
+          userId: user.id,
+          notificationId: response[0].insertedId,
+          readed: false
+        });
+      }
       success = true;
     });
 
@@ -143,7 +147,12 @@ export async function markNotificationsAsRead(userNotifications: UserNotificatio
     userNotifications.map(async (n) => {
       await db.update(usersNotifications)
         .set({ readed: true })
-        .where(eq(usersNotifications.notificationId, n.notificationId));
+        .where(
+          and(
+            eq(usersNotifications.notificationId, n.notificationId),
+            eq(usersNotifications.userId, n.userId)
+          )
+        );
     })
   }
   catch (error) {
@@ -152,13 +161,8 @@ export async function markNotificationsAsRead(userNotifications: UserNotificatio
   }
 };
 
-export async function createNotificationForDomain(doms: ExpiringDomains[], type: NotificationType, message?: string) {
+export async function createNotificationForDomains(doms: ExpiringDomains[], type: NotificationType, message?: string) {
   try {
-    const users = await getUsers();
-    if (!users.length) {
-      console.log("No hay usuarios para notificar.");
-      return;
-    }
     const notifications = doms.flatMap((dom) => {
       let messageComplete = `El dominio ${dom.name} `;
       switch (type) {
@@ -178,28 +182,30 @@ export async function createNotificationForDomain(doms: ExpiringDomains[], type:
           if (!message) throw new Error("Para notificaciones de tipo 'Simple', se debe proporcionar un mensaje.");
           messageComplete = message;
       }
+
       const notification: NotificationInsert = {
         message: messageComplete,
         type,
         domainId: dom.id,
         domainName: dom.name,
       };
-      return users.map(async (user) => {
-        await insertNotification(notification, user.id);
 
-        if (notification.type !== 'Simple' && notification.type !== 'Email no entregado') {
+      const notificationPromise = insertNotification(notification)
 
-          await sendEmailToClient(
-            dom.name,
-            formatDate(dom.expirationDate),
-            notification.type,
-            dom.contact.email,
-            notification.type === 'Vencido' ? 'expired' : notification.type === 'Vence hoy' ? 'today' : 'soon',
-            notification.type === 'Vencido' || notification.type === 'Vence hoy' ? '#FF5B5B' : '#60C9A1'
-          );
-        }
-      });
-    });
+      let emailPromise: Promise<{ success: boolean; }> | null = null;
+      if (notification.type !== 'Simple' && notification.type !== 'Email no entregado') {
+        emailPromise = sendEmailToClient(
+          dom.name,
+          formatDate(dom.expirationDate),
+          notification.type,
+          dom.contact.email,
+          notification.type === 'Vencido' ? 'expired' : notification.type === 'Vence hoy' ? 'today' : 'soon',
+          notification.type === 'Vencido' || notification.type === 'Vence hoy' ? '#FF5B5B' : '#60C9A1'
+        );
+      }
+
+      return emailPromise ? [notificationPromise, emailPromise] : notificationPromise;
+    }).flat();
 
     const returnMessage = {
       'Vence hoy': 'Dominios que vencen hoy.',
@@ -209,11 +215,12 @@ export async function createNotificationForDomain(doms: ExpiringDomains[], type:
       'Email no entregado': 'Mails no entregados',
       'Simple': 'Notificaciones simples'
     };
-    //ejecución en paralelo de todas las notis
+
     await Promise.allSettled(notifications);
+
     return 'Notificaciones creadas correctamente: ' + returnMessage[type];
   } catch (error) {
-    console.error("Error al insertar notificaciones:", error);
+    console.error("Error al insertar notificaciones o enviar emails:", error);
   }
 }
 

@@ -5,7 +5,7 @@ import { ExpiringDomains } from "./expiring-domains";
 import { useEffect, useState } from "react";
 import {
   getDashboardData,
-  getExpiringDomains,
+  getExpiredActiveDomains,
 } from "@/actions/domains-actions";
 import { Skeleton } from "../../ui/skeleton";
 import { DomainWithRelations } from "@/db/schema";
@@ -42,7 +42,7 @@ export function DomainsDashboard() {
     async function getDomainData() {
       try {
         const dashboardData: DashboardData = await getDashboardData();
-        const { expiringDomains } = await getExpiringDomains();
+        const expiringDomains  = await getExpiredActiveDomains();
         const formattedData = dashboardData.registeredPerMonth
           .map((item) => ({
             month: new Date(item.month as string),
