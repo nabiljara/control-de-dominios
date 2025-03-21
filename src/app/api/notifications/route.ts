@@ -27,22 +27,10 @@ export async function POST(req: NextRequest) {
         domainId: contact?.id ?? null,
       };
 
-      const users = await getUsers();
-      if (users.length > 0) {
-          await Promise.all(users.map((user) => insertNotification(notification, user.id)));
-          console.log("Notificaciones creadas para todos los usuarios.");
-        }
+      await insertNotification(notification);
 
-      const [emailResult] = await Promise.allSettled([
-        sendEmailBounced(emailTo, contact?.id ?? null),
-      ]);
-      
-      if (emailResult.status === "fulfilled") {
-        console.log("Email enviado con éxito a gerencia");
-      } else {
-        console.error(`Error al enviar email a gerencia por mail no enviado- Motivo: ${emailResult.reason}`);
-      }
-      }
+      await sendEmailBounced(emailTo, contact?.id ?? null)
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error procesando webhook:", error);
