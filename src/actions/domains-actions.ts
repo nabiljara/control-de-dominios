@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { decryptPassword } from "@/actions/accesses-actions";
 import { createNotificationForDomains } from "./notifications-actions";
 import { domainFormSchema, DomainFormValues } from "@/validators/zod-schemas";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 
 export async function getDomains() {
   try {
@@ -138,12 +138,15 @@ export async function updateDomain(domain: DomainFormValues, accessId: number | 
         throw new Error("El ID del dominio no está definido.");
       }
       if (!justUpdateAccess) {
+
+        const normalizedDate = set(parsed.expirationDate, { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 });
+        
         const domainUpdate: DomainInsert = {
           name: parsed.name.toLowerCase(),
           providerId: parseInt(parsed.provider.id),
           clientId: parseInt(parsed.client.id),
           contactId: parseInt(parsed.contactId),
-          expirationDate: format(parsed.expirationDate, "yyyy-MM-dd HH:mm"),
+          expirationDate: format(normalizedDate, "yyyy-MM-dd HH:mm"),
           status: parsed.status,
         }
         await tx.update(domains)
@@ -232,12 +235,14 @@ export async function insertDomain(domain: DomainFormValues, accessId: number | 
       throw new Error("Error de validación del formulario del dominio.");
     }
 
+    const normalizedDate = set(parsed.expirationDate, { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 });
+
     const domainInsert: DomainInsert = {
       name: parsed.name.toLowerCase(),
       providerId: parseInt(parsed.provider.id),
       clientId: parseInt(parsed.client.id),
       contactId: parseInt(parsed.contactId),
-      expirationDate: format(parsed.expirationDate, "yyyy-MM-dd HH:mm"),
+      expirationDate: format(normalizedDate, "yyyy-MM-dd HH:mm"),
       status: parsed.status,
     }
 
