@@ -1,10 +1,9 @@
-"use client";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DomainsDashboard } from "@/components/dashboard/domains/domains-dashboard";
 import { ClientsDashboard } from "@/components/dashboard/clients/clients-dashboard";
 import { ProvidersDashboard } from "@/components/dashboard/providers/providers-dashboard";
 import { LayoutDashboard } from "lucide-react";
+import { Suspense } from "react";
 
 export default function Dashboard() {
   return (
@@ -27,8 +26,11 @@ export default function Dashboard() {
         <TabsContent value="clients" className="space-y-4">
           <ClientsDashboard />
         </TabsContent>
+
         <TabsContent value="providers" className="space-y-4">
-          <ProvidersDashboard />
+          <Suspense fallback={<p>Cargando contenido proveedores...</p>}>
+            <ProvidersDashboard />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

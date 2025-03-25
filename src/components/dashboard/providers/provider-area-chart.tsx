@@ -12,14 +12,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Loader2 } from "lucide-react";
 
 interface ProviderAreaChartProps {
   data: Record<string, string | number>[];
-  loading: boolean;
 }
 
-export function ProviderAreaChart({ data, loading }: ProviderAreaChartProps) {
+export function ProviderAreaChart({ data }: ProviderAreaChartProps) {
   const allProviders = new Set<string>();
   data.forEach((entry) => {
     Object.keys(entry).forEach((key) => {
@@ -39,48 +37,42 @@ export function ProviderAreaChart({ data, loading }: ProviderAreaChartProps) {
   );
   return (
     <div className="relative h-[375px] w-full">
-      {loading ? (
-        <div className="flex h-full items-center justify-center">
-          <Loader2 className="animate-spin text-gray-500" size={48} />
-        </div>
-      ) : (
-        <ChartContainer config={chartConfig} className="h-full w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={data}
-              margin={{
-                top: 10,
-                right: 10,
-                left: 20,
-                bottom: 0,
-              }}
-            >
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
+      <ChartContainer config={chartConfig} className="h-full w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart
+            data={data}
+            margin={{
+              top: 10,
+              right: 10,
+              left: 20,
+              bottom: 0,
+            }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="dot" />}
+            />
+            {Object.keys(chartConfig).map((provider, index) => (
+              <Area
+                key={provider}
+                dataKey={provider}
+                type="natural"
+                fill={chartConfig[provider].color}
+                fillOpacity={0.4}
+                stroke={chartConfig[provider].color}
+                stackId={`stack-${index}`}
               />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              {Object.keys(chartConfig).map((provider, index) => (
-                <Area
-                  key={provider}
-                  dataKey={provider}
-                  type="natural"
-                  fill={chartConfig[provider].color}
-                  fillOpacity={0.4}
-                  stroke={chartConfig[provider].color}
-                  stackId={`stack-${index}`}
-                />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      )}
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 }

@@ -165,18 +165,23 @@ export async function createNotificationForDomains(doms: ExpiringDomains[], type
   try {
     const notifications = doms.flatMap((dom) => {
       let messageComplete = `El dominio ${dom.name} `;
+      let subjectComplete = `🔔¡Tu dominio ${dom.name} `;
       switch (type) {
         case 'Vence hoy':
           messageComplete += `vence hoy ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
+          subjectComplete += 'vence hoy!'
           break;
         case 'Vence en una semana':
           messageComplete += `vencerá en una semana el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+          subjectComplete += 'vence pronto!'
           break;
         case 'Vence en un mes':
           messageComplete += `vencerá en un mes el ${formatTextDate(dom.expirationDate)}. Considera renovarlo pronto.`;
+          subjectComplete += 'vence pronto!'
           break;
         case 'Vencido':
           messageComplete += `venció el ${formatTextDate(dom.expirationDate)}. Renuévalo ahora para evitar perderlo.`;
+          subjectComplete = `🚨¡Tu dominio ${dom.name} expiró!`
           break;
         case 'Simple':
           if (!message) throw new Error("Para notificaciones de tipo 'Simple', se debe proporcionar un mensaje.");
@@ -195,6 +200,7 @@ export async function createNotificationForDomains(doms: ExpiringDomains[], type
       let emailPromise: Promise<{ success: boolean; }> | null = null;
       if (notification.type !== 'Simple' && notification.type !== 'Email no entregado') {
         emailPromise = sendEmailToClient(
+          subjectComplete,
           dom.name,
           formatDate(dom.expirationDate),
           notification.type,

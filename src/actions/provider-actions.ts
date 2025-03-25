@@ -190,6 +190,49 @@ export async function getDashboardData(){
     throw error;
   }
 }
+export async function getDomainsPerProv(){
+  try{
+    const result = await db.select({
+        providerId: providers.id,
+        providerName: providers.name,
+        domainCount: sql<number>`COUNT(domain_history.id)`.as("domainCount"),
+      })
+        .from(providers)
+        .leftJoin(domainHistory, and(
+          eq(domainHistory.entity, "Proveedores"),
+          eq(domainHistory.entityId, providers.id),
+          eq(domainHistory.active, true)
+        ))
+        .groupBy(providers.id)
+
+    const colors = ["#1E6A4F"
+      ,"#23815E"
+      ,"#27986E"
+      ,"#2CAF7E"
+      ,"#30C68E"
+      ,"#38BC89"
+      ,"#4FCAA0"
+      ,"#66D7B7"
+      ,"#7DE4CE"
+      ,"#94F1E5"
+      ,"#0E4B3A"
+      ,"#125749"
+      ,"#166358"
+      ,"#1A6F67"
+      ,"#1E7B76"];
+    const formattedChartData = result.map((provider, index) => ({
+      proveedor: provider.providerName,
+      dominios: provider.domainCount,
+      fill: colors[index % colors.length], 
+    }));
+
+    return formattedChartData;
+  }catch (error) {
+    console.error("Error al obtener los datos de proveedores:", error);
+    throw error;
+  }
+}
+
 
 export async function getDomainsByProviderAndMonth(){
   try{
@@ -242,6 +285,7 @@ export async function getDomainsByProviderAndMonth(){
 
     return Object.values(transformedData);
   }catch(error){
-    console.log("Error al obtener los dominios por proveedor y mes: ",error)
+    console.error("Error al obtener los dominios por proveedor y mes: ", error);
+    return [];
   }
 }

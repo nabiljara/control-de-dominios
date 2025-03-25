@@ -244,8 +244,6 @@ export async function getDashboardData() {
   try {
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
-    const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString();
-    const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).toISOString();
 
     // TODO: VER BIEN COMO TOMAR EL PORCENTAJE DE RETENCIÓN(SI ES QUE QUEDA)
     //  
@@ -255,43 +253,47 @@ export async function getDashboardData() {
       // [1]
       db.select({ count: count() }).from(clients).where(eq(clients.status, "Activo")),
       // [2]
-      db.select({ count: count() }).from(clients)
-        .where(gte(clients.createdAt, firstDayOfMonth)),
+      db.select({ count: count() }).from(clients).where(eq(clients.status, "Suspendido")),
       // [3]
       db.select({ count: count() }).from(clients)
-        .where(and(eq(clients.status, "Activo"), lt(clients.createdAt, firstDayOfMonth))),
+        .where(gte(clients.createdAt, firstDayOfMonth)),
       // [4]
-      db.select({
+      db.select({ count: count() }).from(clients)
+        .where(and(eq(clients.status, "Activo"), lt(clients.createdAt, firstDayOfMonth))),
+    ]);
+    const totalClients = result[0][0]?.count ?? 0;
+    const totalActive = result[1][0]?.count ?? 0;
+    const totalSuspended = result[2][0]?.count ?? 0;
+    const newClientsThisMonth = result[3][0]?.count ?? 0;
+
+    return {
+      total: totalClients,
+      suspended: totalSuspended,
+      active: totalActive,
+      newClientsThisMonth,
+    };
+  }
+  catch (error) {
+    console.error("Error al obtener información de los clientes:", error);
+    throw error;
+  }
+}
+
+export async function getLastCreatedClients() {
+  try {
+
+    const latestCreated = await db.select({
         month: sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`.as("month"),
         count: count(),
       })
         .from(clients)
         .groupBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`)
-        .orderBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP)) DESC`),
-    ]);
-    const totalClients = result[0][0]?.count ?? 0;
-    const totalActive = result[1][0]?.count ?? 0;
-    const newClientsThisMonth = result[2][0]?.count ?? 0;
-    const activeClientsLastMonth = result[3][0]?.count ?? 0;
-    const registeredPerMonth = result[4] ?? [];
+        .orderBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP)) DESC`);
 
-    //variación
-    let variationPercentage = 0;
-    if (activeClientsLastMonth > 0) {
-      variationPercentage = ((totalActive - activeClientsLastMonth) / activeClientsLastMonth) * 100;
-    }
-    variationPercentage = Math.round(variationPercentage * 100) / 100;
+    return latestCreated;
 
-    return {
-      total: totalClients,
-      active: totalActive,
-      newClientsThisMonth,
-      registeredPerMonth,
-      variationPercentage,
-    };
-  }
-  catch (error) {
-    console.error("Error al obtener información de los clientes:", error);
+  } catch (error) {
+    console.error("Error al obtener los dominios activos vencidos:", error);
     throw error;
   }
 }
@@ -309,7 +311,7 @@ export async function getLatestClients() {
       leftJoin(domainHistory, and(eq(domainHistory.entity, "Clientes"),
         eq(domainHistory.entityId, clients.id),
         eq(domainHistory.active, true))).
-      groupBy(clients.id).orderBy(asc(clients.createdAt));
+      groupBy(clients.id).orderBy(desc(clients.createdAt)).limit(6);
     return data;
   }
   catch (error) {

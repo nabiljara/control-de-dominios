@@ -8,6 +8,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendEmailToClient = async (
+  subject:string,
   domain: string,
   expirationDate: string,
   type: NotificationType,
@@ -17,9 +18,9 @@ export const sendEmailToClient = async (
 ) => {
   try {
     const data = await resend.emails.send({
-      from: 'Soporte Kernel <soporte@kerneltech.dev>',
+      from: 'Kernel <no-reply@kerneltech.dev>',
       to: [email],
-      subject: 'Vencimiento de dominio.',
+      subject: subject,
       react: ClientEmail({
         domain,
         expirationDate,

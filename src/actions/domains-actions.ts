@@ -394,6 +394,32 @@ export async function getExpiredActiveDomains() {
     throw error;
   }
 }
+export async function getLastExpiringDomains() {
+  try {
+
+    const expiringDomains = await db.query.domains.findMany({
+      columns: {
+        expirationDate: true,
+        id: true,
+        name: true
+      },
+      where: and(
+        eq(domains.status, 'Activo'),
+      ),
+      orderBy: asc(domains.expirationDate), 
+      limit: 6,
+      with: {
+        client: true
+      }
+    });
+
+    return expiringDomains;
+
+  } catch (error) {
+    console.error("Error al obtener los dominios activos vencidos:", error);
+    throw error;
+  }
+}
 
 export async function getDashboardData() {
   try {
@@ -413,19 +439,35 @@ export async function getDashboardData() {
     const totalActive = result[1][0]?.count ?? 0;
     const totalExpired = result[2][0]?.count ?? 0;
     const registeredPerMonth = result[3] ?? [];
-
     //crecimiento
+    
     let growthPercentage = 0;
     if (registeredPerMonth.length > 1) {
-      const lastMonth = registeredPerMonth[0]?.count ?? 0;
-      const previousMonth = registeredPerMonth[1]?.count ?? 1;
-      growthPercentage = ((lastMonth - previousMonth) / previousMonth) * 100;
-    }
+      const prevMonthStr =  registeredPerMonth[1]?.month;
+      const currentMonthStr = registeredPerMonth[0]?.month;
+
+      if (typeof prevMonthStr === "string" && typeof currentMonthStr === "string") {
+        const prevMonth = new Date(prevMonthStr);
+        const currentMonth = new Date(currentMonthStr);
+
+        const isConsecutive =
+        currentMonth.getFullYear() === prevMonth.getFullYear()
+        ? currentMonth.getMonth() - prevMonth.getMonth() === 1
+        : currentMonth.getMonth() === 0 && prevMonth.getMonth() === 11;
+        
+        if (isConsecutive) {
+            const lastMonthCount = registeredPerMonth[0]?.count ?? 0;
+            const previousMonthCount = registeredPerMonth[1]?.count ?? 1;
+            growthPercentage = ((lastMonthCount - previousMonthCount) / previousMonthCount) * 100;
+        } else {
+            growthPercentage = 0;
+          }
+      }
+  }
     return {
       total: totalDomains,
       active: totalActive,
       expired: totalExpired,
-      registeredPerMonth,
       growthPercentage: Math.round(growthPercentage * 100) / 100,
     };
   }
@@ -434,7 +476,21 @@ export async function getDashboardData() {
     throw error;
   }
 }
-
+export async function getRegisteredPerMonthData() {
+  try {
+    const registeredPerMonth = await db.select({
+      month: sql`DATE_TRUNC('month', CAST(${domains.createdAt} AS TIMESTAMP))`.as("month"),
+      count: count(),
+    })
+      .from(domains)
+      .groupBy(sql`DATE_TRUNC('month', CAST(${domains.createdAt} AS TIMESTAMP))`)
+      .orderBy(sql`DATE_TRUNC('month', CAST(${domains.createdAt} AS TIMESTAMP)) DESC`);
+    return registeredPerMonth;
+  } catch (error) {
+    console.error("Error al obtener dominios registrados por mes:", error);
+    throw error;
+  }
+}
 /**
  * Validates a domain name against the system's criteria and checks if it is already registered.
  *
