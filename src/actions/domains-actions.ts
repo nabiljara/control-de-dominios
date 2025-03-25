@@ -431,7 +431,7 @@ export async function getDashboardData() {
     const result = await Promise.all([
       db.select({ count: count() }).from(domains),
       db.select({ count: count() }).from(domains).where(eq(domains.status, "Activo")),
-      db.select({ count: count() }).from(domains).where(lt(domains.expirationDate, new Date().toISOString())),
+      db.select({ count: count() }).from(domains).where(eq(domains.status, "Vencido")),
       db.select({
         month: sql`DATE_TRUNC('month', CAST(${domains.createdAt} AS TIMESTAMP))`.as("month"),
         count: count(),
