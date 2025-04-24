@@ -47,7 +47,7 @@ export async function CardWrapper() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
           <CardTitle className="text-base font-medium leading-[18px]">
-            Crecimiento Mensual
+            Balance Mensual
           </CardTitle>
           <TrendingUp className="h-6 w-6 text-muted-foreground" />
         </CardHeader>
