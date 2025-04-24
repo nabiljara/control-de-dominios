@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, ArrowRight, Globe, Calendar, Box, User, Contact2, KeySquare, Loader2 } from "lucide-react"
+import { CheckCircle, ArrowRight, Globe, Calendar, Box, User, Contact2, KeySquare, Loader2, StickyNote } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DomainFormValues } from "@/validators/zod-schemas"
 import { UseFormReturn } from "react-hook-form"
@@ -35,7 +35,7 @@ export function EditDomainConfirmationModal({
   setIsEditConfirmationModalOpen: React.Dispatch<React.SetStateAction<boolean>>
 
 }) {
-  const { name, provider, expirationDate, status, client } = form.getValues()
+  const { name, provider, expirationDate, status, client, notes } = form.getValues()
   const nameState = form.getFieldState("name")
   const providerState = form.getFieldState("provider.id")
   const clientState = form.getFieldState("client.id")
@@ -43,6 +43,8 @@ export function EditDomainConfirmationModal({
   const contactState = form.getFieldState("contactId")
   const expirationDateState = form.getFieldState("expirationDate")
   const statusState = form.getFieldState("status")
+  const notesState = form.getFieldState("notes")
+
 
 
   const renderField = (
@@ -175,6 +177,13 @@ export function EditDomainConfirmationModal({
               }
             </div>
           </div>
+        )}
+        {renderField(
+          <StickyNote className="w-4 h-4 text-primary" />,
+          "Notas",
+          oldDomain?.notes ?? undefined,
+          notes ?? 'Sin notas',
+          notesState.isDirty
         )}
         <div className='flex gap-2'>
           <Button

@@ -14,7 +14,6 @@ export const LeavingDialog = ({ isOpen, yesCallback, noCallback }: LeavingDialog
       onOpenChange={() => noCallback()}
       title="La información ingresada se perderá"
       description="¿Está seguro que quiere dejar está página?"
-      className="md:max-w-fit"
     >
       <div className='flex flex-row justify-end items-center gap-2'>
         <Button onClick={() => noCallback()}>Cancelar</Button>

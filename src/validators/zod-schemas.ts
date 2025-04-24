@@ -22,7 +22,7 @@ export const contactFormSchema = z.object({
   name: z
     .string()
     .trim()
-    .max(30, { message: "El nombre debe tener como máximo 30 caracteres." })
+    .max(60, { message: "El nombre debe tener como máximo 60 caracteres." })
     .min(2, { message: "El nombre es obligatorio y debe contener al menos 2 caracteres." })
     .refine((value) => nameRegex.test(value), { message: "El nombre solo puede contener letras." }),
 
@@ -66,7 +66,7 @@ export const accessFormSchema = z.object({
   notes: z
     .string()
     .trim()
-    .max(100, { message: "Máximo 100 caracteres" })
+    .max(300, { message: "Máximo 300 caracteres." })
     .optional(),
   client: z.object({
     id: z.string().optional(),
@@ -100,11 +100,19 @@ export const clientFormSchema = z.object({
 export const domainFormSchema = z.object({
   id: z.number().optional(),
 
-  name: z.
-    string()
-    .trim()
+  name: z.preprocess((input) => {
+    if (typeof input === "string") {
+      const trimmed = input.trim();
+      if (!/^https?:\/\//i.test(trimmed)) {
+        return `https://${trimmed}`;
+      }
+      return trimmed;
+    }
+    return input;
+  }, z.string()
     .url('Nombre de dominio inválido.')
-    .max(60, { message: "Máximo 60 caracteres" }),
+    .max(100, { message: "Máximo 100 caracteres" })
+  ),
 
   provider: z.object({
     id: z.string({ message: "El proveedor es requerido." }),
@@ -122,7 +130,11 @@ export const domainFormSchema = z.object({
   expirationDate: z.date({ message: 'La fecha de vencimiento es requerida.' }),
 
   status: z.enum(domainStatus, { message: "El estado del dominio es requerido." }),
-
+  notes: z
+  .string()
+  .trim()
+  .max(1000, { message: "Máximo 1000 caracteres." })
+  .optional(),
   contactId: z.string({ message: 'El contacto es requerido.' }),
   contact: contactFormSchema.optional(),
   isClientContact: z.boolean().optional(),

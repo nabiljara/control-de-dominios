@@ -4,7 +4,7 @@ import { useState, useEffect, Dispatch, SetStateAction } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { addDays, addYears } from "date-fns"
+import { addDays, addYears, format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -43,6 +43,7 @@ import {
   Plus,
   ChevronsUpDown,
   Check,
+  CalendarIcon,
 } from "lucide-react"
 import {
   Command,
@@ -88,6 +89,7 @@ import { DropdownNavProps, DropdownProps } from "react-day-picker";
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { domainStatus, statusConfig } from "@/constants"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function CreateDomainForm({
   providers,
@@ -271,6 +273,7 @@ export default function CreateDomainForm({
       client: { id: domain?.client.id.toString(), name: domain?.client.name },
       contactId: domain?.contactId.toString(),
       accessId: domain?.accessData?.access.id,
+      notes: domain?.notes ?? undefined,
       isClientContact: diffFromUndefinedContact && domain?.contact.clientId === domain?.clientId && domain?.clientId !== 1, // Es contacto del cliente pero diferente de Kernel para no repetir IsKernelContact
       isKernelContact: diffFromUndefinedContact && domain?.contact.clientId === 1,
       isIndividualContact: diffFromUndefinedContact && domain?.contact.clientId !== domain?.clientId && domain?.contact.clientId !== 1,
@@ -287,6 +290,7 @@ export default function CreateDomainForm({
 
   const clientId = parseInt(form.getValues("client").id)
   const providerId = parseInt(form.getValues("provider").id)
+  const [inputExpirationValue, setInputExpirationValue] = useState(form.getValues('expirationDate') ? form.getValues('expirationDate').toISOString().split("T")[0] : '');
 
   // useEffect para buscar contactos de los clientes
 
@@ -371,6 +375,23 @@ export default function CreateDomainForm({
     _e(_event);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputExpirationValue(value);
+
+    if (value) {
+      const [year, month, day] = value.split('-').map(Number);
+      if (year >= 1900 && year <= 2100) {
+        const localDate = new Date(year, month - 1, day);
+        if (!isNaN(localDate.getTime())) {
+          form.setValue('expirationDate', localDate);
+        }
+      }
+    } else {
+
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -403,7 +424,7 @@ export default function CreateDomainForm({
                     <FormControl>
                       <Input
                         placeholder="Ingrese el nombre del dominio"
-                        autoComplete="name"
+                        autoComplete="off"
                         {...field}
                         onKeyDown={(
                           e: React.KeyboardEvent<HTMLInputElement>
@@ -589,90 +610,133 @@ export default function CreateDomainForm({
                   </FormItem>
                 )}
               />
+
+              {/* FECHA DE VENCIMIENTO */}
+
+
+              <FormField
+                control={form.control}
+                name="expirationDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex-grow">
+                      Fecha de Vencimiento{" "}
+                      <span className="text-red-500">*</span>
+                    </FormLabel>
+
+                    <div className="flex flex-col gap-2">
+                      <div className="relative max-w-[270px]">
+                        <Input
+                          type="date"
+                          value={inputExpirationValue}
+                          onChange={handleInputChange}
+                          className="peer [&::-webkit-calendar-picker-indicator]:hidden ps-9 w-full appearance-none [&::-webkit-calendar-picker-indicator]:appearance-none"
+                          aria-label="Select date"
+                        />
+                        <div className="absolute inset-y-0 flex justify-center items-center peer-disabled:opacity-50 ps-3 text-muted-foreground/80 pointer-events-none start-0">
+                          <CalendarIcon size={16} aria-hidden="true" />
+                        </div>
+                      </div>
+
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          if (date instanceof Date && !isNaN(date.getTime())) {
+                            setInputExpirationValue(format(date, "yyyy-MM-dd"));
+                          }
+                        }}
+                        onMonthChange={(date) => {
+                          field.onChange(date);
+                          if (date instanceof Date && !isNaN(date.getTime())) {
+                            setInputExpirationValue(format(date, "yyyy-MM-dd"));
+                          }
+                        }}
+                        month={field.value || addDays(new Date(), 1)}
+                        className="p-2 border rounded-sm"
+                        locale={es}
+                        classNames={{
+                          month_caption: "mx-0",
+                        }}
+                        captionLayout="dropdown"
+                        defaultMonth={field.value || addDays(new Date(), 1)}
+                        // startMonth={new Date()}
+                        endMonth={addYears(new Date(), 10)}
+                        hideNavigation
+                        components={{
+                          DropdownNav: (props: DropdownNavProps) => {
+                            return <div className="flex items-center gap-2 w-full">{props.children}</div>;
+                          },
+                          Dropdown: (props: DropdownProps) => {
+                            return (
+                              <Select
+                                value={String(props.value)}
+                                onValueChange={(value) => {
+                                  if (props.onChange) {
+                                    handleCalendarChange(value, props.onChange);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="w-fit h-8 font-medium first:grow">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
+                                  {props.options?.map((option) => (
+                                    <SelectItem
+                                      key={option.value}
+                                      value={String(option.value)}
+                                      disabled={option.disabled}
+                                      className="hover:bg-muted cursor-pointer"
+                                    >
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            );
+                          },
+                        }}
+                      />
+                      {
+                        domain && <Button
+                          variant="outline"
+                          size="sm"
+                          className="max-w-[270px]"
+                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            field.onChange(addYears(field.value || new Date(), 1));
+                            setInputExpirationValue(format(addYears(field.value || new Date(), 1), "yyyy-MM-dd"));
+                          }}
+                        >
+                          Próximo año
+                        </Button>
+                      }
+                    </div>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notas</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        className='h-[92%] resize-none' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            {/* FECHA DE VENCIMIENTO */}
-
-            <FormField
-              control={form.control}
-              name="expirationDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>
-                    Fecha de Vencimiento{" "}
-                    <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    onMonthChange={field.onChange}
-                    month={field.value || addDays(new Date(), 1)}
-                    className="p-2 border rounded-sm"
-                    locale={es}
-                    classNames={{
-                      month_caption: "mx-0",
-                    }}
-                    disabled={[
-                      { before: new Date() },
-                    ]}
-                    captionLayout="dropdown"
-                    defaultMonth={field.value || addDays(new Date(), 1)}
-                    startMonth={new Date()}
-                    endMonth={addYears(new Date(), 10)}
-                    hideNavigation
-                    components={{
-                      DropdownNav: (props: DropdownNavProps) => {
-                        return <div className="flex items-center gap-2 w-full">{props.children}</div>;
-                      },
-                      Dropdown: (props: DropdownProps) => {
-                        return (
-                          <Select
-                            value={String(props.value)}
-                            onValueChange={(value) => {
-                              if (props.onChange) {
-                                handleCalendarChange(value, props.onChange);
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="w-fit h-8 font-medium first:grow">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
-                              {props.options?.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={String(option.value)}
-                                  disabled={option.disabled}
-                                  className="hover:bg-muted cursor-pointer"
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        );
-                      },
-                    }}
-                  />
-                  {
-                    domain && <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-min"
-                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        field.onChange(addYears(field.value || new Date(), 1));
-                      }}
-                    >
-                      Próximo año
-                    </Button>
-                  }
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* CONTACTO DEL CLIENTE */}
 
@@ -1157,6 +1221,6 @@ export default function CreateDomainForm({
         />
       </ResponsiveDialog>
       <PreventNavigation isDirty={isDirty} backHref={'/domains'} resetData={form.reset} />
-    </Card>
+    </Card >
   )
 }

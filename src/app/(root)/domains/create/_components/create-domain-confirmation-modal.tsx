@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { CheckCircle, Globe, CalendarArrowDown, Handshake, Loader2 } from "lucide-react"
+import { CheckCircle, Globe, CalendarArrowDown, Handshake, Loader2, StickyNote } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { DomainFormValues } from "@/validators/zod-schemas";
 import { UseFormReturn } from "react-hook-form";
@@ -45,7 +45,7 @@ export function CreateDomainConfirmationModal(
                   <CalendarArrowDown className="w-4 h-4 shrink-0" />
                   <p className='flex gap-2 truncate'>
                     <span className="font-medium">Fecha de vencimiento:</span>
-                    {format(form.getValues('expirationDate'), "dd/MM/yyyy HH:mm")}
+                    {format(form.getValues('expirationDate'), "dd/MM/yyyy")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -63,6 +63,16 @@ export function CreateDomainConfirmationModal(
                   <span className="font-medium">Cliente:</span>
                   {form.getValues('client.name')}
                 </div>
+                {form.getValues('notes') && (
+                  <div className="flex items-start gap-2">
+                    <div className='flex items-center gap-2'>
+                    <StickyNote className="w-4 h-4 shrink-0" />
+                    <span className="font-medium">Notas:</span>
+                    </div>
+                    {form.getValues('notes')}
+                  </div>
+
+                )}
               </div>
             </CardContent>
           </Card>

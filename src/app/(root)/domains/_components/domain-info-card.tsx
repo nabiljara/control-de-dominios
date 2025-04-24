@@ -11,16 +11,16 @@ import {
   ExternalLink,
   ExternalLinkIcon,
   Eye,
-  FileText,
   Handshake,
   History,
   KeySquare,
   Mail,
   Phone,
+  StickyNote,
   Tag,
   User
 } from "lucide-react";
-import { formatDate } from "@/lib/utils"
+import { cn, formatDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
@@ -45,11 +45,12 @@ interface SectionProps {
   icon: React.ReactNode
   children: React.ReactNode
   href?: string
+  className?: string
 }
 
-function Section({ title, icon, children, href }: SectionProps) {
+function Section({ title, icon, children, href, className }: SectionProps) {
   return (
-    <Card className="flex-1">
+    <Card className={cn("flex-1", className)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           {icon}
@@ -97,7 +98,7 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
       </CardHeader>
       <CardContent>
         <Separator className="my-6" />
-        <div className={`gap-4 grid grid-cols-1 lg:${domain.accessData ? 'grid-cols-2' : 'grid-cols-1'} xl:${domain.accessData ? 'grid-cols-2' : 'grid-cols-3'} mb-6`}>
+        <div className={`gap-4 grid grid-cols-1 lg:${domain.accessData || domain.notes ? 'grid-cols-2' : 'grid-cols-1'} xl:${domain.accessData || domain.notes ? 'grid-cols-2' : 'grid-cols-3'} mb-6`}>
           <Section title="Cliente" icon={<Handshake />} href={`/clients/${domain.clientId}`}>
             <div className="flex flex-col space-y-2">
               <p className="font-medium truncate">{domain.client.name}</p>
@@ -163,15 +164,20 @@ export default function DomainInfoCard({ domain, domainHistory }: DomainInfoCard
                   <PasswordCell password={domain.accessData.access.password} />
                 </div>
                 {domain.accessData.access.notes &&
-                  <p className="flex items-center">
-                    <FileText className="mr-2 shrink-0" />
-                    <span>Notas: {domain.accessData.access.notes}</span>
+                  <p className="flex items-start">
+                    <StickyNote className="mr-2 shrink-0" />
+                    <span className="font-medium text-muted-foreground">{domain.accessData.access.notes}</span>
                   </p>
                 }
               </div>
             </Section>
           )
           }
+
+          {domain.notes &&
+            <Section title="Notas" icon={<StickyNote />} className={cn(domain.accessData ? 'col-span-2' : 'col-span-1')}>
+              <p className="font-medium text-muted-foreground text-start">{domain.notes}</p>
+            </Section>}
         </div>
 
         <Separator className="my-6" />

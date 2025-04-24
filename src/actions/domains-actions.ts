@@ -146,6 +146,7 @@ export async function updateDomain(domain: DomainFormValues, accessId: number | 
           providerId: parseInt(parsed.provider.id),
           clientId: parseInt(parsed.client.id),
           contactId: parseInt(parsed.contactId),
+          notes: parsed.notes ?? null,
           expirationDate: format(normalizedDate, "yyyy-MM-dd HH:mm"),
           status: parsed.status,
         }
@@ -242,6 +243,7 @@ export async function insertDomain(domain: DomainFormValues, accessId: number | 
       providerId: parseInt(parsed.provider.id),
       clientId: parseInt(parsed.client.id),
       contactId: parseInt(parsed.contactId),
+      notes: parsed.notes ?? null,
       expirationDate: format(normalizedDate, "yyyy-MM-dd HH:mm"),
       status: parsed.status,
     }

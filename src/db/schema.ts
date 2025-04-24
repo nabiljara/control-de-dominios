@@ -132,6 +132,7 @@ export const domains = pgTable("domains", {
   name: varchar("name", { length: 255 }).notNull().unique(),
   expirationDate: timestamp("expiration_date", { mode: "string" }).notNull(),
   status: domainStatusEnum("status").notNull().default("Activo"),
+  notes: text("notes"),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow()
 })
