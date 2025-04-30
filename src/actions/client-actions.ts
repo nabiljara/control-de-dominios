@@ -326,7 +326,7 @@ export async function getLatestClients() {
 async function validateClientName(name: string) {
   try {
     const response = await db.query.clients.findFirst({
-      where: eq(clients.name, name)
+      where: eq(clients.name, name.toUpperCase()),
     });
     return response ? false : true;
   } catch (error) {
