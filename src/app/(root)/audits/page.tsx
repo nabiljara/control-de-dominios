@@ -7,6 +7,11 @@ import { Audit } from "@/db/schema"
 import { getUsers } from "@/actions/user-action/user-actions"
 import HeaderPage from "@/components/header-page"
 import { BookOpen } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "SICOM - Auditorías",
+}
 
 export default async function ProvidersPage() {
   let audits: Audit[] = []

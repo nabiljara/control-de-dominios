@@ -7,7 +7,7 @@ import { Box } from "lucide-react";
 import HeaderPage from "@/components/header-page";
 
 export const metadata: Metadata = {
-  title: "Proveedores",
+  title: "SICOM - Proveedores",
 };
 
 export default async function ProvidersPage() {

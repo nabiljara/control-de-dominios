@@ -9,7 +9,7 @@ import { Client, Contact } from "@/db/schema"
 import HeaderPage from "@/components/header-page"
 
 export const metadata: Metadata = {
-  title: "Contactos"
+  title: "SICOM - Contactos",
 }
 
 export default async function ContactPage() {

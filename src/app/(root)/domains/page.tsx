@@ -11,7 +11,7 @@ import { getClients } from "@/actions/client-actions"
 import HeaderPage from "@/components/header-page"
 
 export const metadata: Metadata = {
-  title: "Dominios",
+  title: "SICOM - Dominios",
 }
 
 export default async function DomainPage() {

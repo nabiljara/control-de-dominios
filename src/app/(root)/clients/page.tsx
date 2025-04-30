@@ -10,7 +10,7 @@ import { Client } from "@/db/schema"
 import HeaderPage from "@/components/header-page"
 
 export const metadata: Metadata = {
-  title: "Clientes",
+  title: "SICOM - Clientes",
 }
 
 export default async function ClientsPage() {
