@@ -36,7 +36,7 @@ import {
 import { ResponsiveDialog } from "@/components/responsive-dialog"
 import { EditClientConfirmationModal } from "./edit-client-confirmation-modal"
 import { toast } from "sonner"
-import { updateClient, updateClientAndDomains } from "@/actions/client-actions"
+import { updateClient, updateClientAndDomains, validateClient } from "@/actions/client-actions"
 import { clientSizes, clientStatus, sizeConfig, statusConfig } from "@/constants"
 
 interface EditableClientCardProps {
@@ -83,8 +83,32 @@ export function EditableClientCard({
     mode: 'onSubmit'
   })
 
-  const onSubmit: SubmitHandler<ClientUpdateValues> = () => {
-    setIsEditConfirmationModalOpen(true)
+  const onSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsSubmitting(true)
+      const isValid = await form.trigger() //ejecuto validación manual
+      const errorList = await validateClient(form.getValues('name'), client.name) // valido el nombre del cliente en la base de datos manualmente
+      if (isValid) {
+
+        if (errorList.length > 0) {
+          errorList.forEach((error) => {
+            form.setError(error.field, {
+              type: "manual",
+              message: error.message,
+            });
+            toast.warning(error.message)
+          });
+        } else {
+          setIsEditConfirmationModalOpen(true)
+        }
+      }
+      setIsSubmitting(false)
+    } catch (error) {
+      toast.error('No se pudo validar el cliente correctamente.')
+      console.log(error);
+    }
   }
 
   const validateDomains = () => {
@@ -177,7 +201,7 @@ export function EditableClientCard({
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={onSubmit}>
           <Card>
             <CardHeader className="flex sm:flex-row flex-col justify-between gap-4 overflow-hidden">
               <div className="flex flex-row items-center gap-2">
@@ -194,7 +218,7 @@ export function EditableClientCard({
                           <Input
                             {...field}
                             placeholder="Ingrese el nombre del cliente"
-                            autoComplete="name"
+                            autoComplete="off"
                             className="h-auto font-bold text-3xl"
                           />
                         </FormControl>

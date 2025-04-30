@@ -238,7 +238,7 @@ export function ContactModal({
                 <FormItem>
                   <FormLabel>Nombre <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="Ingrese el nombre del contacto" autoComplete="name" {...field} />
+                    <Input placeholder="Ingrese el nombre del contacto" autoComplete="off" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -256,7 +256,7 @@ export function ContactModal({
                     <Input
                       type="email"
                       placeholder="Ingrese el email del contacto"
-                      autoComplete="email"
+                      autoComplete="off"
                       {...field} />
                   </FormControl>
                   <FormMessage />
@@ -309,7 +309,7 @@ export function ContactModal({
                         id: 'phone',
                         placeholder:
                           'Escribe tu número',
-                        autoComplete: "phone"
+                        autoComplete: "off"
                       }}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {

@@ -319,3 +319,32 @@ export async function getLatestClients() {
     throw error;
   }
 };
+
+async function validateClientName(name: string) {
+  try {
+    const response = await db.query.clients.findFirst({
+      where: eq(clients.name, name)
+    });
+    return response ? false : true;
+  } catch (error) {
+    console.error("Error al validar el nombre del cliente:", error);
+    throw error;
+  }
+}
+
+export const validateClient = async (clientName: string, oldClientName: string | undefined) => {
+  try {
+    const errorList: { field: "name"; message: string }[] = [];
+    const clientIsValid = await validateClientName(clientName);
+    if (!clientIsValid && clientName !== oldClientName) {
+      errorList.push({
+        field: "name",
+        message: "El nombre del cliente ya está registrado en el sistema.",
+      });
+    }
+    return errorList;
+  } catch (error) {
+    console.error("Error al validar el cliente: ", error)
+    throw error;
+  }
+}

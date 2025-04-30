@@ -530,7 +530,7 @@ async function validateDomainName(name: string) {
     });
     return response ? false : true;
   } catch (error) {
-    console.error("Error al validar el email")
+    console.error("Error al validar el nombre de dominio:", error);
   }
 }
 export async function updateDomainsState(doms: ExpiringDomains[]) {

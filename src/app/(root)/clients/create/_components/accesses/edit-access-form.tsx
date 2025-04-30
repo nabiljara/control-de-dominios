@@ -96,7 +96,7 @@ export function EditAccessForm({
             <FormItem>
               <FormLabel>Nombre de usuario o email <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Ingrese el usuario o email del cliente" autoComplete="email" />
+                <Input {...field} placeholder="Ingrese el usuario o email del cliente" autoComplete="off" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -109,7 +109,7 @@ export function EditAccessForm({
             <FormItem>
               <FormLabel>Contraseña <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <PasswordInput {...field} placeholder="Ingrese la contraseña" autoComplete="new-password" />
+                <PasswordInput {...field} placeholder="Ingrese la contraseña" autoComplete="off" />
               </FormControl>
               <FormMessage />
             </FormItem>

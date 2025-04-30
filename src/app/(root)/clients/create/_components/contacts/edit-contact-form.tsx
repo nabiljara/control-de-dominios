@@ -65,7 +65,7 @@ export function EditContactForm({
             <FormItem>
               <FormLabel>Nombre <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Ingrese el nombre del contacto" autoComplete="name" />
+                <Input {...field} placeholder="Ingrese el nombre del contacto" autoComplete="off" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -78,7 +78,7 @@ export function EditContactForm({
             <FormItem>
               <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input type="email" {...field} placeholder="Ingrese el email del contacto" autoComplete="email" />
+                <Input type="email" {...field} placeholder="Ingrese el email del contacto" autoComplete="off" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -126,7 +126,7 @@ export function EditContactForm({
                     id: 'phone',
                     placeholder:
                       'Escribe tu número',
-                    autoComplete: "phone"
+                    autoComplete: "off"
                   }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') {

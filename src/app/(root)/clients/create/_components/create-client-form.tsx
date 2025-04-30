@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
@@ -38,7 +38,7 @@ import { CreateClientConfirmationModal } from "@/app/(root)/clients/create/_comp
 import { Provider } from "@/db/schema"
 import { Locality } from "@/db/schema"
 import { toast } from "sonner"
-import { createClient } from "@/actions/client-actions"
+import { createClient, validateClient } from "@/actions/client-actions"
 import {
   accessFormSchema,
   AccessFormValues,
@@ -107,8 +107,32 @@ export function CreateClientForm({
       })
   }
 
-  const onSubmit: SubmitHandler<ClientFormValues> = () => {
-    setIsConfirmationModalOpen(true)
+  const onSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsSubmitting(true)
+      const isValid = await form.trigger() //ejecuto validación manual
+      const errorList = await validateClient(form.getValues('name'), undefined) // valido el nombre del cliente en la base de datos manualmente
+      if (isValid) {
+
+        if (errorList.length > 0) {
+          errorList.forEach((error) => {
+            form.setError(error.field, {
+              type: "manual",
+              message: error.message,
+            });
+            toast.warning(error.message)
+          });
+        } else {
+          setIsConfirmationModalOpen(true)
+        }
+      }
+      setIsSubmitting(false)
+    } catch (error) {
+      toast.error('No se pudo validar el cliente correctamente.')
+      console.log(error);
+    }
   }
 
   const removeContact = (index: number) => {
@@ -137,7 +161,7 @@ export function CreateClientForm({
       name: "",
       contacts: [],
       access: [],
-      status:'Activo'
+      status: 'Activo'
     }
   })
 
@@ -185,7 +209,7 @@ export function CreateClientForm({
         </CardHeader>
         <CardContent className="md:flex-row space-y-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={onSubmit} className="space-y-6">
               <div className="flex flex-col gap-6">
                 <div className="flex md:flex-row flex-col gap-6">
                   <FormField
@@ -199,7 +223,7 @@ export function CreateClientForm({
                         <FormControl>
                           <Input
                             placeholder="Ingrese el nombre del cliente"
-                            autoComplete="name"
+                            autoComplete="off"
                             {...field}
                             autoFocus
                           />

@@ -115,7 +115,7 @@ export default function EditableProviderCard({
                     <FormItem>
                       {isEditing ? (
                         <FormControl>
-                          <Input {...field} placeholder="Ingrese el nombre del proveedor" autoComplete="name" className="h-auto font-bold text-3xl" />
+                          <Input {...field} placeholder="Ingrese el nombre del proveedor" autoComplete="off" className="h-auto font-bold text-3xl" />
                         </FormControl>
                       ) : (
                         <CardTitle className="font-bold text-3xl">{provider.name}</CardTitle>
@@ -147,7 +147,7 @@ export default function EditableProviderCard({
                           <div className="flex flex-col items-center gap-3 w-full">
                             <div className="flex items-center w-full">
                               <ExternalLink className="mr-2 text-blue-500" />
-                              <Input {...field} placeholder="Ingrese el nombre del proveedor" autoComplete="name" className="text-blue-500" />
+                              <Input {...field} placeholder="Ingrese el nombre del proveedor" autoComplete="off" className="text-blue-500" />
                             </div>
                             <FormMessage />
                           </div>
