@@ -179,10 +179,8 @@ export default function CreateDomainForm({
       e.stopPropagation();
       setIsSubmitting(true)
       const isValid = await form.trigger() //ejecuto validación manual
-      const errorList = domain ? await validateDomain(form.getValues('name'), domain.name) : await validateDomain(form.getValues('name'), undefined); // valido el dominio en la base de datos manualmente
-
       if (isValid) {
-
+        const errorList = domain ? await validateDomain(form.getValues('name'), domain.name) : await validateDomain(form.getValues('name'), undefined); // valido el dominio en la base de datos manualmente
         if (errorList.length > 0) {
           errorList.forEach((error) => {
             form.setError(error.field, {

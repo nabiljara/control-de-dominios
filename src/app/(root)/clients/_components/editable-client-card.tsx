@@ -89,9 +89,8 @@ export function EditableClientCard({
       e.stopPropagation();
       setIsSubmitting(true)
       const isValid = await form.trigger() //ejecuto validación manual
-      const errorList = await validateClient(form.getValues('name'), client.name) // valido el nombre del cliente en la base de datos manualmente
-      if (isValid) {
-
+      if (isValid && form.formState.isDirty) {
+        const errorList = await validateClient(form.getValues('name'), client.name) // valido el nombre del cliente en la base de datos manualmente
         if (errorList.length > 0) {
           errorList.forEach((error) => {
             form.setError(error.field, {
@@ -243,7 +242,7 @@ export function EditableClientCard({
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="flex md:flex-row flex-col justify-between items-start gap-3 overflow-auto">
+              <div className="flex md:flex-row flex-col justify-between items-start gap-3 p-1 overflow-auto">
                 <FormField
                   control={form.control}
                   name="status"
@@ -313,7 +312,7 @@ export function EditableClientCard({
                             name="locality"
                           >
                             <FormControl>
-                              <SelectTrigger className="w-[180px]">
+                              <SelectTrigger className="max-w-[260px]">
                                 <SelectValue placeholder="Seleccione la localidad" />
                               </SelectTrigger>
                             </FormControl>
@@ -332,7 +331,7 @@ export function EditableClientCard({
                           <FormMessage />
                         </>
                       ) : (
-                        <span className="font-semibold text-muted-foreground">{client.locality.name}</span>
+                        <span className="font-semibold text-black">{client.locality.name}</span>
                       )}
                       <FormMessage />
                     </FormItem>

@@ -121,6 +121,7 @@ export async function updateClient(client: ClientFormValues) {
     if (!parsed.id) {
       throw new Error("El ID del cliente no está definido.");
     }
+    parsed.name = parsed.name.toUpperCase()
     await setUserId()
     await db.update(clients)
       .set({ ...parsed, updatedAt: sql`NOW()` })
@@ -138,6 +139,7 @@ export async function updateClient(client: ClientFormValues) {
 export async function updateClientAndDomains(client: ClientUpdateValues) {
   try {
     const parsed = await clientUpdateFormSchema.parseAsync(client);
+    parsed.name = parsed.name.toUpperCase()
     await db.transaction(async (tx) => {
 
       if (!parsed.id) {
@@ -191,6 +193,7 @@ export async function createClient(client: ClientFormValues) {
   try {
 
     const parsed = await clientFormSchema.parseAsync(client);
+    parsed.name = parsed.name.toUpperCase()
 
     if (!parsed) {
       throw new Error("Error de validación del formulario de cliente.");

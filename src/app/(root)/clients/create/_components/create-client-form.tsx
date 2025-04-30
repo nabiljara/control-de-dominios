@@ -113,9 +113,8 @@ export function CreateClientForm({
       e.stopPropagation();
       setIsSubmitting(true)
       const isValid = await form.trigger() //ejecuto validación manual
-      const errorList = await validateClient(form.getValues('name'), undefined) // valido el nombre del cliente en la base de datos manualmente
       if (isValid) {
-
+        const errorList = await validateClient(form.getValues('name'), undefined) // valido el nombre del cliente en la base de datos manualmente
         if (errorList.length > 0) {
           errorList.forEach((error) => {
             form.setError(error.field, {
