@@ -24,7 +24,6 @@ export function EditContactConfirmationModal(
     setIsEditConfirmationModalOpen,
     client,
     individualContacts,
-    kernelContacts,
     clients
   }: {
     form: UseFormReturn<ContactFormValues>
@@ -35,7 +34,6 @@ export function EditContactConfirmationModal(
     setIsEditConfirmationModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
     client?: string
     individualContacts?: Contact[]
-    kernelContacts?: Contact[]
     clients?: Client[]
   }
 ) {
@@ -147,7 +145,7 @@ export function EditContactConfirmationModal(
           <CardDescription className="mb-4">
             Los siguientes dominios se verán afectados por la baja del
             contacto, deberá seleccionar un nuevo contacto (del cliente
-            del dominio, de Kernel o un contacto individual) para cada uno. Puede crear uno nuevo si lo desea.
+            del dominio o un contacto individual) para cada uno. Puede crear uno nuevo si lo desea.
           </CardDescription>
           <CardContent className="flex flex-col gap-4 border-none">
             <ul className='space-y-4'>
@@ -201,41 +199,6 @@ export function EditContactConfirmationModal(
                             <span className='ml-2 text-destructive text-xs'>No hay contactos activos.</span>
                           )}
                         </SelectGroup>
-                        {
-                          domain.clientId !== 1 &&
-                          <>
-                            <div className="my-2 border-gray-200 border-t" />
-                            <div className="px-2 font-semibold text-gray-500 text-sm">
-                              Contactos de Kernel SAS
-                            </div>
-                            {kernelContacts && kernelContacts.filter((contact) => contact.id !== oldContact.id).length > 0 ? (
-                              <SelectGroup>
-                                {
-                                  kernelContacts
-                                    ?.filter((contact) => contact.id !== oldContact.id)
-                                    .map((contact) => (
-                                      <SelectItem
-                                        key={contact.id}
-                                        value={contact.id.toString()}
-                                        className="hover:bg-muted cursor-pointer"
-                                      >
-                                        <div>
-                                          <p className="font-medium text-sm text-left">{contact.name}</p>
-                                          <p className="flex items-center text-gray-500 text-xs">
-                                            <Mail className="mr-1 w-3 h-3 shrink-0" />
-                                            {contact.email}
-                                          </p>
-                                        </div>
-                                      </SelectItem>
-                                    )
-                                    )
-                                }
-                              </SelectGroup>
-                            ) : (
-                              <span className='ml-2 text-destructive text-xs'>No hay contactos activos.</span>
-                            )}
-                          </>
-                        }
                         <div className="my-2 border-gray-200 border-t" />
                         <div className="px-2 font-semibold text-gray-500 text-sm">
                           Contactos individuales

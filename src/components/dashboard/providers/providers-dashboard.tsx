@@ -21,7 +21,7 @@ export function ProvidersDashboard() {
         <Card className="md:col-span-4">
           <CardHeader>
             <CardTitle className="text-lg md:text-2xl">
-              Dominios por Proveedor
+              Dominios por proveedor
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
               Distribución actual (todos los dominios).
@@ -31,10 +31,10 @@ export function ProvidersDashboard() {
             <ProviderPie />
           </CardContent>
         </Card>
-        <Card className="mt-4 md:col-span-4 md:mt-0">
+        <Card className="md:col-span-4 mt-4 md:mt-0">
           <CardHeader>
             <CardTitle className="text-lg md:text-2xl">
-              Registros de Dominios por Proveedor
+              Registros de dominios por proveedor
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
               Últimos 6 meses

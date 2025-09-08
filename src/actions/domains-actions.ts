@@ -509,6 +509,8 @@ export async function getRegisteredPerMonthData() {
 export const validateDomain = async (domainName: string, oldDomainName: string | undefined) => {
   try {
     const errorList: { field: "name"; message: string }[] = [];
+    console.log(domainName);
+    
     const domainIsValid = await validateDomainName(domainName);
     if (!domainIsValid && domainName !== oldDomainName) {
       errorList.push({

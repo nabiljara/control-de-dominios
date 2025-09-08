@@ -21,8 +21,8 @@ export default function SignInForm() {
   const form = useForm<SigninInput>({
     resolver: valibotResolver(SigninSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "prueba@gmail.com",
+      password: "password",
     },
     mode:'onSubmit'
   });

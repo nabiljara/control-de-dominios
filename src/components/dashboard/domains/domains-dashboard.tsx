@@ -16,18 +16,18 @@ export function DomainsDashboard() {
         <Card className="md:col-span-4">
           <CardHeader>
             <CardTitle className="text-lg md:text-2xl">
-              Dominios por Mes
+              Dominios por mes
             </CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <OverviewDomain />
           </CardContent>
         </Card>
-        <Card className="mt-4 md:col-span-4 md:mt-0">
+        <Card className="md:col-span-4 mt-4 md:mt-0">
           <CardHeader>
             <CardTitle className="flex flex-row items-center gap-1 text-lg md:text-2xl">
-              <CircleAlert className="h-6 w-6 text-orange-600 md:mt-1" />
-              Dominios proximos a Vencer
+              <CircleAlert className="md:mt-1 w-6 h-6 text-orange-600" />
+              Dominios próximos a vencer
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -10,17 +10,16 @@ export default function NotFound() {
         <div className="mb-8">
           <Link href="/" className="flex justify-center items-center gap-2 font-semibold">
               <Image
-                src="/images/logo.svg"
-                width={100}
-                height={100}
+                src="/images/logo.png"
+                width={120}
+                height={120}
                 alt='Logo'
               />
           </Link>
-          <h1 className="mt-4 font-bold text-gray-700 dark:text-blue-400 text-4xl">SICOM</h1>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 shadow-2xl mb-8 p-8 rounded-3xl">
-          <h2 className="mb-4 font-bold text-gray-900 dark:text-gray-100 text-6xl">404</h2>
+        <div className="bg-white dark:bg-gray-800 shadow-lg mb-8 p-8 rounded-3xl">
+          <h2 className="mb-4 font-bold text-gray-900 dark:text-gray-100 text-6xl">Página no encontrada</h2>
           <p className="mb-8 text-gray-600 dark:text-gray-400 text-xl">
             Oops! Parece que te perdiste.
           </p>
@@ -29,12 +28,6 @@ export default function NotFound() {
               <Link href="/" className="flex justify-center items-center gap-2">
                 <Home className="w-4 h-4" />
                 Volver al inicio
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link href="/domains" className="flex justify-center items-center gap-2">
-                <Search className="w-4 h-4" />
-                Buscar dominios
               </Link>
             </Button>
           </div>

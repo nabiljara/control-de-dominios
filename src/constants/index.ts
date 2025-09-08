@@ -18,14 +18,15 @@ import {
   AlertCircle,
   CalendarClock,
   MailX,
-  Bell
+  Bell,
+  LayoutDashboard
 } from "lucide-react"
 
 export const NAV_MAIN = [
   {
-    label: "Home",
+    label: "Dashboard",
     href: "/",
-    icon: Home,
+    icon: LayoutDashboard,
     command: "H",
   },
   {

@@ -6,7 +6,7 @@ import { Globe, Trash } from "lucide-react";
 import { deleteAccess } from "@/actions/accesses-actions";
 import { AccessWithRelations} from "@/db/schema";
 import { toast } from "sonner";
-import { AccessInfoCard } from "@/app/(root)/clients/_components/access-info-card";
+import { AccessInfoCard } from "@/app/(root)/(tables)/clients/_components/access-info-card";
 import { ResponsiveDialog } from "../responsive-dialog";
 import { Card, CardContent, CardDescription } from "../ui/card";
 interface DeleteAccessModalProps {

@@ -65,7 +65,7 @@ export async function updateContact(contact: ContactFormValues, pathToRevalidate
                 throw new Error("El ID del contacto no está definido.");
             }
             await setUserId(tx)
-            
+
             await tx
                 .update(contacts)
                 .set({
@@ -78,13 +78,13 @@ export async function updateContact(contact: ContactFormValues, pathToRevalidate
                     updatedAt: sql`NOW()`
                 })
                 .where(eq(contacts.id, Number(contact.id)))
-                
+
 
             if (selectedContacts) {
                 await Promise.all(Object.entries(selectedContacts).map(async ([domainId, contactId]) => {
                     if (!contactId) throw new Error(`El ID del contacto no está definido para el dominio con id: ${domainId}`);
-                    await tx.update(domains) 
-                        .set({ contactId: contactId})
+                    await tx.update(domains)
+                        .set({ contactId: contactId })
                         .where(eq(domains.id, Number(domainId)));
                 }));
             }

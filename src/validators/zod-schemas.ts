@@ -101,11 +101,17 @@ export const domainFormSchema = z.object({
   id: z.number().optional(),
 
   name: z.preprocess((input) => {
-    if (typeof input === "string") {
-      const trimmed = input.trim();
+     if (typeof input === "string") {
+      let trimmed = input.trim();
+
+      // si no tiene protocolo, agregar https://
       if (!/^https?:\/\//i.test(trimmed)) {
-        return `https://${trimmed}`;
+        trimmed = `https://${trimmed}`;
       }
+
+      // eliminar cualquier "/" al final
+      trimmed = trimmed.replace(/\/+$/, "");
+
       return trimmed;
     }
     return input;
@@ -138,10 +144,8 @@ export const domainFormSchema = z.object({
   contactId: z.string({ message: 'El contacto es requerido.' }),
   contact: contactFormSchema.optional(),
   isClientContact: z.boolean().optional(),
-  isKernelContact: z.boolean().optional(),
   isIndividualContact: z.boolean().optional(),
   isClientAccess: z.boolean().optional(),
-  isKernelAccess: z.boolean().optional(),
 })
 
 export const clientUpdateFormSchema = clientFormSchema.omit({

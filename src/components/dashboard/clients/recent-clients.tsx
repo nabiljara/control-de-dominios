@@ -16,17 +16,17 @@ export async function RecentClients() {
   return (
     <div className="spcae-y-2">
       <div className="h-fit">
-        <div className="h-fit rounded-lg border">
+        <div className="border rounded-lg h-fit">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="rounded-tl-lg">Cliente</TableHead>
                 <TableHead className="text-center">Tamaño</TableHead>
                 <TableHead className="text-center">
-                  Dominios Registrados
+                  Dominios registrados
                 </TableHead>
                 <TableHead className="rounded-tr-lg text-center">
-                  Fecha de Registro
+                  Fecha de registro
                 </TableHead>
               </TableRow>
             </TableHeader>

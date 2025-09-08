@@ -28,15 +28,14 @@ export async function AppSidebar() {
               <Link href="/" className="flex items-center gap-2 font-semibold">
                 <div className="flex justify-center items-center rounded-lg size-8 aspect-square text-sidebar-primary-foreground">
                   <Image
-                    src="/images/logo.svg"
-                    width={20}
-                    height={20}
+                    src="/images/logo.png"
+                    width={40}
+                    height={40}
                     alt='Logo'
                   />
                 </div>
                 <div className="flex-1 grid text-sm text-left leading-tight">
-                  <span className="font-semibold truncate">SICOM</span>
-                  <span className="text-xs truncate">Interna y externa</span>
+                  <span className="font-semibold truncate">Control de dominios</span>
                 </div>
               </Link>
             </SidebarMenuButton>

@@ -124,7 +124,13 @@ export async function updateClient(client: ClientFormValues) {
     parsed.name = parsed.name.toUpperCase()
     await setUserId()
     await db.update(clients)
-      .set({ ...parsed, updatedAt: sql`NOW()` })
+      .set({
+        localityId: parseInt(parsed.locality.id),
+        name: parsed.name,
+        size: parsed.size,
+        status: parsed.status,
+        updatedAt: sql`NOW()`
+      })
       .where(eq(clients.id, parsed.id))
     success = true;
   } catch (error) {
@@ -286,12 +292,12 @@ export async function getLastCreatedClients() {
   try {
 
     const latestCreated = await db.select({
-        month: sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`.as("month"),
-        count: count(),
-      })
-        .from(clients)
-        .groupBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`)
-        .orderBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP)) DESC`);
+      month: sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`.as("month"),
+      count: count(),
+    })
+      .from(clients)
+      .groupBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP))`)
+      .orderBy(sql`DATE_TRUNC('month', CAST(${clients.createdAt} AS TIMESTAMP)) DESC`);
 
     return latestCreated;
 

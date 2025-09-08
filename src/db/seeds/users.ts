@@ -7,7 +7,7 @@ const mock = async () => {
   return [
     {
       name: "Sistema",
-      email: "desarrollo@kerneltech.dev",
+      email: "prueba@gmail.com",
       password: await argon2.hash(password),
       role: "user" as typeof userRoleEnum.enumValues[number],
     }

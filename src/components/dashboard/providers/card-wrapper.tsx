@@ -1,32 +1,32 @@
 import { getDashboardData } from "@/actions/provider-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Building2 } from "lucide-react";
+import { TrendingUp, Building2, Box } from "lucide-react";
 export async function CardWrapper() {
   const dashboardData = await getDashboardData();
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="gap-4 grid grid-cols-2">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-          <CardTitle className="text-base font-medium leading-[18px]">
-            Proveedores Totales
+        <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-0">
+          <CardTitle className="font-medium text-base leading-[18px]">
+            Proveedores totales
           </CardTitle>
-          <Building2 className="h-6 w-6 text-muted-foreground" />
+          <Box className="w-6 h-6 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="mt-2 text-center text-2xl font-bold md:text-4xl lg:mt-0 lg:text-start">
+          <div className="mt-2 lg:mt-0 font-bold text-2xl md:text-4xl text-center lg:text-start">
             {dashboardData.total}
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-          <CardTitle className="text-base font-medium leading-[18px]">
+        <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-0">
+          <CardTitle className="font-medium text-base leading-[18px]">
             Proveedor más utilizado
           </CardTitle>
-          <TrendingUp className="h-6 w-6 text-muted-foreground" />
+          <TrendingUp className="w-6 h-6 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="mt-2 text-center text-2xl font-bold md:text-3xl lg:mt-0 lg:text-start">
+          <div className="mt-2 lg:mt-0 font-bold text-2xl md:text-3xl text-center lg:text-start">
             {dashboardData.mostUsedProv.providerName}
           </div>
         </CardContent>

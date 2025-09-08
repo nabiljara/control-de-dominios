@@ -23,10 +23,10 @@ export function ClientsDashboard() {
             <OverviewClients />
           </CardContent>
         </Card>
-        <Card className="mt-4 md:col-span-4 md:mt-0">
+        <Card className="md:col-span-4 mt-4 md:mt-0">
           <CardHeader>
             <CardTitle className="text-lg md:text-2xl">
-              Últimos Clientes añadidos
+              Últimos clientes añadidos
             </CardTitle>
           </CardHeader>
           <CardContent>

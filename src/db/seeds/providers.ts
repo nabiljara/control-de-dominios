@@ -9,7 +9,8 @@ const mock = async () => {
   data.push(
     { name: 'DonWeb', url: 'https://donweb.com' },
     { name: 'GoDaddy', url: 'https://godaddy.com' },
-    { name: 'Hostinger', url: 'https://hostinger.com.ar' }
+    { name: 'Hostinger', url: 'https://hostinger.com.ar' },
+    { name: 'Digital Ocean', url: 'https://www.digitalocean.com' }
   );
   return data;
 };

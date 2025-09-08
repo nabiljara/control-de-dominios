@@ -1,58 +1,58 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe2, Activity, TrendingUp, AlertCircle } from "lucide-react";
+import { Globe2, Activity, TrendingUp, AlertCircle, Globe } from "lucide-react";
 import { getDashboardData } from "@/actions/domains-actions";
 export async function CardWrapper() {
   const dashboardData = await getDashboardData();
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="gap-4 grid grid-cols-2 lg:grid-cols-4">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-          <CardTitle className="text-base font-medium leading-[18px]">
-            Dominios Totales
+        <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-0">
+          <CardTitle className="font-medium text-base leading-[18px]">
+            Dominios totales
           </CardTitle>
-          <Globe2 className="h-6 w-6 text-muted-foreground" />
+          <Globe className="w-6 h-6 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="mt-2 text-center text-3xl font-bold md:text-4xl lg:mt-0 lg:text-start">
+          <div className="mt-2 lg:mt-0 font-bold text-3xl md:text-4xl text-center lg:text-start">
             {dashboardData.total}
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-          <CardTitle className="text-base font-medium leading-[18px]">
-            Dominios Activos
+        <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-0">
+          <CardTitle className="font-medium text-base leading-[18px]">
+            Dominios activos
           </CardTitle>
-          <Activity className="h-6 w-6 text-muted-foreground" />
+          <Activity className="w-6 h-6 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="mt-2 text-center text-3xl font-bold md:text-4xl lg:mt-0 lg:text-start">
+          <div className="mt-2 lg:mt-0 font-bold text-3xl md:text-4xl text-center lg:text-start">
             {dashboardData.active}
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-          <CardTitle className="text-base font-medium leading-[18px]">
-            Dominios Vencidos
+        <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-0">
+          <CardTitle className="font-medium text-base leading-[18px]">
+            Dominios vencidos
           </CardTitle>
-          <AlertCircle className="h-6 w-6 text-muted-foreground" />
+          <AlertCircle className="w-6 h-6 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="mt-2 text-center text-3xl font-bold md:text-4xl lg:mt-0 lg:text-start">
+          <div className="mt-2 lg:mt-0 font-bold text-3xl md:text-4xl text-center lg:text-start">
             {dashboardData.expired}
           </div>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-          <CardTitle className="text-base font-medium leading-[18px]">
-            Balance Mensual
+        <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-0">
+          <CardTitle className="font-medium text-base leading-[18px]">
+            Balance mensual
           </CardTitle>
-          <TrendingUp className="h-6 w-6 text-muted-foreground" />
+          <TrendingUp className="w-6 h-6 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="mt-2 text-center text-3xl font-bold md:text-4xl lg:mt-0 lg:text-start">
+          <div className="mt-2 lg:mt-0 font-bold text-3xl md:text-4xl text-center lg:text-start">
             {dashboardData.growthPercentage}%
           </div>
         </CardContent>

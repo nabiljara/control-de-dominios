@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown } f
 
 export default function DomainManagementSkeleton() {
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-8">
       {/* Title and subtitle */}
       <div className="space-y-2">
         <Skeleton className="w-40 h-8" />

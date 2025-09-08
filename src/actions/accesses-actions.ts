@@ -46,25 +46,6 @@ export async function getAccessByClientAndProviderId(clientId: number, providerI
   }
 }
 
-export async function getKernelAccessByProviderId(providerId: number) {
-  try {
-    const data = await db.query.access.findMany({
-      orderBy: [desc(access.id)],
-      where: and(eq(access.clientId, 1), eq(access.providerId, providerId)),
-      with: {
-        provider: true
-      }
-    });
-    data.map((access) => {
-      access.password = decryptPassword(access.password)
-    });
-    return data;
-  } catch (error) {
-    console.error("Error al obtener accesos:", error);
-    throw error;
-  }
-}
-
 export async function validateUsername(username: string, providerId: number) {
   try {
     const response = await db.query.access.findFirst({

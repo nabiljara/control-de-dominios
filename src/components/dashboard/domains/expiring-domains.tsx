@@ -14,7 +14,7 @@ export async function ExpiringDomains() {
   return (
     <div className="space-y-2">
       <div className="h-fit">
-        <div className="h-fit rounded-lg border">
+        <div className="border rounded-lg h-fit">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -22,7 +22,7 @@ export async function ExpiringDomains() {
                 <TableHead className="text-center">Cliente</TableHead>
                 <TableHead className="text-center">Vence</TableHead>
                 <TableHead className="rounded-tr-lg text-center">
-                  Días Restantes
+                  Días restantes
                 </TableHead>
               </TableRow>
             </TableHeader>

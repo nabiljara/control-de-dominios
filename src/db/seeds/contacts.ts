@@ -4,7 +4,7 @@ import { ContactInsert, contacts } from "@/db/schema";
 const mock = async () => {
   const data: ContactInsert[] = []
   data.push(
-    { name: 'Soporte Kernel', email:'soporte@kerneltech.dev', status:'Activo', type:'Soporte al Cliente', clientId:1},
+    { name: 'Nabil Jara', email:'nabil@gmail.com', status:'Activo', type:'Soporte', clientId:1},
   );
   return data;
 };

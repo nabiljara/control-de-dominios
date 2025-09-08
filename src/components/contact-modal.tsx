@@ -14,11 +14,13 @@ import { Badge } from '@/components/ui/badge'
 import { contactStatus, contactTypes, statusConfig } from '@/constants'
 import { Client, Contact, ContactWithRelations } from '@/db/schema'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
-import { NewContactConfirmationModal } from '@/app/(root)/domains/create/_components/new-contact-confirmation-modal'
+
 import { createContact, updateContact, validateContact } from '@/actions/contacts-actions'
 import { toast } from 'sonner'
 import { Contact2, Loader2 } from "lucide-react";
 import { EditContactConfirmationModal } from "./edit-contact-confirmation-modal";
+import { useTheme } from "next-themes";
+import { NewContactConfirmationModal } from "@/app/(root)/(tables)/domains/create/_components/new-contact-confirmation-modal";
 
 
 export function ContactModal({
@@ -35,7 +37,6 @@ export function ContactModal({
   isOpen,
   setIsOpen,
   individualContacts,
-  kernelContacts
 }: {
   contactFormSchema?: z.Schema;
   contacts?: ContactFormValues[]; //Indica que trata al registro como un contacto temporal
@@ -50,7 +51,6 @@ export function ContactModal({
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>; //Permite controlar el estado de abierto y cerrado desde afuera
   isOpen?: boolean;
   individualContacts?: Contact[]
-  kernelContacts?: Contact[]
 }) {
   const [isContactModalOpen, setIsContactModalOpen] = useState(isOpen ?? false)
   const [isNewContactConfirmationModalOpen, setIsNewContactConfirmationModalOpen] = useState(false)
@@ -213,6 +213,7 @@ export function ContactModal({
   }, [command])
 
   const isDirty = Object.keys(form.formState.dirtyFields).length !== 0
+  const { theme } = useTheme();
 
   return (
     <>
@@ -275,19 +276,22 @@ export function ContactModal({
                   </FormLabel>
                   <FormControl>
                     <PhoneInput
+                      dropdownStyle={{
+                        backgroundColor: theme === "dark" ? "hsl(222.2 84% 4.9%)" : "rgb(255 255 255)",
+                        color: theme === "dark" ? "white" : "black",
+                      }}
                       inputStyle={{
                         width: '100%',
                         height: '2.5rem',
                         borderRadius: '0.375rem',
-                        borderColor:
-                          'rgb(226 232 240)',
-                        paddingLeft: '60px'
+                        borderColor: theme === "dark" ? "hsl(217.2 32.6% 17.5%)" : "hsl(214.3 31.8% 91.4%)",
+                        paddingLeft: '60px',
+                        backgroundColor: theme === "dark" ? "hsl(222.2 84% 4.9%)" : "rgb(255 255 255)",
+                        color: theme === "dark" ? "white" : "black",
                       }}
                       buttonStyle={{
-                        backgroundColor:
-                          'rgb(255 255 255)',
-                        borderColor:
-                          'rgb(226 232 240)'
+                        backgroundColor: theme === "dark" ? "hsl(222.2 84% 4.9%)" : "rgb(255 255 255)",
+                        borderColor: theme === "dark" ? "hsl(217.2 32.6% 17.5%)" : "hsl(214.3 31.8% 91.4%)",
                       }}
                       country={'ar'}
                       preferredCountries={[
@@ -535,7 +539,6 @@ export function ContactModal({
           handleSubmit={handleEditDBContactSubmit}
           isSubmitting={isSubmitting}
           client={selectedClientName ?? client?.name}
-          kernelContacts={kernelContacts}
           individualContacts={individualContacts}
           clients={clients}
         />

@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SICOM",
-  description: "Aplicación para gestionar correctamente los dominios de Kernel S.A.S",
+  title: "Control de dominios",
+  description: "Aplicación para gestionar correctamente los dominios",
 };
 
 export default function RootLayout({
