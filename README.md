@@ -22,9 +22,18 @@ Pensado para administradores que necesitan centralizar la información de **clie
 ✅ **Historial completo** de cada dominio (clientes, proveedores y contactos)  
 ✅ **Auditorías** de todos los cambios realizados en el sistema  
 ✅ **Gestión de sesión** (login/logout seguro)  
+✅ **Dashboard con métricas y gráficos**  
+
 
 ---
-El sistema permite:
+
+## 🎯 Propósito  
+
+Este sistema fue diseñado para **empresas, agencias o profesionales** que gestionan múltiples dominios de clientes y necesitan un **control centralizado**, evitando pérdidas por vencimientos y manteniendo organizada toda la información de contactos, accesos y proveedores.  
+
+---
+
+## El sistema permite:
 
 - Crear, modificar y eliminar **Clientes, Proveedores, Contactos, Dominios y Accesos**.  
 - Visualizar el **historial de cambios** de cada dominio.  
@@ -45,7 +54,10 @@ El sistema permite:
   - [Node.js](https://nodejs.org/)
   - [Drizzle ORM](https://orm.drizzle.team/)
   - [Zod](https://zod.dev/)
-  - [Authjs](https://authjs.dev/)
+  - [Auth.js](https://authjs.dev/)
+
+- **Notificaciones email**
+  - [Resend](https://resend.com/)
 
 ## 📸 Vista previa
 
