@@ -111,9 +111,9 @@ export default function BouncedMail({ emailTo, contactId }: BouncedEmailProps) {
                           style={logoColumnStyle}
                         >
                           <Img
-                            src={`${baseUrl}/images/kernel-black.png`}
-                            alt="Kernel"
-                            className="h-[24px] w-[120px]"
+                            src={`${baseUrl}/images/logo.png`}
+                            alt="Logo"
+                            className="w-[120px] h-[24px]"
                           />
                         </Column>
                         <Column
@@ -176,12 +176,7 @@ export default function BouncedMail({ emailTo, contactId }: BouncedEmailProps) {
           <Section style={footerStyle}>
             <Row>
               <Column style={textLeftFooter}>
-                <Text style={footerText}>© 2025 Kernel S.A.S.</Text>
-              </Column>
-              <Column style={textRightFooter}>
-                <Link href="https://kerneltech.dev/legales" style={privacyLink}>
-                  Política de privacidad
-                </Link>
+                <Text style={footerText}>Control de dominios</Text>
               </Column>
             </Row>
           </Section>

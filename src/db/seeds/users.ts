@@ -6,8 +6,8 @@ const mock = async () => {
   const password = process.env.SEED_USER_PASSWORD || "admin";
   return [
     {
-      name: "Sistema",
-      email: "prueba@gmail.com",
+      name: "Admin",
+      email: "admin@example.com",
       password: await argon2.hash(password),
       role: "user" as typeof userRoleEnum.enumValues[number],
     }

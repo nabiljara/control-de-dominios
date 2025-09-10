@@ -18,7 +18,7 @@ export const sendEmailToClient = async (
 ) => {
   try {
     const data = await resend.emails.send({
-      from: 'Kernel <no-reply@kerneltech.dev>',
+      from: 'Control de Dominios <no-reply@controldedominios.online>',
       to: [email],
       subject: subject,
       react: ClientEmail({
@@ -43,10 +43,10 @@ export const sendEmailToClient = async (
 };
 
 export const sendEmailBounced = async (emailTo: string, contactId: number | null) => {
-  const managementEmail = 'gerencia@kerneltech.dev'
+  const managementEmail = 'gerencia@controldedominios.online'
   try {
     const data = await resend.emails.send({
-      from: 'SICOM <soporte@kerneltech.dev>',
+      from: 'Control de Dominios <soporte@controldedominios.online>',
       to: [managementEmail],
       subject: 'Email no entregado.',
       react: BouncedMail({

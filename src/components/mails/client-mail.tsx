@@ -119,12 +119,8 @@ export default function ClientEmail({
                           style={logoColumnStyle}
                         >
                           <Img
-                            src={
-                              expire === "expired" || expire === "today"
-                                ? `${baseUrl}/images/kernel-black.png`
-                                : `${baseUrl}/images/kernel-color.png`
-                            }
-                            alt="Kernel"
+                            src={`${baseUrl}/images/logo.png`}
+                            alt="Logo"
                             className="w-[120px] h-[24px]"
                           />
                         </Column>
@@ -222,12 +218,7 @@ export default function ClientEmail({
           <Section style={footerStyle}>
             <Row>
               <Column style={textLeftFooter}>
-                <Text style={footerText}>© 2025 Kernel S.A.S.</Text>
-              </Column>
-              <Column style={textRightFooter}>
-                <Link href="https://kerneltech.dev/legales" style={privacyLink}>
-                  Política de privacidad
-                </Link>
+                <Text style={footerText}>Control de dominios</Text>
               </Column>
             </Row>
           </Section>

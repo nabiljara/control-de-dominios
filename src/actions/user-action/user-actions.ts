@@ -69,7 +69,7 @@ export async function setUserId(tx?: any) {
 export async function setUserSystem(tx?: any) {
     try {
         const userSystem = await db.query.users.findFirst({
-            where: eq(users.email, "desarrollo@kerneltech.dev"),
+            where: eq(users.email, "admin@example.com"),
         });
         if (!userSystem?.id) {
             throw new Error("Usuario Sistema no encontrado en la base de datos.");

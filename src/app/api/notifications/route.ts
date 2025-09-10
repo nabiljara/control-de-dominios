@@ -1,6 +1,5 @@
 import { sendEmailBounced } from "@/actions/mail-actions";
 import { insertNotification } from "@/actions/notifications-actions";
-import { getUsers } from "@/actions/user-action/user-actions";
 import db from "@/db";
 import { contacts, NotificationInsert } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -14,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "La estructura del payload no es válida" }, { status: 400 });
     }
 
-    if (payload.data.from.includes("soporte@kerneltech.dev") && payload.type === "email.bounced") {
+    if (payload.type === "email.bounced") {
       const emailTo = payload.data.to[0];
 
       const contact = await db.query.contacts.findFirst({

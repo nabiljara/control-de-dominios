@@ -196,7 +196,7 @@ export function NotificationsSheet() {
           <div className="relative flex-1 w-full">
             <Search className="top-1/2 left-2 absolute w-4 h-4 text-muted-foreground -translate-y-1/2" />
             <Input
-              placeholder="Ej: https://kerneltech.dev"
+              placeholder="Ej: https://midominio.com"
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -308,7 +308,7 @@ export function NotificationsSheet() {
             </div>
           </TabsContent>
           <TabsContent value="read" className="w-full">
-            <div className="flex flex-col items-start gap-2 px-4">
+            <div className="flex flex-col items-start gap-2 px-3">
               <div className="flex sm:flex-row flex-col justify-between items-center gap-2 w-full">
                 <Button
                   className="w-full"
@@ -324,7 +324,9 @@ export function NotificationsSheet() {
                   ) : (
                     <>
                       <Database />
-                      Filtrar por base de datos
+                      <p className="text-xs">
+                        Filtrar por base de datos
+                      </p>
                     </>
                   )}
                 </Button>
@@ -346,7 +348,10 @@ export function NotificationsSheet() {
                   ) : (
                     <>
                       <RefreshCw />
+                      <p className="text-xs">
+
                       {`Traer últimas ${limit}`}
+                      </p>
                     </>
                   )}
                 </Button>
