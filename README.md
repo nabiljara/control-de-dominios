@@ -7,9 +7,28 @@ Pensado para administradores que necesitan centralizar la información de **clie
 
 ---
 
+## 🎯 Propósito  
+
+Este sistema fue diseñado para **empresas, agencias o profesionales** que gestionan múltiples dominios de clientes y necesitan un **control centralizado**, evitando pérdidas por vencimientos y manteniendo organizada toda la información de contactos, accesos y proveedores.  
+
+---
+
 ## 🌍 Demo en vivo  
 
 👉 [Probar aplicación](https://www.controldedominios.online/)
+
+---
+
+## 📸 Vista previa
+
+### Pantalla principal
+![Dashboard](/public/readme/dashboard.png)
+
+### Dominios
+![Alta dominio](/public/readme/crear-dominio.png)
+
+### Clientes
+![Listado de clientes](/public/readme/listado-clientes.png)
 
 ---
 
@@ -23,13 +42,6 @@ Pensado para administradores que necesitan centralizar la información de **clie
 ✅ **Auditorías** de todos los cambios realizados en el sistema  
 ✅ **Gestión de sesión** (login/logout seguro)  
 ✅ **Dashboard con métricas y gráficos**  
-
-
----
-
-## 🎯 Propósito  
-
-Este sistema fue diseñado para **empresas, agencias o profesionales** que gestionan múltiples dominios de clientes y necesitan un **control centralizado**, evitando pérdidas por vencimientos y manteniendo organizada toda la información de contactos, accesos y proveedores.  
 
 ---
 
@@ -58,14 +70,3 @@ Este sistema fue diseñado para **empresas, agencias o profesionales** que gesti
 
 - **Notificaciones email**
   - [Resend](https://resend.com/)
-
-## 📸 Vista previa
-
-### Pantalla principal
-![Dashboard](/readme/dashboard.png)
-
-### Dominios
-![Alta dominio](/readme/crear-dominio.png)
-
-### Clientes
-![Listado de clientes](/readme/listado-clientes.png)
