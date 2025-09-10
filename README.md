@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 Sistema de Control de Dominios
 
-## Getting Started
+Un sistema moderno y completo para la **gestión y control de dominios**.  
+Pensado para administradores que necesitan centralizar la información de **clientes, contactos, proveedores y accesos**, con **notificaciones automáticas y alertas de vencimientos vía email** para evitar pérdidas de dominios.  
 
-First, run the development server:
+> 🚀 Proyecto full stack desarrollado con tecnologías modernas en frontend, backend y base de datos.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🌍 Demo en vivo  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+👉 [Probar aplicación](https://www.controldedominios.online/)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## ✨ Funcionalidades principales
 
-To learn more about Next.js, take a look at the following resources:
+✅ Gestión de **Clientes, Proveedores y Contactos**  
+✅ Administración de **Dominios** y sus asociaciones
+✅ Registro de **Accesos por proveedor**  
+✅ **Notificaciones y envío de mails** por vencimientos (30, 7 y 1 día antes o al vencer)
+✅ **Historial completo** de cada dominio (clientes, proveedores y contactos)  
+✅ **Auditorías** de todos los cambios realizados en el sistema  
+✅ **Gestión de sesión** (login/logout seguro)  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
+El sistema permite:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Crear, modificar y eliminar **Clientes, Proveedores, Contactos, Dominios y Accesos**.  
+- Visualizar el **historial de cambios** de cada dominio.  
+- Acceder a **reportes y auditorías**.  
+- Recibir y gestionar **alertas de vencimiento**.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Tecnologías utilizadas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend**
+  - [Next.js](https://nextjs.org/) 
+  - [TypeScript](https://www.typescriptlang.org/) 
+  - [Tailwind CSS](https://tailwindcss.com/)
+  - [shadcn/ui](https://ui.shadcn.com/)
+
+- **Backend / Lógica**
+  - [Node.js](https://nodejs.org/)
+  - [Drizzle ORM](https://orm.drizzle.team/)
+  - [Zod](https://zod.dev/)
+  - [Authjs](https://authjs.dev/)
+
+## 📸 Vista previa
+
+### Pantalla principal
+![Dashboard](/readme/dashboard.png)
+
+### Dominios
+![Alta dominio](/readme/crear-dominio.png)
+
+### Clientes
+![Listado de clientes](/readme/listado-clientes.png)

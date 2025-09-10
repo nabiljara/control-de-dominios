@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  Home,
   Globe,
   Box,
   Contact,
@@ -58,7 +57,7 @@ export const NAV_MAIN = [
     command: "C",
   },
   {
-    label: "Auditorias",
+    label: "Auditorías",
     href: "/audits",
     icon: BookOpen,
     singular: "auditoria",
